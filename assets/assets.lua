@@ -29,6 +29,7 @@ end
 
 local list = {
 -- Graphics
+  { path = "sprites/leaves/leaf_001.png", name = "sprite.leaves.1", onLoad = filterNearest },
 
 -- Audio
   -- sourceType = "static"/"stream"
