@@ -8,7 +8,7 @@ local input = {
     controls = settings.client.input,
     pairs = {
       move = { "moveRight", "moveLeft", "moveUp", "moveDown" },
-      face = { "targetRight", "targetLeft", "moveUp", "moveDown" },
+      -- face = { "targetRight", "targetLeft", "moveUp", "moveDown" },
     },
     joystick = joystick,
     deadzone = settings.client.deadzone,
