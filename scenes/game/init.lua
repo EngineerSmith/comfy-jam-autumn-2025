@@ -16,6 +16,11 @@ audioManager.setVolumeAll()
 
 local scene = { }
 
+local world = require("src.world")
+local player = require("src.player")
+player.setCharacter(require("assets.characters.hedgehog"))
+
+player.character:addToWorld(world.slickWorld)
 
 scene.load = function(roomInfo)
   -- Load/keep loaded the main menu to return
@@ -42,10 +47,13 @@ scene.resize = function(w, h)
   cursor.setScale(scene.scale)
 end
 
-scene.update = function(dt) end
+scene.update = function(dt)
+  player.update(dt)
+end
 
 scene.draw = function()
   love.graphics.clear()
+  player.draw()
 end
 
 scene.joystickadded = function(...)
