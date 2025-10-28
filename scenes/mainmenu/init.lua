@@ -19,8 +19,9 @@ settingsMenu.set(suit)
 
 suit.theme = require("ui.theme.menu")
 
-
 local scene = { }
+
+local background = require("scenes.mainmenu.background")
 
 scene.preload = function()
   settingsMenu.preload()
@@ -33,6 +34,7 @@ scene.load = function(state)
   scene.menu = "prompt"
 
   settingsMenu.load()
+  background.load()
 
   scene.gameLily = sceneManager.preload("scenes.game")
 end
@@ -40,6 +42,7 @@ end
 scene.unload = function()
   cursor.switch(nil)
   settingsMenu.unload()
+  background.unload()
 end
 
 scene.langchanged = function()
@@ -71,6 +74,8 @@ scene.resize = function(w, h)
 
   -- scale Cursor
   cursor.setScale(scene.scale)
+  --
+  background.resize(w, h, scene.scale)
 end
 
 local inputTimer, inputTimeout = 0, 0
@@ -129,6 +134,8 @@ scene.update = function(dt)
   end
 
   scene.prompt:update(dt)
+
+  background.update(dt, scene.scale)
 end
 
 local maxOffsetW = 30
@@ -218,9 +225,8 @@ local mainButtons = {
       suit:setGamepadPosition(1)
     end),
   mainButtonFactory("menu.new_game", function()
-      -- changeMenu("game")
       suit:setGamepadPosition(1)
-      --sceneManager.changeScene("scenes.game")
+      sceneManager.changeScene("scenes.game")
     end),
 }
 
@@ -259,7 +265,8 @@ scene.updateui = function()
 end
 
 scene.draw = function()
-  lg.clear(120/255, 88/255, 55/255)
+  lg.clear()
+  background.draw(scene.scale)
   if scene.menu == "prompt" then
     local windowW, windowH = lg.getDimensions()
     local offset = windowH/10
