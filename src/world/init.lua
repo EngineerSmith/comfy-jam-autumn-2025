@@ -1,10 +1,14 @@
-local slick = require("libs.slick")
+local level = require("src.world.level")
 
 local world = {
-  slickWorld = slick.newWorld(150, 150)
+  levels = { },
 }
 
 world.load = function()
+
+end
+
+world.unload = function()
 
 end
 
@@ -13,7 +17,7 @@ world.update = function(dt)
 end
 
 world.draw = function()
-  
+
 end
 
 return world

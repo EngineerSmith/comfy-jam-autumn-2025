@@ -20,7 +20,7 @@ local world = require("src.world")
 local player = require("src.player")
 player.setCharacter(require("assets.characters.hedgehog"))
 
-player.character:addToWorld(world.slickWorld)
+-- player.character:addToLevel(nil)
 
 scene.load = function(roomInfo)
   -- Load/keep loaded the main menu to return
