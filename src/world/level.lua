@@ -7,15 +7,17 @@ local logger = require("util.logger")
 
 local BOUNDARY_MARGIN = 10
 
-level.new = function(name, width, height, positionOffsetX, positionOffsetY)
+level.new = function(name, width, height, zLevel, positionOffsetX, positionOffsetY)
   width = width or 100
   height = height or width
+  zLevel = zLevel or 0
   positionOffsetX = positionOffsetX or 0
   positionOffsetY = positionOffsetY or 0
   local halfWidth, halfHeight = width / 2, height / 2
 
   return setmetatable({
     name = name,
+    zLevel = zLevel,
     offsetX = positionOffsetX,
     offsetY = positionOffsetY,
     boundRadius = math.sqrt(halfWidth * halfWidth + halfHeight * halfHeight) + BOUNDARY_MARGIN,
