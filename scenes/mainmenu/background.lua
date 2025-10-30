@@ -8,16 +8,44 @@ background.load = function()
   background.sprites = {
     assetManager["sprite.leaves.1"],
   }
+  background.trees = {
+    {
+      x = 0.2,
+      sprite = assetManager["sprite.trees.1"],
+    },
+    {
+      x = 0.95,
+      sprite = assetManager["sprite.trees.1"],
+    },
+    {
+      x = 0.7,
+      sprite = assetManager["sprite.trees.2"],
+    },
+  }
+  background.treeShader = lg.newShader(
+[[
+vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords)
+{
+  vec4 textureColor = Texel(tex, texture_coords);
+  if (textureColor.a - 0.05 <= 0.0)
+    discard;
+  return textureColor * color;
+}
+]])
 end
 
 background.unload = function()
   background.sprites = nil
   background.leaves = nil
   background.gradientMesh = nil
+  background.gradientTreeMesh = nil
+  background.treeShader = nil
 end
 
-local TOP_COLOR = { 115/255, 61/255, 26/255, 1 } -- Deep Ochre
-local BOTTOM_COLOR = { 60/255, 30/255, 10/255, 1 } -- Richer brown
+-- local TOP_COLOR = { 115/255, 61/255, 26/255, 1 } -- Deep Ochre
+-- local BOTTOM_COLOR = { 60/255, 30/255, 10/255, 1 } -- Richer brown
+local TOP_COLOR = { 107/255, 60/255, 31/255, 1 }
+local BOTTOM_COLOR = { 69/255, 39/255, 21/255, 1 }
 local createGradientMesh = function(w, h)
   local vertices = {
     { 0, 0, 0, 0, unpack(TOP_COLOR) },
@@ -31,8 +59,26 @@ local createGradientMesh = function(w, h)
   background.gradientMesh = lg.newMesh(vertices, "triangles", "static")
 end
 
+-- local TOP_TREE_COLOR = { 95/255, 50/255, 22/255, 1 }
+-- local BOTTOM_TREE_COLOR = { 70/255, 37/255, 12/255, 1 }
+local TOP_TREE_COLOR = { 85/255, 48/255, 25/255, 1 }
+local BOTTOM_TREE_COLOR = { 54/255, 31/255, 17/255, 1 }
+local createGradientTreeMesh = function(w, h)
+  local vertices = {
+    { 0, 0, 0, 0, unpack(TOP_TREE_COLOR) },
+    { 0, h, 0, 0, unpack(BOTTOM_TREE_COLOR) },
+    { w, h, 0, 0, unpack(BOTTOM_TREE_COLOR) },
+    
+    { 0, 0, 0, 0, unpack(TOP_TREE_COLOR) },
+    { w, h, 0, 0, unpack(BOTTOM_TREE_COLOR) },
+    { w, 0, 0, 0, unpack(TOP_TREE_COLOR) },
+  }
+  background.gradientTreeMesh = lg.newMesh(vertices, "triangles", "static")
+end
+
 background.resize = function(w, h, scale)
   createGradientMesh(w, h)
+  createGradientTreeMesh(w, h)
 
   background.leaves = { }
   for _ = 1, 10 + 30 * scale do
@@ -125,6 +171,21 @@ background.draw = function(scale)
   lg.push("all")
     lg.setColor(1, 1, 1, 1)
     lg.draw(background.gradientMesh)
+
+    lg.push("all")
+    lg.setStencilMode("draw", 1)
+    lg.setColorMask(true)
+    lg.setShader(background.treeShader)
+    for _, tree in ipairs(background.trees) do
+      local s = 0.5*scale
+      local sWidth, sHeight = tree.sprite:getDimensions()
+      lg.draw(tree.sprite, lg.getWidth()*tree.x-sWidth/2*s, lg.getHeight()-sHeight*s, 0, s)
+    end
+    lg.setShader(nil)
+    lg.setStencilMode("test", 1)
+    lg.draw(background.gradientTreeMesh)
+    lg.setStencilMode("off")
+    lg.pop()
 
     for _, leaf in ipairs(background.leaves) do
       local sprite = background.sprites[leaf.sprite]
