@@ -12,16 +12,46 @@ local world = {
   characters = { },
 }
 
-world.load = function()
-  local chunk, errmsg = lfs.load("assets/level/mapData.lua")
+local characterFactories = { }
+local getCharacterFactory = function(file)
+  if characterFactories[file] then
+    return characterFactories[file]
+  end
+
+  local chunk, errmsg = lfs.load(file)
   if not chunk then
     error(errmsg)
     return
   end
-  local success, mapData = pcall(chunk)
+  local success, characterFactory = pcall(chunk)
   if not success then
-    error(mapData)
+    error(characterFactory)
     return
+  end
+
+  if type(characterFactory) ~= "function" then
+    error("Character factory didn't return function: "..tostring(file))
+    return
+  end
+
+  characterFactories[file] = characterFactory
+  return characterFactory
+end
+
+world.load = function()
+  local mapData
+  do -- Load mapData
+    local chunk, errmsg = lfs.load("assets/level/mapData.lua")
+    if not chunk then
+      error(errmsg)
+      return
+    end
+    local success
+    success, mapData = pcall(chunk)
+    if not success then
+      error(mapData)
+      return
+    end
   end
 
   for levelName, levelInfo in pairs(mapData.levels) do
@@ -40,16 +70,7 @@ world.load = function()
   end
 
   for characterName, characterInfo in pairs(mapData.characters) do
-    local chunk, errmsg = lfs.load(characterInfo.file)
-    if not chunk then
-      error(errmsg)
-      return
-    end
-    local success, character = pcall(chunk)
-    if not success then
-      error(character)
-      return
-    end
+    local character = getCharacterFactory(characterInfo.file)()
     local level = world.levels[characterInfo.level]
     if not level then
       logger.warn("Character '"..tostring(characterName).."', level couldn't be found. Check spelling.")
@@ -75,7 +96,7 @@ world.unload = function()
 end
 
 world.update = function(dt)
-  player:update(dt)
+  player.update(dt)
 
   for _, character in pairs(world.characters) do
     character:update(dt)

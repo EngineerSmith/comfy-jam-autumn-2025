@@ -25,6 +25,9 @@ transition.new = function(minX, minY, maxX, maxY, edgeMap)
     end
   end
 
+  self.isRampX = self.edgeMap.left and self.edgeMap.right -- Horizontal transition
+  self.isRampY = self.edgeMap.top and self.edgeMap.bottom -- Vertical   transition
+
   if #self.levels > 0 then -- Don't create walls for a boxed in transition zone
     self:createWalls()
   end
@@ -60,7 +63,7 @@ transition.createWalls = function(self)
   if not self.edgeMap.left then
     wallDefinitions.left = {
       id = getWallID("left"),
-      x = minX - halfDepth, y = minY + (maxY - minY) / 2
+      x = minX - halfDepth, y = minY + (maxY - minY) / 2,
       w = wallDepth, h = maxY - minY,
     }
   end
@@ -82,7 +85,7 @@ transition.createWalls = function(self)
   end
 end
 
-transition.removeWalls = function()
+transition.removeWalls = function(self)
   if not self.walls or #self.walls == 0 then
     return
   end
@@ -141,6 +144,10 @@ transition.update = function(self, characters)
       goto continue -- May be in/near the zone, but perhaps not on the same Z level
     end
 
+    if inside then
+      character.z = self:calculateZ(character)
+    end
+
     if inside and not wasInside then -- Entered
       -- If entered, add to all levels they're aren't in
       for _, level in ipairs(self.levels) do
@@ -164,6 +171,44 @@ transition.update = function(self, characters)
     end
     ::continue::
   end
+end
+
+local lerp = function(a, b, t)
+  return a + (b - a) * t
+end
+
+transition.calculateZ = function(self, character)
+  if #self.levels == 0 then return 0 end
+  if #self.levels ~= 2 then
+    return self.levels[1].zLevel -- All levels must be on the same zLevel for other transitions
+  end
+  local z1, z2 = self.levels[1].zLevel, self.levels[2].zLevel
+  local t = 0
+
+  if self.isRampX then
+    local startZ, endZ = z1, z2 -- start with the assumption left == levels[1]
+    if self.edgeMap.left == self.levels[2] then
+      startZ, endZ = z2, z1
+    end
+
+    local range = self.maxX - self.minX
+    t = (character.x - self.minX) / range
+
+    return lerp(startZ, endZ, t)
+  elseif self.isRampY then
+    local startZ, endZ = z1, z2
+    if self.edgeMap.top == self.levels[2] then
+      startZ, endZ = z2, z1
+    end
+
+    local range = self.maxY - self.minY
+    t = (character.y - self.minY) / range
+
+    return lerp(startZ, endZ, t)
+  end
+
+  -- Shouldn't reach this point
+  return character.z
 end
 
 return transition

@@ -34,7 +34,7 @@ level.isInLevel = function(self, item)
 end
 
 level.add = function(self, item, ...)
-  if level:isInLevel(item) then
+  if self:isInLevel(item) then
     return nil
   end
   if type(item) == "table" and item._character == true then
@@ -44,7 +44,7 @@ level.add = function(self, item, ...)
 end
 
 level.remove = function(self, item, ...)
-  if not level:isInLevel(item) then
+  if not self:isInLevel(item) then
     return nil
   end
   if type(item) == "table" and item._character == true then

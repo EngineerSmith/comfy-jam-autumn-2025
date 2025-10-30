@@ -13,7 +13,9 @@ character.create = function(x, y, speed, size)
     previousX = x, previousY = y,
     speed = speed or 1,
     size = size or 1,
+    z = 0,
     levels = { },
+    levelCounter = 0,
   }, character)
   self.halfSize = self.size/2
   self.shape = slick.newRectangleShape(-self.halfSize, -self.halfSize, self.size, self.size,  slickHelper.types.CHARACTER)
@@ -27,6 +29,11 @@ character.addToLevel = function(self, level)
   end
   level:add(self, self.x, self.y, self.shape)
   self.levels[level] = true
+  self.levelCounter = self.levelCounter + 1
+
+  if self.levelCounter == 1 then
+    self.z = level.zLevel
+  end
 end
 
 character.removeFromLevel = function(self, level)
@@ -36,6 +43,12 @@ character.removeFromLevel = function(self, level)
   end
   level:remove(self)
   self.levels[level] = nil
+  self.levelCounter = self.levelCounter - 1
+
+  if self.levelCounter == 1 then
+    local activeLevel = next(self.levels)
+    self.z = activeLevel.zLevel -- find only level, and set Z
+  end
 end
 
 character.move = function(self, dx, dy)
@@ -72,7 +85,7 @@ character.move = function(self, dx, dy)
 end
 
 character.teleport = function(self, x, y)
-  for levels in pairs(self.levels) do
+  for level in pairs(self.levels) do
     level.world:update(self, x, y)
   end
   self.previousX, self.previousY = self.x, self.y
@@ -88,6 +101,8 @@ character.draw = function(self)
   lg.push("all")
   lg.translate(math.floor(self.x), math.floor(self.y))
   if self.color then
+    lg.setColor(1,1,1,1)
+    lg.print(("Z: %.1f"):format(self.z), 0, 20)
     lg.setColor(self.color)
     lg.rectangle("fill", self.x-self.halfSize, self.y-self.halfSize, self.size, self.size)
   end

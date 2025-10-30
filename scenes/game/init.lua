@@ -17,23 +17,22 @@ audioManager.setVolumeAll()
 local scene = { }
 
 local world = require("src.world")
-local player = require("src.player")
-player.setCharacter(require("assets.characters.hedgehog"))
-
--- player.character:addToLevel(nil)
 
 scene.load = function(roomInfo)
   -- Load/keep loaded the main menu to return
   sceneManager.preload("scenes.mainmenu")
+  world.load()
 end
 
-scene.unload = function() end
+scene.unload = function()
+  world.unload()
+end
 
 scene.resize = function(w, h)
   -- Update settings
   settings.client.resize(w, h)
 
--- Scale scene
+  -- Scale scene
   local wsize = settings._default.client.windowSize
   local tw, th = wsize.width, wsize.height
   local sw, sh = w / tw, h / th
@@ -48,12 +47,12 @@ scene.resize = function(w, h)
 end
 
 scene.update = function(dt)
-  player.update(dt)
+  world.update(dt)
 end
 
 scene.draw = function()
   love.graphics.clear()
-  player.draw()
+  world.draw()
 end
 
 scene.joystickadded = function(...)
