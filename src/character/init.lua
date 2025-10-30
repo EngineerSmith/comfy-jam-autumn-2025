@@ -3,10 +3,12 @@ local slickHelper = require("util.slickHelper")
 
 local logger = require("util.logger")
 
-local character = { }
+local character = {
+  _character = true,
+}
 character.__index = character
 
-character.create = function(x, y, speed, size)
+character.create = function(name, x, y, speed, size)
   local self = setmetatable({
     x = x,
     y = y,
@@ -34,6 +36,8 @@ character.addToLevel = function(self, level)
   if self.levelCounter == 1 then
     self.z = level.zLevel
   end
+
+  logger.info("Character added to "..tostring(level.name))
 end
 
 character.removeFromLevel = function(self, level)
@@ -49,6 +53,8 @@ character.removeFromLevel = function(self, level)
     local activeLevel = next(self.levels)
     self.z = activeLevel.zLevel -- find only level, and set Z
   end
+
+  logger.info("Character removed from "..tostring(level.name))
 end
 
 character.move = function(self, dx, dy)
@@ -102,9 +108,18 @@ character.draw = function(self)
   lg.translate(math.floor(self.x), math.floor(self.y))
   if self.color then
     lg.setColor(1,1,1,1)
-    lg.print(("Z: %.1f"):format(self.z), 0, 20)
+    if not self.z then print(self.levelCounter) end
+
+    local levelName = "None"
+    if self.levelCounter > 1 then
+      levelName = "In Transition"
+    elseif self.levelCounter == 1 then
+      levelName = next(self.levels).name
+    end
+
+    lg.print(("%.1f:%1.f:%.1f %s"):format(self.x, self.y, self.z, levelName), 0, 20)
     lg.setColor(self.color)
-    lg.rectangle("fill", self.x-self.halfSize, self.y-self.halfSize, self.size, self.size)
+    lg.rectangle("fill", -self.halfSize, -self.halfSize, self.size, self.size)
   end
   lg.pop()
 end

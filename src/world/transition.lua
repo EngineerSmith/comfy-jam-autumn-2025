@@ -4,7 +4,9 @@ transition.__index = transition
 local slick = require("libs.slick")
 local slickHelper = require("util.slickHelper")
 
-transition.new = function(minX, minY, maxX, maxY, edgeMap)
+transition.new = function(x, y, width, height, edgeMap)
+  local minX, minY = x, y
+  local maxX, maxY = x + width, y + height
   if minX > maxX then minX, maxX = maxX, minX end
   if minY > maxY then minY, maxY = maxY, minY end
 
@@ -13,6 +15,7 @@ transition.new = function(minX, minY, maxX, maxY, edgeMap)
     maxX = maxX, maxY = maxY,
     -- edgeMap: E.G. { left = levelA, right = levelB, top = nil, bottom = nil }
     edgeMap = edgeMap or { },
+    rect = { x, y, width, height },
     walls = { },
   }, transition)
 
@@ -123,7 +126,7 @@ transition.update = function(self, characters)
     return
   end
 
-  for _, character in ipairs(characters) do
+  for _, character in pairs(characters) do
     local inside = self:isInside(character.x, character.y)
     local wasInside = self:isInside(character.previousX, character.previousY)
     
@@ -141,7 +144,7 @@ transition.update = function(self, characters)
       end
     end
     if not foundInLevel then
-      goto continue -- May be in/near the zone, but perhaps not on the same Z level
+      goto continue
     end
 
     if inside then

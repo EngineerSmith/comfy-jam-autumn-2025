@@ -5,26 +5,28 @@ local slick = require("libs.slick")
 
 local logger = require("util.logger")
 
-local BOUNDARY_MARGIN = 10
+local BOUNDARY_MARGIN = 100
 
-level.new = function(name, width, height, zLevel, positionOffsetX, positionOffsetY)
-  width = width or 100
+level.new = function(name, x, y, width, height, zLevel)
+  x      = x or 0
+  y      = y or 0
+  width  = width or 100
   height = height or width
   zLevel = zLevel or 0
-  positionOffsetX = positionOffsetX or 0
-  positionOffsetY = positionOffsetY or 0
+
   local halfWidth, halfHeight = width / 2, height / 2
 
   return setmetatable({
     name = name,
-    zLevel = zLevel,
-    offsetX = positionOffsetX,
-    offsetY = positionOffsetY,
+    centreX = x + halfWidth,
+    centreY = y + halfHeight,
+    zLevel  = zLevel,
     boundRadius = math.sqrt(halfWidth * halfWidth + halfHeight * halfHeight) + BOUNDARY_MARGIN,
     world = slick.newWorld(width, height, {
-        quadTreeX = -halfWidth + positionOffsetX,
-        quadTreeY = -halfHeight + positionOffsetY,
-      }),
+      quadTreeX = x,
+      quadTreeY = y,
+    }),
+    rect = { x, y, width, height },
     characters = { },
   }, level)
 end
@@ -59,10 +61,10 @@ end
 
 level.update = function(self, dt)
   for _, character in ipairs(self.characters) do
-    local dx, dy = character.x - self.offsetX, character.y - self.offsetY
+    local dx, dy = character.x - self.centreX, character.y - self.centreY
     local mag = math.sqrt(dx * dx + dy * dy)
     if mag >= self.boundRadius then
-      character:teleport(-self.offsetX, self.offsetY) -- for now, teleport to centre
+      character:teleport(self.centreX, self.centreY) -- for now, teleport to centre
       logger.warn("Character was found outside of level bounds, teleported to centre.")
     end
   end

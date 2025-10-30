@@ -10,6 +10,7 @@ local world = {
   levels = { },
   transitions = { },
   characters = { },
+  debug = { },
 }
 
 local characterFactories = { }
@@ -55,7 +56,11 @@ world.load = function()
   end
 
   for levelName, levelInfo in pairs(mapData.levels) do
-    world.levels[levelName] = level.new(levelName, levelInfo[1], levelInfo[2], levelInfo[3], levelInfo[4], levelInfo[5])
+    local x, y, width, height, z = unpack(levelInfo)
+    world.levels[levelName] = level.new(levelName, x, y, width, height, z)
+    local rect = { unpack(world.levels[levelName].rect) }
+    rect.color = { 1, 1, 1, 0.5 }
+    table.insert(world.debug, rect)
   end
   for _, transitionInfo in ipairs(mapData.transitions) do
     for edgeName, levelName in pairs(transitionInfo.edgeMap) do
@@ -65,8 +70,12 @@ world.load = function()
         logger.warn("Could not find level named '"..tostring(levelName).."'. Check spelling.")
       end
     end
-    local t = transition.new(transitionInfo.minX, transitionInfo.minY, transitionInfo.maxX, transitionInfo.maxY, transitionInfo.edgeMap)
+    local x, y, width, height = unpack(transitionInfo)
+    local t = transition.new(x, y, width, height, transitionInfo.edgeMap)
     table.insert(world.transitions, t)
+    local rect = { unpack(t.rect) }
+    rect.color = { 1, 1, 0, 0.5 }
+    table.insert(world.debug, rect)
   end
 
   for characterName, characterInfo in pairs(mapData.characters) do
@@ -78,6 +87,7 @@ world.load = function()
       character:addToLevel(level)
       character:teleport(characterInfo.posX or 0, characterInfo.posY or 0)
     end
+    character.name = characterName
     world.characters[characterName] = character
   end
 
@@ -93,6 +103,7 @@ world.unload = function()
   world.levels = { }
   world.transitions = { }
   world.characters = { }
+  world.debug = { }
 end
 
 world.update = function(dt)
@@ -110,7 +121,14 @@ world.update = function(dt)
   end
 end
 
+local lg = love.graphics
 world.draw = function()
+  for _, rect in ipairs(world.debug) do
+    lg.setColor(rect.color)
+    lg.rectangle("fill", unpack(rect))
+  end
+  lg.setColor(1,1,1,1)
+
   for _, character in pairs(world.characters) do
     character:draw() -- This includes the player character
   end

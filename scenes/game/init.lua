@@ -52,7 +52,10 @@ end
 
 scene.draw = function()
   love.graphics.clear()
+  lg.push("all")
+  lg.translate(math.floor(lg.getWidth()/2), math.floor(lg.getHeight()/2))
   world.draw()
+  lg.pop()
 end
 
 scene.joystickadded = function(...)
