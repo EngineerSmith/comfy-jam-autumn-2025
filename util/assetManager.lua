@@ -19,6 +19,8 @@ local extensions = {
     ttf  = "newFont",
     otf  = "newFont",
     fnt  = "newFont",
+
+    obj = "read",
   }
 
 local types = {
