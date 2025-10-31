@@ -14,6 +14,10 @@ return {
       model = "model.stump.1", level = "LevelA", x = -150, y = 50, z = 0, scale = 5,
       collider = { levels = { "LevelA", "LevelB" }, shape = "circle", radius = 0.22, segments = 16, tag = "LOG", },
     },
+    {
+      model = "model.stump.1", level = "LevelA", x = -180, y = 50, z = 0, scale = 5,
+      collider = { levels = { "LevelA", "LevelB" }, shape = "rectangle", width = 0.44, height = 0.44, tag = "LOG" },
+    }
   },
   colliders = {
     { levels = { "LevelA" }, shape = "rectangle", x = -50, y = -100, width = 10, height = 200, tag = "WALL" },

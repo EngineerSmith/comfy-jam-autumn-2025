@@ -74,7 +74,7 @@ return function (path, mtlPath, uFlip, vFlip)
     local currentColor = { 1, 1, 1, 1 }
 
     -- go line by line through the file
-    for line in love.filesystem.lines(lines) do
+    for _, line in ipairs(lines) do
         local words = {}
 
         -- split the line into words

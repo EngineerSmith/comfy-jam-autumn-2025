@@ -31,9 +31,9 @@ colliderRectangle.remove = function(self)
 end
 
 local lg = love.graphics
-colliderRectangle.draw = function(self)
+colliderRectangle.debugDraw = function(self)
   lg.push("all")
-  lg.setColor(0,1,1,0.5)
+  lg.setColor(0,0,1,0.5)
   lg.rectangle("fill", self.x, self.y, self.width, self.height)
   lg.pop()
 end

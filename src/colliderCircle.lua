@@ -32,9 +32,9 @@ colliderCircle.remove = function(self)
 end
 
 local lg = love.graphics
-colliderCircle.draw = function(self)
+colliderCircle.debugDraw = function(self)
   lg.push("all")
-  lg.setColor(0,1,1,0.5)
+  lg.setColor(0,0,1,0.5)
   lg.circle("fill", self.x, self.y, self.radius, self.segments)
   lg.pop()
 end

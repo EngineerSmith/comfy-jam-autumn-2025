@@ -2,7 +2,9 @@ local level = require("src.world.level")
 local transition = require("src.world.transition")
 
 local logger = require("util.logger")
+local assetManager = require("util.assetManager")
 
+local prop = require("src.prop")
 local player = require("src.player")
 local character = require("src.character")
 local colliderCircle = require("src.colliderCircle")
@@ -13,6 +15,7 @@ local lfs = love.filesystem
 local world = {
   levels = { },
   transitions = { },
+  props = { },
   colliders = { },
   characters = { },
   debug = { },
@@ -83,8 +86,61 @@ world.load = function()
     table.insert(world.debug, rect)
   end
 
-  for i, colliderInfo in ipairs(mapData.colliders) do
+  for i, modelInfo in ipairs(mapData.models) do
+    do
+      local model = assetManager[modelInfo.model]
+      if not model then
+        logger.warn("There was no model prepared with ID: ", tostring(modelInfo.model))
+        goto continue
+      end
+      local levelName = modelInfo.level
+      if type(levelName) ~= "string" then
+        logger.warn("MapData's Model["..i.."] is missing level.")
+        goto continue
+      end
+      local level = world.levels[levelName]
+      if not level then
+        logger.warn("MapData's Model["..i.."] had level not found. Check spelling: "..tostring(levelName))
+        goto continue
+      end
+      levelName = nil
+      local x, y, z, scale = modelInfo.x, modelInfo.y, modelInfo.z, modelInfo.scale or 1
+      local collider
+      if modelInfo.collider then
+        local colliderInfo = modelInfo.collider
+        local levels = { }
+        for _, levelName in ipairs(colliderInfo.levels) do
+          if world.levels[levelName] then
+            table.insert(levels, world.levels[levelName])
+          else
+            logger.warn("MapData's Model["..i.."]'s collider had level that wasn't found. Check spelling: "..tostring(levelName))
+          end
+        end
+        if #levels == 0 then
+          logger.warn("MapData's Model["..i.."]'s collider had no valid levels, ignoring. Model will appear without collider.")
+        else
+          if colliderInfo.shape == "rectangle" then
+            local width, height, tag = colliderInfo.width, colliderInfo.height, colliderInfo.tag
+            width, height = width * scale, height * scale
+            local halfWidth, halfHeight = width / 2, height / 2
+            collider = colliderRectangle.new(x-halfWidth, y-halfHeight, width, height, tag, levels)
+          elseif colliderInfo.shape == "circle" then
+            local radius, segments, tag = colliderInfo.radius, colliderInfo.segments, colliderInfo.tag
+            radius = radius * scale
+            collider = colliderCircle.new(x, y, radius, segment, tag, levels)
+          else
+            logger.warn("MapData's Model["..i.."]'s collider had invalid shape. Check spelling: ", tostring(colliderInfo.shape))
+          end
+        end
+      end
 
+      local newProp = prop.new(model, x, y, z, level, scale, collider)
+      table.insert(world.props, newProp)
+    end
+    ::continue::
+  end
+
+  for i, colliderInfo in ipairs(mapData.colliders) do
     local levels = { }
     for _, levelName in ipairs(colliderInfo.levels) do
       if world.levels[levelName] then
@@ -138,6 +194,7 @@ end
 world.unload = function()
   world.levels = { }
   world.transitions = { }
+  world.props = { }
   world.colliders = { }
   world.characters = { }
   world.debug = { }
@@ -160,14 +217,25 @@ end
 
 local lg = love.graphics
 world.draw = function()
+  lg.push()
   for _, rect in ipairs(world.debug) do
     lg.setColor(rect.color)
     lg.rectangle("fill", unpack(rect))
   end
   for _, collider in ipairs(world.colliders) do
-    collider:draw()
+    collider:debugDraw()
   end
+  for _, prop in ipairs(world.props) do
+    if prop.collider then
+      prop.collider:debugDraw()
+    end
+  end
+  lg.pop()
   lg.setColor(1,1,1,1)
+
+  for _, prop in ipairs(world.props) do
+    prop:draw()
+  end
 
   for _, character in pairs(world.characters) do
     character:draw() -- This includes the player character
