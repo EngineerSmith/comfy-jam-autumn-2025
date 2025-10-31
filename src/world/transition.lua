@@ -79,7 +79,7 @@ transition.createWalls = function(self)
   end
 
   for edgeName, definition in pairs(wallDefinitions) do
-    local shape = slick.newRectangleShape(-definition.w / 2, -definition.h / 2, definition.w, definition.h, slickHelper.types.WALL)
+    local shape = slick.newRectangleShape(-definition.w / 2, -definition.h / 2, definition.w, definition.h, slickHelper.tags.WALL)
 
     for _, level in ipairs(self.levels) do
       level:add(definition.id, definition.x, definition.y, shape)
