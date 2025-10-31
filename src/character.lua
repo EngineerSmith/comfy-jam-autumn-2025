@@ -8,25 +8,24 @@ local character = {
 }
 character.__index = character
 
-character.create = function(name, x, y, speed, size)
+character.create = function(name, speed, size)
   local self = setmetatable({
-    x = x,
-    y = y,
-    previousX = x, previousY = y,
+    name  = name,
     speed = speed or 1,
-    size = size or 1,
-    z = 0,
+    size  = size  or 1,
+    x = 0, y = 0, z = 0,
+    previousX = 0, previousY = 0,
     levels = { },
     levelCounter = 0,
   }, character)
   self.halfSize = self.size/2
-  self.shape = slick.newRectangleShape(-self.halfSize, -self.halfSize, self.size, self.size,  slickHelper.types.CHARACTER)
+  self.shape = slick.newCircleShape(0, 0, self.halfSize, 16, slickHelper.tags.CHARACTER)
   return self
 end
 
 character.addToLevel = function(self, level)
   if level:isInLevel(self) then
-    logger.info("Character already added to this level")
+    logger.info("Character already added to this level '"..tostring(level.name).."'.")
     return
   end
   level:add(self, self.x, self.y, self.shape)
@@ -42,7 +41,7 @@ end
 
 character.removeFromLevel = function(self, level)
   if not level:isInLevel(self) then
-    logger.info("Tried to remove character not added to level")
+    logger.info("Tried to remove character not added to level '"..tostring(level.name).."'.")
     return
   end
   level:remove(self)
