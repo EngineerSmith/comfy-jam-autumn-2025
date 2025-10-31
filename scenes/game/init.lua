@@ -14,6 +14,11 @@ local enum = require("util.enum")
 local ui = require("util.ui")
 audioManager.setVolumeAll()
 
+local g3d = require("libs.g3d")
+local cam = g3d.camera:current()
+cam.fov = math.rad(70)
+cam:updateProjectionMatrix()
+
 local scene = { }
 
 local world = require("src.world")
@@ -44,6 +49,11 @@ scene.resize = function(w, h)
 
   -- scale Cursor
   cursor.setScale(scene.scale)
+  ----
+
+  local cam = g3d.camera:current()
+  cam.aspectRatio = w/h
+  cam:updateProjectionMatrix()
 end
 
 scene.update = function(dt)
