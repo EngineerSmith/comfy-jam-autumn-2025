@@ -119,7 +119,7 @@ scene.draw = function()
       end
     end
 
-    lg.print(("%1.f:%1.f:%1.f %s"):format(playerX, playerY, playerZ, levelName), 0, scene.minimap.size + 20)
+    lg.print(("%1.f:%1.f:%1.f\n%s"):format(playerX, playerY, playerZ, levelName), 0, scene.minimap.size + 20)
   lg.pop()
 end
 
