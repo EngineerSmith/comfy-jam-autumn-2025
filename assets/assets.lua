@@ -35,7 +35,9 @@ local g3d = require("libs.g3d")
 -- rotation [nil, or {x,y,z}]
 -- scale = [nil, or {x,y,z}]
 local objLoader = function(objContent, ...)
-  return g3d.newModel(objContent, ...)
+  local model = g3d.newModel(objContent, ...)
+  -- model:makeNormals()
+  return model
 end
 
 local list = {
@@ -46,7 +48,7 @@ local list = {
   { path = "sprites/trees/tree_001.png", name = "sprite.trees.1", onLoad = filterLinear },
   { path = "sprites/trees/tree_002.png", name = "sprite.trees.2", onLoad = filterLinear },
 -- Models
-  { path = "models/stump_roundDetailed.obj", name = "model.stump.1", onLoad = objLoader, "models/stump_roundDetailed.mtl" },
+  { path = "models/stump_roundDetailed.obj", name = "model.stump.1", onLoad = objLoader, "assets/models/stump_roundDetailed.mtl" },
 -- Audio
   -- sourceType = "static"/"stream"
   { path = "audio/ui/rollover4.ogg", name = "audio.ui.select.1", sourceType = "static", audioType = "ui", key = "audio.ui.select", volume = .5 },

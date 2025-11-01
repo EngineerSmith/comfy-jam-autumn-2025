@@ -2,6 +2,7 @@ local slick = require("libs.slick")
 local slickHelper = require("util.slickHelper")
 
 local logger = require("util.logger")
+local colliderCircle = require("src.colliderCircle")
 
 local character = {
   _character = true,
@@ -102,7 +103,7 @@ character.update = function(self, dt)
 end
 
 local lg = love.graphics
-character.draw = function(self)
+character.debugDraw = function(self)
   lg.push("all")
   lg.translate(math.floor(self.x), math.floor(self.y))
   if self.color then
@@ -116,11 +117,15 @@ character.draw = function(self)
       levelName = next(self.levels).name
     end
 
-    lg.print(("%.1f:%1.f:%.1f %s"):format(self.x, self.y, self.z, levelName), 0, 20)
+    lg.print(("%1.f:%1.f:%1.f %s"):format(self.x, self.y, self.z, levelName), 0, 20)
     lg.setColor(self.color)
-    lg.rectangle("fill", -self.halfSize, -self.halfSize, self.size, self.size)
+    lg.circle("fill", 0, 0, self.halfSize, self.segments)
   end
   lg.pop()
+end
+
+character.draw = function(self)
+
 end
 
 return character

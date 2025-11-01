@@ -12,4 +12,13 @@ player.update = function(dt)
   player.character:move(dx, dy)
 end
 
+player.getPosition = function()
+  local x, y, z = 0, 0, 0
+  local char = player.character
+  if char then
+    x, y, z = char.x, char.y, char.z
+  end
+  return x, y, z
+end
+
 return player

@@ -75,9 +75,9 @@ function model:makeNormals(isFlipped)
         local vn = self.verts[i+2]
 
         local n_1, n_2, n_3 = vectorNormalize(vectorCrossProduct(v[1]-vp[1], v[2]-vp[2], v[3]-vp[3], vn[1]-v[1], vn[2]-v[2], vn[3]-v[3]))
-        vp[6], v[6], vn[6] = n_1, n_1, n_1
-        vp[7], v[7], vn[7] = n_2, n_2, n_2
-        vp[8], v[8], vn[8] = n_3, n_3, n_3
+        vp[10], v[10], vn[10] = n_1, n_1, n_1
+        vp[11], v[11], vn[11] = n_2, n_2, n_2
+        vp[12], v[12], vn[12] = n_3, n_3, n_3
     end
 
     self.mesh = love.graphics.newMesh(self.vertexFormat, self.verts, "triangles")

@@ -216,7 +216,7 @@ world.update = function(dt)
 end
 
 local lg = love.graphics
-world.draw = function()
+world.debugDraw = function()
   lg.push()
   for _, rect in ipairs(world.debug) do
     lg.setColor(rect.color)
@@ -230,7 +230,11 @@ world.draw = function()
       prop.collider:debugDraw()
     end
   end
+  player.character:debugDraw()
   lg.pop()
+end
+
+world.draw = function()
   lg.setColor(1,1,1,1)
 
   for _, prop in ipairs(world.props) do
