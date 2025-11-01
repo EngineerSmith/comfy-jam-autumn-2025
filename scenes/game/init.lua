@@ -26,26 +26,28 @@ cam.fov = math.rad(50)
 cam:updateProjectionMatrix()
 cam.speed = 20
 
-local CUBE = g3d.newModel("scenes/game/cube.obj", nil, nil, { 0, 0, 0 })
+local CUBE = g3d.newModel("scenes/game/cube.obj", nil, nil, { 5, 0, 0 })
+cam:lookAt(0,1e-5,25,0,0,0)
 
 local player = require("src.player")
 local world = require("src.world")
 
 local scene = {
-  lookAt = { 0, -4.3, 25 },
+  minimap = {
+    size = 256,
+    scale = 2,
+  }
 }
 
-local updateCamera = function()
-  local x, y, z = player.getPosition()
-  local atX, atY, atZ = scene.lookAt[1], scene.lookAt[2], scene.lookAt[3]
-  g3d.camera.current():lookAt(x, y, z, x + atX, y + atY, z + atZ)
-end
+scene.minimap.canvas = lg.newCanvas(scene.minimap.size, scene.minimap.size)
 
 scene.load = function(roomInfo)
+  love.mouse.setRelativeMode(false)
+  love.mouse.setVisible(true)
+
   -- Load/keep loaded the main menu to return
   sceneManager.preload("scenes.mainmenu")
   world.load()
-  -- updateCamera()
 end
 
 scene.unload = function()
@@ -77,25 +79,47 @@ end
 
 scene.update = function(dt)
   world.update(dt)
-  -- updateCamera()
-  local cam = g3d.camera:current()
-  cam:firstPersonMovement(dt)
-  -- print(">", unpack(cam.position))
 
   local t = love.timer.getTime()
-  CUBE:setTranslation(math.cos(t)*5, math.sin(t)*5 + 4, 0)
-  CUBE:setRotation(0, 0, math.pi - t)
 end
 
 scene.draw = function()
   love.graphics.clear()
   lg.push("all")
-    lg.translate(math.floor(lg.getWidth()/2), math.floor(lg.getHeight()/2))
+    CUBE:draw()
+    world.draw()
+  lg.pop()
+
+  lg.push("all")
+    lg.setCanvas(scene.minimap.canvas)
+    lg.clear(.1,.1,.1, 1)
+    local playerX, playerY, playerZ = player.getPosition()
+    local halfMap = scene.minimap.size / 2
+    lg.translate(halfMap, halfMap)
+    lg.scale(scene.minimap.scale, -scene.minimap.scale)
+    lg.translate(-playerX, -playerY)
     world.debugDraw()
   lg.pop()
   lg.push("all")
-    CUBE:draw()
-    world.draw()
+    local screenX = lg.getWidth() - scene.minimap.size - 20
+    local screenY = 20
+    lg.translate(screenX, screenY)
+    lg.setColor(1,1,1,1)
+    lg.draw(scene.minimap.canvas)
+    lg.setLineWidth(2)
+    lg.rectangle("line", 0, 0, scene.minimap.size, scene.minimap.size)
+
+    local char = player.character
+    local levelName = "None"
+    if char then
+      if char.levelCounter > 1 then
+        levelName = "In Transition"
+      elseif char.levelCounter == 1 then
+        levelName = next(char.levels).name
+      end
+    end
+
+    lg.print(("%1.f:%1.f:%1.f %s"):format(playerX, playerY, playerZ, levelName), 0, scene.minimap.size + 20)
   lg.pop()
 end
 

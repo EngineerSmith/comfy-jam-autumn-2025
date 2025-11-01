@@ -37,6 +37,7 @@ local g3d = require("libs.g3d")
 local objLoader = function(objContent, ...)
   local model = g3d.newModel(objContent, ...)
   -- model:makeNormals()
+  model:setRotation(math.rad(90), 0, 0)
   return model
 end
 

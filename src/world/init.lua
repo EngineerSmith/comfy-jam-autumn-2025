@@ -125,9 +125,9 @@ world.load = function()
             local halfWidth, halfHeight = width / 2, height / 2
             collider = colliderRectangle.new(x-halfWidth, y-halfHeight, width, height, tag, levels)
           elseif colliderInfo.shape == "circle" then
-            local radius, segments, tag = colliderInfo.radius, colliderInfo.segments, colliderInfo.tag
+            local radius, segments, rotation, tag = colliderInfo.radius, colliderInfo.segments, colliderInfo.rotation, colliderInfo.tag
             radius = radius * scale
-            collider = colliderCircle.new(x, y, radius, segment, tag, levels)
+            collider = colliderCircle.new(x, y, radius, segments, rotation, tag, levels)
           else
             logger.warn("MapData's Model["..i.."]'s collider had invalid shape. Check spelling: ", tostring(colliderInfo.shape))
           end
@@ -159,8 +159,8 @@ world.load = function()
         local width, height = colliderInfo.width, colliderInfo.height
         collider = colliderRectangle.new(x, y, width, height, tag, levels)
       elseif colliderInfo.shape == "circle" then
-        local radius, segments = colliderInfo.radius, colliderInfo.segments
-        collider = colliderCircle.new(x, y, radius, segments or 16, tag, levels)
+        local radius, segments, rotation = colliderInfo.radius, colliderInfo.segments, colliderInfo.rotation
+        collider = colliderCircle.new(x, y, radius, segments or 16, rotation, tag, levels)
       else
         logger.warn("There is a collider with bad shape. mapData.colliders["..tostring(i).."]. Shape given: "..tostring(colliderInfo.shape))
       end

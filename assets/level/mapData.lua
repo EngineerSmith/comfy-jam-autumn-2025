@@ -11,12 +11,12 @@ return {
   },
   models = {
     {
-      model = "model.stump.1", level = "LevelA", x = -150, y = 50, z = 0, scale = 5,
-      collider = { levels = { "LevelA", "LevelB" }, shape = "circle", radius = 0.22, segments = 16, tag = "LOG", },
+      model = "model.stump.1", level = "LevelA", x = -150, y = 50, z = 0, scale = 20,
+      collider = { levels = { "LevelA", "LevelB" }, shape = "circle", radius = 0.18, segments = 6, rotation = 90, tag = "LOG" },
     },
     {
-      model = "model.stump.1", level = "LevelA", x = -180, y = 50, z = 0, scale = 5,
-      collider = { levels = { "LevelA", "LevelB" }, shape = "rectangle", width = 0.44, height = 0.44, tag = "LOG" },
+      model = "model.stump.1", level = "LevelA", x = -180, y = 50, z = 0, scale = 20,
+      collider = { levels = { "LevelA", "LevelB" }, shape = "rectangle", width = 0.36, height = 0.44, tag = "LOG" },
     }
   },
   colliders = {
