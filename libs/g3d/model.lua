@@ -58,8 +58,10 @@ local function newModel(verts, mtlPath, texture, translation, rotation, scale)
 end
 
 function model:setTexture(texture)
-    self.texture = texture
-    self.mesh:setTexture(self.texture)
+    if self.texture ~= texture then
+        self.texture = texture
+        self.mesh:setTexture(self.texture)
+    end
 end
 
 -- populate model's normals in model's mesh automatically

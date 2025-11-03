@@ -8,8 +8,8 @@ local tags = {
   ["LEAF"] = {
     radius = 2, -- for minimap
     rotationSpeed = math.rad(180), -- per second
-    bobbingSpeed = 2, -- per second
-    bobbingHeight = 1,
+    bobbingSpeed = 0.5, -- per second
+    bobbingHeight = 0.5,
     bobbingOffset = 1,
     draw = function(self)
       CUBE:setTranslation(self:getPosition())

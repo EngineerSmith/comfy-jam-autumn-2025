@@ -104,6 +104,13 @@ world.load = function()
         logger.warn("There was no model prepared with ID: ", tostring(modelInfo.model))
         goto continue
       end
+      local texture
+      if modelInfo.texture then
+        texture = assetManager[modelInfo.texture]
+        if not texture then
+          logger.warn("There was no texture prepared with ID: ", tostring(modelInfo.texture), ". Attempting to continue.")
+        end
+      end
       local levelName = modelInfo.level
       if type(levelName) ~= "string" then
         logger.warn("MapData's Model["..i.."] is missing level.")
@@ -145,7 +152,7 @@ world.load = function()
         end
       end
 
-      local newProp = prop.new(model, x, y, z, level, scale, collider)
+      local newProp = prop.new(model, texture, x, y, z, level, scale, collider)
       table.insert(world.props, newProp)
     end
     ::continue::
@@ -267,10 +274,12 @@ world.update = function(dt)
       end
     end
 
+    local shader = g3d.shader
     if #collectablePositions > 0 then
-      local shader = g3d.shader
       shader:send("collectablePositions", unpack(collectablePositions))
       shader:send("numCollectable", #collectablePositions)
+    else
+      shader:send("numCollectable", 0)
     end
 
     for _, collectable in ipairs(world.collectables) do
@@ -330,7 +339,6 @@ end
 
 world.draw = function()
   lg.setColor(1,1,1,1)
-  lg.print(tostring(world.leaves), 20, 20)
 
   for _, prop in ipairs(world.props) do
     prop:draw()
@@ -343,6 +351,12 @@ world.draw = function()
   for _, character in pairs(world.characters) do
     character:draw() -- This includes the player character
   end
+
+  lg.push("all")
+    lg.origin()
+    lg.setColor(1,1,1,1)
+    lg.print(("Collected Leaves: %2d"):format(world.leaves), 20, 20)
+  lg.pop()
 end
 
 return world

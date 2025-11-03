@@ -87,7 +87,8 @@ scene.update = function(dt)
 end
 
 scene.draw = function()
-  love.graphics.clear(33/255, 117/255, 7/255)
+  love.graphics.clear()
+  -- love.graphics.clear(33/255, 117/255, 7/255)
   lg.push("all")
     -- CUBE:draw()
     world.draw()

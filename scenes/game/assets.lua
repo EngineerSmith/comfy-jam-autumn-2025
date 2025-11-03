@@ -13,6 +13,10 @@ for _, modelInfo in ipairs(mapData.models) do
     table.insert(assets, modelInfo.model)
     lookup[modelInfo.model] = true
   end
+  if modelInfo.texture and not lookup[modelInfo.texture] then
+    table.insert(assets, modelInfo.texture)
+    lookup[modelInfo.texture] = true
+  end
 end
 ---
 

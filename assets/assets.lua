@@ -2,10 +2,12 @@ local anim8 = require("libs.anim8")
 
 local filterNearest = function(image)
   image:setFilter("nearest", "nearest")
+  image:setWrap("repeat")
 end
 
 local filterLinear = function(image)
   image:setFilter("linear", "linear")
+  image:setWrap("repeat")
 end
 
 local threeSlices = require("ui.threeSlices")
@@ -48,8 +50,12 @@ local list = {
   -- Trees
   { path = "sprites/trees/tree_001.png", name = "sprite.trees.1", onLoad = filterLinear },
   { path = "sprites/trees/tree_002.png", name = "sprite.trees.2", onLoad = filterLinear },
+  -- Textures
+  { path = "textures/texture_05.png", name = "texture.prototype.1", onLoad = filterLinear },
+  { path = "textures/texture_06.png", name = "texture.prototype.2", onLoad = filterLinear },
 -- Models
   { path = "models/stump_roundDetailed.obj", name = "model.stump.1", onLoad = objLoader, "assets/models/stump_roundDetailed.mtl" },
+  { path = "models/ground_surface.obj", name = "model.surface.1", onLoad = objLoader },
 -- Audio
   -- sourceType = "static"/"stream"
   { path = "audio/ui/rollover4.ogg", name = "audio.ui.select.1", sourceType = "static", audioType = "ui", key = "audio.ui.select", volume = .5 },

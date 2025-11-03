@@ -10,6 +10,9 @@ return {
     },
   },
   models = {
+    -- Surfaces
+    { model = "model.surface.1", texture = "texture.prototype.2", level = "LevelA", x = -100, y = 0, z = -.1, },
+    --
     {
       model = "model.stump.1", level = "LevelA", x = -100, y = 20, z = 0, scale = 20,
       collider = { levels = { "LevelA", "LevelB" }, shape = "circle", radius = 0.18, segments = 6, rotation = 90, tag = "LOG" },
@@ -17,7 +20,7 @@ return {
     {
       model = "model.stump.1", level = "LevelA", x = -180, y = 50, z = 0, scale = 20,
       collider = { levels = { "LevelA", "LevelB" }, shape = "rectangle", width = 0.36, height = 0.44, tag = "LOG" },
-    }
+    },
   },
   colliders = {
     { levels = { "LevelA" }, shape = "rectangle", x = -50, y = -100, width = 10, height = 80, tag = "WALL" },
