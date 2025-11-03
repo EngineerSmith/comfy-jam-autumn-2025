@@ -4,11 +4,15 @@ local transition = require("src.world.transition")
 local logger = require("util.logger")
 local assetManager = require("util.assetManager")
 
+local g3d = require("libs.g3d")
+
 local prop = require("src.prop")
 local player = require("src.player")
 local character = require("src.character")
+local collectable = require("src.collectable")
 local colliderCircle = require("src.colliderCircle")
 local colliderRectangle = require("src.colliderRectangle")
+
 
 local lfs = love.filesystem
 
@@ -17,8 +21,11 @@ local world = {
   transitions = { },
   props = { },
   colliders = { },
+  collectables = { },
   characters = { },
   debug = { },
+
+  leaves = 0,
 }
 
 local characterFactories = { }
@@ -48,6 +55,10 @@ local getCharacterFactory = function(file)
 end
 
 world.load = function()
+  collectable.load() -- load assets
+
+  world.leaves = 0
+
   local mapData
   do -- Load mapData
     local chunk, errmsg = lfs.load("assets/level/mapData.lua")
@@ -82,7 +93,7 @@ world.load = function()
     local t = transition.new(x, y, width, height, transitionInfo.edgeMap)
     table.insert(world.transitions, t)
     local rect = { unpack(t.rect) }
-    rect.color = { 1, 1, 0, 0.5 }
+    rect.color = { 1, 1, 0.75, 0.5 }
     table.insert(world.debug, rect)
   end
 
@@ -170,6 +181,16 @@ world.load = function()
     end
   end
 
+  for i, collectableInfo in ipairs(mapData.collectables) do
+    local level = world.levels[collectableInfo.level]
+    if not level then
+      logger.warn("Collectable of mapData.collectables["..tostring(i).."] had invalid level. Check spelling. Ignoring collectable.")
+    else
+      local x, y, tag = collectableInfo.x, collectableInfo.y, collectableInfo.tag
+      table.insert(world.collectables, collectable.new(x, y, level, tag))
+    end
+  end
+
   for characterName, characterInfo in pairs(mapData.characters) do
     local character = getCharacterFactory(characterInfo.file)()
     local level = world.levels[characterInfo.level]
@@ -192,12 +213,20 @@ world.load = function()
 end
 
 world.unload = function()
+  collectable.unload()
+
   world.levels = { }
   world.transitions = { }
   world.props = { }
   world.colliders = { }
+  world.collectables = { }
   world.characters = { }
   world.debug = { }
+end
+
+local COLLECTABLE_SHADOW_MAX = 32
+local sort_ClosestMag = function(a, b)
+  return a.mag < b.mag
 end
 
 world.update = function(dt)
@@ -212,6 +241,68 @@ world.update = function(dt)
   end
   for _, transition in ipairs(world.transitions) do
     transition:update(world.characters)
+  end
+
+  local playerCharacter = player.character
+  if playerCharacter then
+    local collectablePositions = { }
+    for _, collectable in ipairs(world.collectables) do
+      if not collectable.isCollected then
+        local dx = collectable.x - playerCharacter.x
+        local dy = collectable.y - playerCharacter.y
+        local mag = math.sqrt(dx * dx + dy * dy)
+
+        table.insert(collectablePositions, {
+          mag = mag,
+          collectable:getShadowPosition() -- multiple return
+        })
+      end
+    end
+
+    table.sort(collectablePositions, sort_ClosestMag)
+
+    if #collectablePositions > COLLECTABLE_SHADOW_MAX then
+      for i = #collectablePositions, COLLECTABLE_SHADOW_MAX + 1, -1 do
+        table.remove(collectablePositions, i)
+      end
+    end
+
+    if #collectablePositions > 0 then
+      local shader = g3d.shader
+      shader:send("collectablePositions", unpack(collectablePositions))
+      shader:send("numCollectable", #collectablePositions)
+    end
+
+    for _, collectable in ipairs(world.collectables) do
+      collectable:update(dt)
+
+      if not collectable.isCollected and playerCharacter:isInLevel(collectable.level) then
+        local dx, dy = collectable.x - playerCharacter.x, collectable.y - playerCharacter.y
+        local mag = math.sqrt(dx * dx + dy * dy)
+        local playerRadius = playerCharacter.halfSize * playerCharacter.textureSizeMod
+        local distance = mag - playerRadius
+
+        if distance <= 1 then
+          local t = 1.0 - math.min(1.0, distance / 1)
+          collectable.scale = (1 - t) * 1 + t * 0.5
+        end
+
+        if distance <= .1 then -- .1 for jiggle room
+          world.leaves = world.leaves + 1
+          collectable:collected()
+        elseif distance <= player.magnet * playerCharacter.size then
+          local dx, dy = dx / mag, dy / mag
+          local speed = 1.5
+          if distance <= (player.magnet * playerCharacter.size)/2 then
+            speed = 4
+          end
+          collectable.x = collectable.x + -dx * speed * dt
+          collectable.y = collectable.y + -dy * speed * dt
+        end
+      else
+        collectable.scale = 1
+      end
+    end
   end
 end
 
@@ -230,15 +321,23 @@ world.debugDraw = function()
       prop.collider:debugDraw()
     end
   end
+  for _, collectable in ipairs(world.collectables) do
+    collectable:debugDraw()
+  end
   player.character:debugDraw()
   lg.pop()
 end
 
 world.draw = function()
   lg.setColor(1,1,1,1)
+  lg.print(tostring(world.leaves), 20, 20)
 
   for _, prop in ipairs(world.props) do
     prop:draw()
+  end
+
+  for _, collectable in ipairs(world.collectables) do
+    collectable:draw()
   end
 
   for _, character in pairs(world.characters) do

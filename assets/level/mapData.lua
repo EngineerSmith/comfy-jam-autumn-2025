@@ -11,7 +11,7 @@ return {
   },
   models = {
     {
-      model = "model.stump.1", level = "LevelA", x = -150, y = 50, z = 0, scale = 20,
+      model = "model.stump.1", level = "LevelA", x = -100, y = 20, z = 0, scale = 20,
       collider = { levels = { "LevelA", "LevelB" }, shape = "circle", radius = 0.18, segments = 6, rotation = 90, tag = "LOG" },
     },
     {
@@ -20,8 +20,22 @@ return {
     }
   },
   colliders = {
-    { levels = { "LevelA" }, shape = "rectangle", x = -50, y = -100, width = 10, height = 200, tag = "WALL" },
+    { levels = { "LevelA" }, shape = "rectangle", x = -50, y = -100, width = 10, height = 80, tag = "WALL" },
     { levels = { "LevelB" }, shape = "circle", x = 145, y = -105, radius = 12.5, segments = 16, tag = "WALL" },
+  },
+  collectables = {
+    { level = "LevelA", x = -125, y = 25, tag = "LEAF" },
+    { level = "LevelA", x = -125, y = 20, tag = "LEAF" },
+    { level = "LevelA", x = -125, y = 15, tag = "LEAF" },
+    { level = "LevelA", x = -125, y = 10, tag = "LEAF" },
+    { level = "LevelA", x = -125, y = 05, tag = "LEAF" },
+    { level = "LevelA", x = -125, y = 00, tag = "LEAF" },
+    { level = "LevelA", x = -120, y = 25, tag = "LEAF" },
+    { level = "LevelA", x = -120, y = 20, tag = "LEAF" },
+    { level = "LevelA", x = -120, y = 15, tag = "LEAF" },
+    { level = "LevelA", x = -120, y = 10, tag = "LEAF" },
+    { level = "LevelA", x = -120, y = 05, tag = "LEAF" },
+    { level = "LevelA", x = -120, y = 00, tag = "LEAF" },
   },
   characters = {
     ["Player.Hedgehog"] = {

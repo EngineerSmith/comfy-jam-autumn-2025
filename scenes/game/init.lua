@@ -34,12 +34,15 @@ local world = require("src.world")
 
 local scene = {
   minimap = {
+    enabled = true,
     size = 256,
     scale = 2,
   }
 }
 
-scene.minimap.canvas = lg.newCanvas(scene.minimap.size, scene.minimap.size)
+if scene.minimap.enabled then
+  scene.minimap.canvas = lg.newCanvas(scene.minimap.size, scene.minimap.size)
+end
 
 scene.load = function(roomInfo)
   love.mouse.setRelativeMode(false)
@@ -80,47 +83,49 @@ end
 scene.update = function(dt)
   world.update(dt)
 
-  local t = love.timer.getTime()
+  -- local t = love.timer.getTime()
 end
 
 scene.draw = function()
-  love.graphics.clear()
+  love.graphics.clear(33/255, 117/255, 7/255)
   lg.push("all")
-    CUBE:draw()
+    -- CUBE:draw()
     world.draw()
   lg.pop()
 
-  lg.push("all")
-    lg.setCanvas(scene.minimap.canvas)
-    lg.clear(.1,.1,.1, 1)
-    local playerX, playerY, playerZ = player.getPosition()
-    local halfMap = scene.minimap.size / 2
-    lg.translate(halfMap, halfMap)
-    lg.scale(scene.minimap.scale, -scene.minimap.scale)
-    lg.translate(-playerX, -playerY)
-    world.debugDraw()
-  lg.pop()
-  lg.push("all")
-    local screenX = lg.getWidth() - scene.minimap.size - 20
-    local screenY = 20
-    lg.translate(screenX, screenY)
-    lg.setColor(1,1,1,1)
-    lg.draw(scene.minimap.canvas)
-    lg.setLineWidth(2)
-    lg.rectangle("line", 0, 0, scene.minimap.size, scene.minimap.size)
+  if scene.minimap.enabled then
+    lg.push("all")
+      lg.setCanvas(scene.minimap.canvas)
+      lg.clear(.1,.1,.1, 1)
+      local playerX, playerY, playerZ = player.getPosition()
+      local halfMap = scene.minimap.size / 2
+      lg.translate(halfMap, halfMap)
+      lg.scale(scene.minimap.scale, -scene.minimap.scale)
+      lg.translate(-playerX, -playerY)
+      world.debugDraw()
+    lg.pop()
+    lg.push("all")
+      local screenX = lg.getWidth() - scene.minimap.size - 20
+      local screenY = 20
+      lg.translate(screenX, screenY)
+      lg.setColor(1,1,1,1)
+      lg.draw(scene.minimap.canvas)
+      lg.setLineWidth(2)
+      lg.rectangle("line", 0, 0, scene.minimap.size, scene.minimap.size)
 
-    local char = player.character
-    local levelName = "None"
-    if char then
-      if char.levelCounter > 1 then
-        levelName = "In Transition"
-      elseif char.levelCounter == 1 then
-        levelName = next(char.levels).name
+      local char = player.character
+      local levelName = "None"
+      if char then
+        if char.levelCounter > 1 then
+          levelName = "In Transition"
+        elseif char.levelCounter == 1 then
+          levelName = next(char.levels).name
+        end
       end
-    end
 
-    lg.print(("%1.f:%1.f:%1.f\n%s"):format(playerX, playerY, playerZ, levelName), 0, scene.minimap.size + 20)
-  lg.pop()
+      lg.print(("%1.f:%1.f:%1.f\n%s"):format(playerX, playerY, playerZ, levelName), 0, scene.minimap.size + 20)
+    lg.pop()
+  end
 end
 
 scene.joystickadded = function(...)

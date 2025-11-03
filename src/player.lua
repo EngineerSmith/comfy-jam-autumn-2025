@@ -1,5 +1,6 @@
 local player = {
   lookAt = { 0, -1e-5, 15 },
+  magnet = 1, -- magnet * playerCharacter.size = effect radius
 }
 
 local g3d = require("libs.g3d")

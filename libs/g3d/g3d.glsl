@@ -44,12 +44,45 @@ vec4 position(mat4 transformProjection, vec4 vertexPosition) {
 #endif
 
 #ifdef PIXEL
+#define COLLECTABLE_SHADOW_MAX 32
+uniform vec3 collectablePositions[COLLECTABLE_SHADOW_MAX];
+uniform int numCollectable;
+uniform float shadowRadiusX;
+uniform float shadowRadiusY;
+uniform float shadowSoftness;
+uniform float shadowStrength;
+
 vec4 effect(vec4 color, Image tex, vec2 texture_coords, vec2 screen_coords)
 {
     vec4 textureColor = Texel(tex, texture_coords);
     if (textureColor.a <= 0.005)
         discard;
     vec4 baseColor = textureColor * color;
-    return vec4(baseColor.rgb * vertexLight, baseColor.a);
+    vec4 finalColor = vec4(baseColor.rgb * vertexLight, baseColor.a);
+
+    float overallShadowIntensity = 0.0;
+    for (int i = 0; i < min(numCollectable, COLLECTABLE_SHADOW_MAX); i++) {
+        if (worldPosition.z >= collectablePositions[i].z)
+            continue;
+
+        float dx = worldPosition.x - collectablePositions[i].x;
+        float dy = worldPosition.y - collectablePositions[i].y;
+
+        float invRadiusX = (shadowRadiusX > 0.0) ? (1.0 / shadowRadiusX) : 0.0;
+        float invRadiusY = (shadowRadiusY > 0.0) ? (1.0 / shadowRadiusY) : 0.0;
+        float effectiveDistSq = (dx * invRadiusX) * (dx * invRadiusX) + (dy * invRadiusY) * (dy * invRadiusY);
+
+        if (effectiveDistSq < 1.0) {
+            float effectiveDist = sqrt(effectiveDistSq);
+            float intensity = 1.0 - effectiveDist;
+            intensity = pow(intensity, shadowSoftness);
+
+            overallShadowIntensity = max(overallShadowIntensity, intensity);
+        }
+    }
+    float darkingFactor = max(1.0 - overallShadowIntensity * shadowStrength, 0.1);
+    finalColor.rgb *= darkingFactor;
+
+    return finalColor;
 }
 #endif

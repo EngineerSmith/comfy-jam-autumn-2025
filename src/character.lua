@@ -56,6 +56,10 @@ character.addToLevel = function(self, level)
   logger.info("Character added to "..tostring(level.name))
 end
 
+character.isInLevel = function(self, level)
+  return self.levels[level] ~= nil
+end
+
 character.removeFromLevel = function(self, level)
   if not level:isInLevel(self) then
     logger.info("Tried to remove character not added to level '"..tostring(level.name).."'.")
