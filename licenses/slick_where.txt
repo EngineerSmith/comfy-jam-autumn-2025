@@ -6,4 +6,4 @@ The full license text is provided in the accompanying file, library.txt.
 COMPLIANCE WITH MPL 2.0 SECTION 3.2(a):
 As required by the MPL 2.0, the corresponding **Source Code Form** for the slick library (including any modifications) is available at: 
 
-https://github.com/erinmaus/slick/tree/slick-v4.0.5
+https://github.com/erinmaus/slick/tree/slick-v4.0.6

@@ -77,7 +77,6 @@ function shapeCollisionResolutionQuery.new(E)
         otherOffset = point.new(),
         contactPointsCount = 0,
         contactPoints = { point.new() },
-        segment = segment.new(),
         currentShape = _newQueryShape(),
         otherShape = _newQueryShape(),
         relativeDirection = point.new()
@@ -431,20 +430,29 @@ function shapeCollisionResolutionQuery:_performPolygonPolygonProjection(selfShap
         local intersection, x, y
         if _cachedSegmentA:overlap(_cachedSegmentB) then
             intersection, x, y = slickmath.intersection(_cachedSegmentA.a, _cachedSegmentA.b, _cachedSegmentB.a, _cachedSegmentB.b, self.epsilon)
-            if not intersection or not (x and y) then
-                intersection, x, y = _cachedSegmentA:intersection(_cachedSegmentB, self.epsilon)
-                if intersection and x and y then
-                    self:_addContactPoint(x, y)
+
+            if intersection and not (x and y) then
+                intersection = slickmath.intersection(_cachedSegmentA.a, _cachedSegmentA.a, _cachedSegmentB.a, _cachedSegmentB.b, self.epsilon)
+                if intersection then
+                    self:_addContactPoint(_cachedSegmentA.a.x, _cachedSegmentB.a.y)
                 end
 
-                intersection, x, y = _cachedSegmentB:intersection(_cachedSegmentA, self.epsilon)
-                if intersection and x and y then
-                    self:_addContactPoint(x, y)
+                intersection = slickmath.intersection(_cachedSegmentA.b, _cachedSegmentA.b, _cachedSegmentB.a, _cachedSegmentB.b, self.epsilon)
+                if intersection then
+                    self:_addContactPoint(_cachedSegmentA.b.x, _cachedSegmentB.b.y)
                 end
-            else
-                if intersection and x and y then
-                    self:_addContactPoint(x, y)
+
+                intersection = slickmath.intersection(_cachedSegmentB.a, _cachedSegmentB.a, _cachedSegmentA.a, _cachedSegmentA.b, self.epsilon)
+                if intersection then
+                    self:_addContactPoint(_cachedSegmentB.a.x, _cachedSegmentB.a.y)
                 end
+
+                intersection = slickmath.intersection(_cachedSegmentB.b, _cachedSegmentB.b, _cachedSegmentA.a, _cachedSegmentA.b, self.epsilon)
+                if intersection then
+                    self:_addContactPoint(_cachedSegmentB.b.x, _cachedSegmentB.b.y)
+                end
+            elseif intersection and x and y then
+                self:_addContactPoint(x, y)
             end
         end
     elseif side == SIDE_NONE then
