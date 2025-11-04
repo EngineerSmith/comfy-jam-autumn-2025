@@ -15,7 +15,7 @@ return {
     --
     {
       model = "model.stump.1", level = "LevelA", x = -100, y = 20, z = 0, scale = 20,
-      collider = { levels = { "LevelA", "LevelB" }, shape = "circle", radius = 0.18, segments = 6, rotation = 90, tag = "LOG" },
+      collider = { levels = { "LevelA", "LevelB" }, shape = "circle", radius = 0.18, segments = 6, rotation = math.rad(90), tag = "LOG" },
     },
     {
       model = "model.stump.1", level = "LevelA", x = -180, y = 50, z = 0, scale = 20,

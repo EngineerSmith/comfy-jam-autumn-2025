@@ -51,9 +51,20 @@ local list = {
   { path = "textures/texture_05.png", name = "texture.prototype.1", onLoad = filterLinear },
   { path = "textures/texture_06.png", name = "texture.prototype.2", onLoad = filterLinear },
 -- Models
-  { path = "models/stump_roundDetailed.obj", name = "model.stump.1", onLoad = objLoader, "y", "assets/models/stump_roundDetailed.mtl" },
+  { path = "models/kenney/Nature Kit/stump_roundDetailed.obj", name = "model.stump.1", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/stump_roundDetailed.mtl" },
   { path = "models/ground_surface.obj", name = "model.surface.1", onLoad = objLoader, "y" },
   { path = "models/leaf_collectable.obj", name = "model.collectable.leaf.1", onLoad = objLoader, "z", "assets/models/leaf_collectable.mtl" },
+  { path = "models/big_flower_pot.obj", name = "model.flower_pot.nest", onLoad = objLoader, "z", "assets/models/big_flower_pot.mtl" },
+  { path = "models/kenney/Nature Kit/pot_small.obj", name = "model.flower_pot.small", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/pot_small.mtl" },
+  { path = "models/kenney/Nature Kit/grass.obj", name = "model.grass", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/grass.mtl" },
+  { path = "models/kenney/Nature Kit/grass_large.obj", name = "model.grass.large", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/grass.mtl" },
+  { path = "models/kenney/Nature Kit/grass_leafs.obj", name = "model.grass.leafs", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/grass.mtl" },
+  { path = "models/kenney/Nature Kit/grass_leafsLarge.obj", name = "model.grass.leafs.large", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/grass.mtl" },
+  { path = "models/kenney/Nature Kit/rock_largeA.obj", name = "model.rock.large.1", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/rock_largeA.mtl" },
+  { path = "models/kenney/Nature Kit/path_stone.obj", name = "model.path.stone.1", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/path_stone.mtl" },
+  { path = "models/kenney/Nature Kit/path_stoneCircle.obj", name = "model.path.stone.2", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/path_stone.mtl" },
+  { path = "models/kenney/Nature Kit/path_stoneCorner.obj", name = "model.path.stone.3", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/path_stone.mtl" },
+  { path = "models/kenney/Nature Kit/path_stoneEnd.obj", name = "model.path.stone.4", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/path_stone.mtl" },
 -- Audio
   -- sourceType = "static"/"stream"
   { path = "audio/ui/rollover4.ogg", name = "audio.ui.select.1", sourceType = "static", audioType = "ui", key = "audio.ui.select", volume = .5 },
