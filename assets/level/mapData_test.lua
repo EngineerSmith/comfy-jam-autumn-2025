@@ -40,6 +40,7 @@ return {
     { level = "LevelA", x = -120, y = 05, tag = "LEAF" },
     { level = "LevelA", x = -120, y = 00, tag = "LEAF" },
   },
+  signposts = { },
   characters = {
     ["Player.Hedgehog"] = {
       file = "assets/characters/hedgehog/init.lua",

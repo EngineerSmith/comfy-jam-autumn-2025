@@ -8,6 +8,7 @@ local g3d = require("libs.g3d")
 
 local prop = require("src.prop")
 local player = require("src.player")
+local signpost = require("src.signpost")
 local character = require("src.character")
 local collectable = require("src.collectable")
 local colliderMulti = require("src.colliderMulti")
@@ -23,6 +24,7 @@ local world = {
   props = { },
   colliders = { },
   collectables = { },
+  signposts = { },
   characters = { },
   debug = { },
 
@@ -215,6 +217,18 @@ world.load = function()
     end
   end
 
+  for i, signpostInfo in ipairs(mapData.signposts) do
+    local level = world.levels[signpostInfo.level]
+    if not level then
+      logger.warn("Signpost of mapData.signposts["..tostring(i).."] had invalid level. Check spelling. Ignoring signpost.")
+    else
+      local x, y, z = signpostInfo.x, signpostInfo.y, signpostInfo.z or 0
+      local radius, rotation = signpostInfo.radius, signpostInfo.rz
+      local content = signpostInfo.content or "[ EMPTY ]"
+      table.insert(world.signposts, signpost.new(x, y, z, radius, rotation, content, level))
+    end
+  end
+
   for characterName, characterInfo in pairs(mapData.characters) do
     local character = getCharacterFactory(characterInfo.file)()
     local level = world.levels[characterInfo.level]
@@ -244,6 +258,7 @@ world.unload = function()
   world.props = { }
   world.colliders = { }
   world.collectables = { }
+  world.signposts = { }
   world.characters = { }
   world.debug = { }
 end
@@ -265,6 +280,9 @@ world.update = function(dt)
   end
   for _, transition in ipairs(world.transitions) do
     transition:update(world.characters)
+  end
+  for _, signpost in ipairs(world.signposts) do
+    signpost:update(dt)
   end
 
   local playerCharacter = player.character
@@ -350,6 +368,9 @@ world.debugDraw = function()
   for _, collectable in ipairs(world.collectables) do
     collectable:debugDraw()
   end
+  for _, signpost in ipairs(world.signposts) do
+    signpost:debugDraw()
+  end
   player.character:debugDraw()
   lg.pop()
 end
@@ -367,6 +388,11 @@ world.draw = function()
 
   for _, character in pairs(world.characters) do
     character:draw() -- This includes the player character
+  end
+
+  -- Has transparency
+  for _, signpost in ipairs(world.signposts) do
+    signpost:draw()
   end
 
   lg.push("all")

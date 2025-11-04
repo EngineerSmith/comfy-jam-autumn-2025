@@ -41,10 +41,14 @@ local mapData = {
   collectables = {
 
   },
+  signposts = {
+    { level = "nest.ground", x = 0, y = -7.4, z = 4, content = "Press [button.interact] to enter Nest", radius = 3.5, rz = math.rad(0) },
+    -- { level = "nest.ground", x = 0, y = -10, content = "Hello World!", radius = 5, rz = math.rad(0) },
+  },
   characters = {
     ["Hedgehog.Player"] = {
       file = "assets/characters/hedgehog/init.lua",
-      level = "nest. ground",
+      level = "nest.ground",
       x = 0, y = -10,
     }
   },
