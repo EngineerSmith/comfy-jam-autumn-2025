@@ -16,17 +16,14 @@ colliderCircle.new = function(x, y, radius, segments, rotation, tag, levels)
       levels = levels,
       x = x, y = y, 
       radius = radius, segments = segments,
-      rotation = rotation or 0
+      rotation = 0,
     }, colliderCircle)
 
-  self.rotation = math.rad(self.rotation)
-
-  for _, level in ipairs(levels) do
+  for _, level in ipairs(self.levels) do
     level:add(self, x, y, self.shape)
-    if self.rotation ~= 0 then
-      level.world:rotate(self, self.rotation)
-    end
   end
+
+  self:rotate(rotation or 0)
 
   return self
 end
@@ -36,6 +33,20 @@ colliderCircle.remove = function(self)
     level:remove(self)
   end
   self.levels = nil
+end
+
+colliderCircle.rotate = function(self, rz)
+  if rz == 0 then
+    return
+  end
+
+  self.rotation = self.rotation + rz
+
+  local trans = slick.newTransform(self.x, self.y, self.rotation)
+
+  for _, level in ipairs(self.levels) do
+    level.world:update(self, trans)
+  end
 end
 
 local lg = love.graphics
