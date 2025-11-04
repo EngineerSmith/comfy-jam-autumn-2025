@@ -9,7 +9,9 @@ local slickHelper = { }
 slickHelper.tags = {
   CHARACTER = slick.newEnum({ type = "character" }),
   WALL      = slick.newEnum({ type = "wall" }),
+  ROCK      = slick.newEnum({ type = "rock" }),
   LOG       = slick.newEnum({ type = "log" }),
+  POT       = slick.newEnum({ type = "pot" }),
 }
 
 return slickHelper

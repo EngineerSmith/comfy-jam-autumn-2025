@@ -1,5 +1,5 @@
 local player = {
-  lookAt = { 0, -5, 15 }, -- -1e-5
+  lookAt = { 0, -5, 20 }, -- -1e-5
   magnet = 0.5, -- magnet * playerCharacter.size = effect radius
 }
 

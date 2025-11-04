@@ -10,6 +10,7 @@ local prop = require("src.prop")
 local player = require("src.player")
 local character = require("src.character")
 local collectable = require("src.collectable")
+local colliderMulti = require("src.colliderMulti")
 local colliderCircle = require("src.colliderCircle")
 local colliderRectangle = require("src.colliderRectangle")
 
@@ -146,6 +147,9 @@ world.load = function()
             local radius, segments, rotation, tag = colliderInfo.radius, colliderInfo.segments, colliderInfo.rotation, colliderInfo.tag
             radius = radius * scale
             collider = colliderCircle.new(x, y, radius, segments, rotation, tag, levels)
+          elseif colliderInfo.shape == "multi" then
+            local tag = colliderInfo.tag
+            collider = colliderMulti.new(x, y, scale, colliderInfo, tag, levels)
           else
             logger.warn("MapData's Model["..i.."]'s collider had invalid shape. Check spelling: ", tostring(colliderInfo.shape))
           end
@@ -153,6 +157,13 @@ world.load = function()
       end
 
       local newProp = prop.new(model, texture, x, y, z, level, scale, collider)
+      if modelInfo.rx or modelInfo.ry or modelInfo.rz then
+        local rx, ry, rz = modelInfo.rx, modelInfo.ry, modelInfo.rz
+        newProp:setRotation(rx, ry, rz)
+      end
+      if modelInfo.noScaleZ then
+        newProp:setNoScaleZ(true)
+      end
       table.insert(world.props, newProp)
     end
     ::continue::
@@ -179,10 +190,16 @@ world.load = function()
       elseif colliderInfo.shape == "circle" then
         local radius, segments, rotation = colliderInfo.radius, colliderInfo.segments, colliderInfo.rotation
         collider = colliderCircle.new(x, y, radius, segments or 16, rotation, tag, levels)
+      elseif colliderInfo.shape == "multi" then
+          local tag = colliderInfo.tag
+          collider = colliderMulti.new(x, y, 1, colliderInfo, tag, levels)
       else
         logger.warn("There is a collider with bad shape. mapData.colliders["..tostring(i).."]. Shape given: "..tostring(colliderInfo.shape))
       end
       if collider then
+        if type(colliderInfo.rz) == "number" then
+          collider:rotate(colliderInfo.rz)
+        end
         table.insert(world.colliders, collider)
       end
     end

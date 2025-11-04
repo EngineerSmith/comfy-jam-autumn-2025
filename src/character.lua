@@ -9,11 +9,12 @@ local character = {
 }
 character.__index = character
 
-character.create = function(name, speed, size, textureSizeMod)
+character.create = function(name, speed, size, zOffset, textureSizeMod)
   local self = setmetatable({
     name  = name,
     speed = speed or 1,
     size  = size  or 1,
+    zOffset = zOffset or 0.2,
     textureSizeMod = textureSizeMod,
     x = 0, y = 0, z = 0,
     previousX = 0, previousY = 0,
@@ -191,7 +192,7 @@ character.draw = function(self)
   end
   lg.push("all")
   lg.setColor(1,1,1,1)
-  self.currentMesh:setTranslation(self.x, self.y, self.z)
+  self.currentMesh:setTranslation(self.x, self.y, self.z + self.zOffset)
   self.currentMesh:setRotation(0, 0, self.rotation)
   self.currentMesh:draw()
   lg.pop()

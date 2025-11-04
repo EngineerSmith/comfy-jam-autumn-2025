@@ -36,7 +36,7 @@ local scene = {
   minimap = {
     enabled = true,
     size = 256,
-    scale = 2,
+    scale = 3,
   }
 }
 
@@ -124,8 +124,16 @@ scene.draw = function()
         end
       end
 
-      lg.print(("%1.f:%1.f:%1.f\n%s"):format(playerX, playerY, playerZ, levelName), 0, scene.minimap.size + 20)
+      lg.print(("%.1f:%.1f:%.1f\n%s"):format(playerX, playerY, playerZ, levelName), 0, scene.minimap.size + 20)
     lg.pop()
+  end
+end
+
+scene.keypressed = function(_ ,key)
+  if key == "c" and love.keyboard.isDown("lcrft", "rctrl") then
+    local playerX, playerY, playerZ = player.getPosition()
+    local str = ("x = %f, y = %f"):format(playerX, playerY)
+    love.system.setClipboardText(str)
   end
 end
 
