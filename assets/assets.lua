@@ -54,6 +54,7 @@ local list = {
   { path = "models/kenney/Nature Kit/stump_roundDetailed.obj", name = "model.stump.1", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/stump_roundDetailed.mtl" },
   { path = "models/ground_surface.obj", name = "model.surface.1", onLoad = objLoader, "y" },
   { path = "models/leaf_collectable.obj", name = "model.collectable.leaf.1", onLoad = objLoader, "z", "assets/models/leaf_collectable.mtl" },
+  { path = "models/leaf_collectable.obj", name = "model.collectable.leaf.gold", onLoad = objLoader, "z", "assets/models/golden_leaf_collectable.mtl" },
   { path = "models/big_flower_pot.obj", name = "model.flower_pot.nest", onLoad = objLoader, "z", "assets/models/big_flower_pot.mtl" },
   { path = "models/kenney/Nature Kit/pot_small.obj", name = "model.flower_pot.small", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/pot_small.mtl" },
   { path = "models/kenney/Nature Kit/grass.obj",            name = "model.grass",             onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/grass.mtl" },
@@ -80,6 +81,9 @@ local list = {
   { path = "audio/fx/sweeping_broom_leaves_stones_11.wav", name = "audio.fx.sweep_leaves.7", sourceType = "static", audioType = "sfx", key = "audio.fx.sweep_leaves", volume = 0.4 },
   { path = "audio/fx/sweeping_broom_leaves_stones_14.wav", name = "audio.fx.sweep_leaves.8", sourceType = "static", audioType = "sfx", key = "audio.fx.sweep_leaves", volume = 0.4 },
   { path = "audio/fx/sweeping_broom_leaves_stones_15.wav", name = "audio.fx.sweep_leaves.9", sourceType = "static", audioType = "sfx", key = "audio.fx.sweep_leaves", volume = 0.4 },
+  { path = "audio/fx/collect_item_02.wav", name = "audio.fx.collect_special.1", sourceType = "static", audioType = "sfx", key = "audio.fx.collect_special", volume = 0.6 },
+  { path = "audio/fx/collect_item_07.wav", name = "audio.fx.collect_special.2", sourceType = "static", audioType = "sfx", key = "audio.fx.collect_special", volume = 0.6 },
+  { path = "audio/fx/collect_item_14.wav", name = "audio.fx.collect_special.3", sourceType = "static", audioType = "sfx", key = "audio.fx.collect_special", volume = 0.6 },
 -- Fonts
   { path = "fonts/Roboto_Mono/RobotoMono-Light.ttf",            name = "fonts.light" },
   { path = "fonts/Roboto_Mono/RobotoMono-LightItalic.ttf",      name = "fonts.light.italic" },

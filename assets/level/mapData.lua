@@ -39,11 +39,15 @@ local mapData = {
     { levels = { "nest.ground" }, shape = "rectangle", x = -30, y = -22, width = 60, height = 3, tag = "WALL" }, -- South wall
   },
   collectables = {
-
+    { level = "nest.ground", x =  0, y = 10, tag = "GOLDEN_LEAF" },
+    { level = "nest.ground", x =  0, y = 13, tag = "LEAF" },
+    { level = "nest.ground", x = -3, y = 10, tag = "LEAF" },
+    { level = "nest.ground", x =  3, y = 10, tag = "LEAF" },
   },
   signposts = {
-    { level = "nest.ground", x = 0, y = -7.4, z = 4, content = "Press [button.interact] to enter Nest", radius = 3.5, rz = math.rad(0) },
-    -- { level = "nest.ground", x = 0, y = -10, content = "Hello World!", radius = 5, rz = math.rad(0) },
+    { level = "nest.ground", x = 0, y = -7.4, z = 4, content = "Press [button.interact] to enter Nest", radius = 3.5 },
+    { level = "nest.ground", x = -23, y = 0, z = 3, content = "[collectable_count.zone_1]", radius = 5.5, rz =  math.rad(20) },
+    { level = "nest.ground", x =  22, y = 0, z = 3, content = "[collectable_count.zone_2]", radius = 5.5, rz = -math.rad(20) },
   },
   characters = {
     ["Hedgehog.Player"] = {
@@ -110,7 +114,7 @@ end
 
 
 
-addGrassClump("nest.ground",   11,    0.5, nil, 5.25)
+addGrassClump("nest.ground",   11,    0.5, nil, 5.25) -- Plant pot grass
 addGrassClump("nest.ground",   -7,   -6)
 addGrassClump("nest.ground",   -3,  -17)
 addGrassClump("nest.ground",    8,   -6)
@@ -118,7 +122,7 @@ addGrassClump("nest.ground",   14,  -19)
 addGrassClump("nest.ground",   -9,    5)
 addGrassClump("nest.ground",    8,    7)
 addGrassClump("nest.ground",    7,  -15)
-
+addGrassClump("nest.ground",   22,  -13)
 addPebbleClump("nest.ground",   4,  -18)
 addPebbleClump("nest.ground",  20,  -24)
 addPebbleClump("nest.ground", -16,  -16)
@@ -126,5 +130,10 @@ addPebbleClump("nest.ground", -14,   -3.5)
 addPebbleClump("nest.ground",  13,    6)
 addPebbleClump("nest.ground", -13,  -25.5)
 addPebbleClump("nest.ground",   9,  -18)
+addPebbleClump("nest.ground",  22,  -13)
+addGrassClump("nest.ground",  -12,  -16.5)
+addGrassClump("nest.ground",  -25,  -10)
+addPebbleClump("nest.ground", -24,  -19)
+addGrassClump("nest.ground",  -24,  -19)
 
 return mapData

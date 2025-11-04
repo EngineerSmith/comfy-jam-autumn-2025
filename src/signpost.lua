@@ -51,9 +51,17 @@ local lerp = function(a, b, t)
 end
 
 signpost.setState = function(self, state)
+  local previousState = self.state
+
   if self.state ~= state then
     self.state = state
-    self.timer = 0.0
+    if previousState == "fadeIn" and state == "fadeOut" then
+      self.timer = FADE_OUT_TIME * (1.0 - self.fade)
+    elseif previousState == "fadeOut" and state == "fadeIn" then
+      self.timer = FADE_IN_TIME * self.fade
+    else
+      self.timer = 0.0
+    end
   end
 end
 

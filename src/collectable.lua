@@ -11,13 +11,35 @@ local CUBE = g3d.newModel("scenes/game/cube.obj")
 local tags = {
   ["LEAF"] = {
     value = 1,
-    radius = 2, -- for minimap
     rotationSpeed = math.rad(180), -- per second
     bobbingSpeed = 0.5, -- per second
     bobbingHeight = 0.5,
     bobbingOffset = 1,
     modelName = "model.collectable.leaf.1",
     audioName = "audio.fx.sweep_leaves",
+    -- minimap
+    radius = 1.5,
+    activeColor = { .8, .5, .1, 1 },
+    inactiveColor = { .3, .3, .05, 1 },
+    draw = function(tag, collectable)
+      tag.model:setTranslation(collectable:getPosition())
+      tag.model:setRotation(0, 0, collectable.rotation)
+      tag.model:setScale(collectable.scale * 0.5)
+      tag.model:draw()
+    end,
+  },
+  ["GOLDEN_LEAF"] = {
+    value = 10,
+    rotationSpeed = math.rad(135), -- per second
+    bobbingSpeed = 1.0, -- per second
+    bobbingHeight = 0.5,
+    bobbingOffset = 1,
+    modelName = "model.collectable.leaf.gold",
+    audioName = "audio.fx.collect_special",
+    -- minimap
+    radius = 2,
+    activeColor = { .8, .8, 0, 1 },
+    inactiveColor = { .5, .5, .1, 1 },
     draw = function(tag, collectable)
       tag.model:setTranslation(collectable:getPosition())
       tag.model:setRotation(0, 0, collectable.rotation)
@@ -119,13 +141,13 @@ end
 local lg = love.graphics
 collectable.debugDraw = function(self)
   lg.push("all")
-  lg.setColor(1,1,0, 1)
+  local tag = self:getTag()
+  lg.setColor(tag.activeColor or { .4, .8, .4, 1 })
   if self.isCollected then
-    lg.setColor(.5,.5,0,1)
+    lg.setColor(tag.inactiveColor or { .1, .4, .1, 1 })
   end
   lg.translate(self.x, self.y)
   lg.rotate(math.rad(-90)+love.timer.getTime()/2)
-  local tag = self:getTag()
   lg.circle("fill", 0, 0, tag.radius, 3)
   lg.pop()
 end
