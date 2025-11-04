@@ -30,16 +30,13 @@ local loopSource = function(source)
 end
 
 local g3d = require("libs.g3d")
--- ... =
--- mtlPath [nil or string]
--- texture [nil, string, or love image]
--- translation [nil or {x,y,z}]
--- rotation [nil, or {x,y,z}]
--- scale = [nil, or {x,y,z}]
-local objLoader = function(objContent, ...)
-  local model = g3d.newModel(objContent, ...)
-  -- model:makeNormals()
-  model:setRotation(math.rad(90), 0, 0)
+local objLoader = function(objContent, up, mtlPath)
+  local model = g3d.newModel(objContent, mtlPath)
+  if up == "y" then
+    model:setRotation(math.rad(90), 0, 0)
+  elseif up == "x" then
+    model:setRotation(0, math.rad(90), 0)
+  end
   return model
 end
 
@@ -54,8 +51,9 @@ local list = {
   { path = "textures/texture_05.png", name = "texture.prototype.1", onLoad = filterLinear },
   { path = "textures/texture_06.png", name = "texture.prototype.2", onLoad = filterLinear },
 -- Models
-  { path = "models/stump_roundDetailed.obj", name = "model.stump.1", onLoad = objLoader, "assets/models/stump_roundDetailed.mtl" },
-  { path = "models/ground_surface.obj", name = "model.surface.1", onLoad = objLoader },
+  { path = "models/stump_roundDetailed.obj", name = "model.stump.1", onLoad = objLoader, "y", "assets/models/stump_roundDetailed.mtl" },
+  { path = "models/ground_surface.obj", name = "model.surface.1", onLoad = objLoader, "y" },
+  { path = "models/leaf_collectable.obj", name = "model.collectable.leaf.1", onLoad = objLoader, "z", "assets/models/leaf_collectable.mtl" },
 -- Audio
   -- sourceType = "static"/"stream"
   { path = "audio/ui/rollover4.ogg", name = "audio.ui.select.1", sourceType = "static", audioType = "ui", key = "audio.ui.select", volume = .5 },

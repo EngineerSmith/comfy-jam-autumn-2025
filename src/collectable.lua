@@ -1,6 +1,9 @@
 local collectable = { }
 collectable.__index = collectable
 
+local logger = require("util.logger")
+local assetManager = require("util.assetManager")
+
 local g3d = require("libs.g3d")
 local CUBE = g3d.newModel("scenes/game/cube.obj")
 
@@ -11,21 +14,45 @@ local tags = {
     bobbingSpeed = 0.5, -- per second
     bobbingHeight = 0.5,
     bobbingOffset = 1,
-    draw = function(self)
-      CUBE:setTranslation(self:getPosition())
-      CUBE:setRotation(0, 0, self.rotation)
-      CUBE:setScale(self.scale * 0.5)
-      CUBE:draw()
+    modelName = "model.collectable.leaf.1",
+    draw = function(tag, collectable)
+      tag.model:setTranslation(collectable:getPosition())
+      tag.model:setRotation(0, 0, collectable.rotation)
+      tag.model:setScale(collectable.scale * 0.5)
+      tag.model:draw()
     end,
   }
 }
 
+local tagModels = { }
+for _, tag in pairs(tags) do
+  if type(tag.modelName) == "string" then
+    table.insert(tagModels, tag.modelName)
+  end
+end
+
+collectable.getModelList = function()
+  return tagModels
+end
+
 collectable.load = function()
-  -- to grab assetManager model
+  for _, tag in pairs(tags) do
+    if type(tag.modelName) == "string" then
+      local model = assetManager[tag.modelName]
+      if not model then
+        logger.warn("Couldn't find collectable model with ID:", tag.modelName, ". Attempting to continue with CUBE")
+        tag.model = CUBE
+      else
+        tag.model = model
+      end
+    end
+  end
 end
 
 collectable.unload = function()
-  -- To release assetManager model
+  for _, tag in pairs(tags) do
+    tag.model = nil
+  end
 end
 
 collectable.getTag = function(tag)
@@ -96,7 +123,7 @@ collectable.draw = function(self)
 
   local tag = self:getTag()
   if tag and tag.draw then
-    tag.draw(self)
+    tag.draw(tag, self)
   end
 end
 

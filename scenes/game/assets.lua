@@ -18,6 +18,15 @@ for _, modelInfo in ipairs(mapData.models) do
     lookup[modelInfo.texture] = true
   end
 end
+
+  -- Collectables
+local modelList = require("src.collectable").getModelList()
+for _, model in ipairs(modelList) do
+  if not lookup[model] then
+    table.insert(assets, model)
+    lookup[model] = true
+  end
+end
 ---
 
 return assets
