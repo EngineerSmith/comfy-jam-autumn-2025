@@ -2,7 +2,8 @@ local lfs = love.filesystem
 
 local g3d = require("libs.g3d")
 
-local PIXEL_TO_UNIT_SCALE = 32 -- 32x32 = 1:1 -- Not sure if this is still needed
+local PIXEL_TO_UNIT_SCALE = 32 -- 32x32 = 1:1
+-- local PADDING_PIXELS = 1 -- 1 pixel padding around each frame
 
 local objVFormat  = "v %.6f %.6f %.6f\n"
 local objVTFormat = "vt %.6f %.6f %.6f\n"

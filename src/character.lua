@@ -22,7 +22,10 @@ character.create = function(name, speed, size, zOffset, textureSizeMod)
     levels = { },
     levelCounter = 0,
     stateTextures = { },
+    stateData = nil,
     movedPreviousFrame = false,
+    idleTimer = 0,
+    idleTriggerTime = 3,
   }, character)
   self.halfSize = self.size/2
   self.shape = slick.newCircleShape(0, 0, self.halfSize * textureSizeMod, 16, slickHelper.tags.CHARACTER)
@@ -32,12 +35,17 @@ end
 
 character.setState = function(self, state)
   self.state = state
-  
+
   local stateData = self.stateTextures[self.state]
-  if stateData and stateData.frameCount > 0 then
+  if stateData then
+    self.stateData = stateData[love.math.random(#stateData)]
     self.timer = 0
     self.currentFrame = 1
-    self.currentMesh = stateData.meshes[self.currentFrame]
+    self.currentMesh = self.stateData.meshes[self.currentFrame]
+  end
+
+  if state == "idle" then
+    self.idleTimer = 0
   end
 end
 
@@ -85,24 +93,35 @@ character.setStateTexture = function(self, state, texture, frameCount, frameTime
   local paddingNormWidth  = 1 / textureWidth
   local paddingNormHeight = 1 / textureHeight
 
-  local widthNormQuad = 1 / frameCount
+  local totalPaddingStrips = frameCount + 1
+  local totalPaddingPixels = totalPaddingStrips
 
-  local meshes = { }
+  local visibleFrameWidthPixels  = (textureWidth - totalPaddingPixels) / frameCount
+  local visibleFrameHeightPixels = textureHeight - 2
+
+  local wNormQuad = visibleFrameWidthPixels / textureWidth
+  local widthNormQuad = (visibleFrameWidthPixels + 1) / textureWidth
 
   local vStart = paddingNormHeight
-  local wNormQuad = widthNormQuad - ( 2 * paddingNormWidth)
-  local hNormQuad = 1.0 - (2 * paddingNormHeight)
+  local hNormQuad = visibleFrameHeightPixels / textureHeight
+
+  local meshes = { }
   for i = 1, frameCount do
-    local uStart = (i - 1) * widthNormQuad + paddingNormWidth
-    meshes[i] = createPlaneForQuad(uStart, vStart, wNormQuad, hNormQuad, texture, self.halfSize)
+    -- local uStart = (i - 1) * widthNormQuad + paddingNormWidth
+    local uStart = paddingNormWidth + ((i - 1) * widthNormQuad)
+    table.insert(meshes, createPlaneForQuad(uStart, vStart, wNormQuad, hNormQuad, texture, self.halfSize))
   end
 
-  self.stateTextures[state] = {
+  if not self.stateTextures[state] then
+    self.stateTextures[state] = { }
+  end
+
+  table.insert(self.stateTextures[state],  {
     texture = texture,
     frameTime = frameTime,
     frameCount = frameCount,
     meshes = meshes,
-  }
+  })
 
   if self.state == state then
     self:setState(self.state)
@@ -159,15 +178,34 @@ character.update = function(self, dt)
   elseif not self.movedPreviousFrame and self.state == "walking" then
     self:setState("idle")
   end
+  self.movedPreviousFrame = false
 
-  local stateData = self.stateTextures[self.state]
+  if self.state == "idle" then
+    self.idleTimer = self.idleTimer + dt
+    if self.idleTimer >= self.idleTriggerTime then
+      local fidgetData = self.stateTextures["idle_fidget"]
+      if fidgetData then
+        self:setState("idle_fidget")
+      else
+        self.idleTimer = 0
+      end
+    end
+  end
 
-  if stateData and stateData.frameCount > 1 then
+  if self.stateData and self.stateData.frameCount > 1 then
     self.timer = self.timer + dt
-    while self.timer >= stateData.frameTime do
-      self.timer = self.timer - stateData.frameTime
-      self.currentFrame = self.currentFrame % stateData.frameCount + 1
-      self.currentMesh = stateData.meshes[self.currentFrame]
+    while self.timer >= self.stateData.frameTime do
+      self.timer = self.timer - self.stateData.frameTime
+      self.currentFrame = self.currentFrame + 1
+      if self.state == "idle_fidget" and self.currentFrame == self.stateData.frameCount then
+        self:setState("idle")
+        break
+      elseif self.currentFrame > self.stateData.frameCount then
+        self:setState(self.state)
+        break
+      else
+        self.currentMesh = self.stateData.meshes[self.currentFrame]
+      end
     end
   end
 end
