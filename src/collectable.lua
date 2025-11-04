@@ -3,18 +3,21 @@ collectable.__index = collectable
 
 local logger = require("util.logger")
 local assetManager = require("util.assetManager")
+local audioManager = require("util.audioManager")
 
 local g3d = require("libs.g3d")
 local CUBE = g3d.newModel("scenes/game/cube.obj")
 
 local tags = {
   ["LEAF"] = {
+    value = 1,
     radius = 2, -- for minimap
     rotationSpeed = math.rad(180), -- per second
     bobbingSpeed = 0.5, -- per second
     bobbingHeight = 0.5,
     bobbingOffset = 1,
     modelName = "model.collectable.leaf.1",
+    audioName = "audio.fx.sweep_leaves",
     draw = function(tag, collectable)
       tag.model:setTranslation(collectable:getPosition())
       tag.model:setRotation(0, 0, collectable.rotation)
@@ -24,15 +27,21 @@ local tags = {
   }
 }
 
-local tagModels = { }
+local tagAssets, lookup = { }, { }
 for _, tag in pairs(tags) do
-  if type(tag.modelName) == "string" then
-    table.insert(tagModels, tag.modelName)
+  if type(tag.modelName) == "string" and not lookup[tag.modelName] then
+    table.insert(tagAssets, tag.modelName)
+    lookup[tag.modelName] = true
+  end
+  if type(tag.audioName) == "string" and not lookup[tag.audioName] then
+    table.insert(tagAssets, tag.audioName)
+    lookup[tag.modelName] = true
   end
 end
+lookup = nil
 
-collectable.getModelList = function()
-  return tagModels
+collectable.getAssetList = function()
+  return tagAssets
 end
 
 collectable.load = function()
@@ -100,6 +109,11 @@ end
 collectable.collected = function(self)
   self.isCollected = true
   self.scale = 1
+  local tag = self:getTag()
+  if tag.audioName then
+    audioManager.play(tag.audioName)
+  end
+  return tag.value
 end
 
 local lg = love.graphics

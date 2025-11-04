@@ -297,8 +297,8 @@ world.update = function(dt)
         end
 
         if distance <= .1 then -- .1 for jiggle room
-          world.leaves = world.leaves + 1
-          collectable:collected()
+          local value = collectable:collected()
+          world.leaves = world.leaves + value
         elseif distance <= player.magnet * playerCharacter.size then
           local dx, dy = dx / mag, dy / mag
           local speed = 1.5

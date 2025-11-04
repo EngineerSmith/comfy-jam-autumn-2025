@@ -20,11 +20,11 @@ for _, modelInfo in ipairs(mapData.models) do
 end
 
   -- Collectables
-local modelList = require("src.collectable").getModelList()
-for _, model in ipairs(modelList) do
-  if not lookup[model] then
-    table.insert(assets, model)
-    lookup[model] = true
+local assetList = require("src.collectable").getAssetList()
+for _, assetKey in ipairs(assetList) do
+  if not lookup[assetKey] then
+    table.insert(assets, assetKey)
+    lookup[assetKey] = true
   end
 end
 ---
