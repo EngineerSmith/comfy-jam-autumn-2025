@@ -303,16 +303,11 @@ world.update = function(dt)
 
     table.sort(collectablePositions, sort_ClosestMag)
 
-    if #collectablePositions > COLLECTABLE_SHADOW_MAX then
-      for i = #collectablePositions, COLLECTABLE_SHADOW_MAX + 1, -1 do
-        table.remove(collectablePositions, i)
-      end
-    end
-
     local shader = g3d.shader
-    if #collectablePositions > 0 then
-      shader:send("collectablePositions", unpack(collectablePositions))
-      shader:send("numCollectable", #collectablePositions)
+    local limit = math.min(#collectablePositions, COLLECTABLE_SHADOW_MAX)
+    if limit > 0 then
+      shader:send("collectablePositions", unpack(collectablePositions, 1, limit))
+      shader:send("numCollectable", limit)
     else
       shader:send("numCollectable", 0)
     end

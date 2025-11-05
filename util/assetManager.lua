@@ -122,11 +122,18 @@ assetManager.load = function(assetList)
   local lilyObject
   if type(assetList) == "string" then
     if assets.getReferenceCount(assetList) == 0 then
-      local assetInfo = assetManager.info[name]
-      assets.addReference(assetList, assetInfo.type)
-      lilyObject = lily[assetInfo[1]](assetInfo[2], assetInfo[3])
-        :onError(onLilyError)
-        :onComplete(onLilyLoad)
+      local assetInfo = assetManager.info[assetList]
+      if assetInfo then
+        assets.addReference(assetList)
+        lily[assetInfo[1]](assetInfo[2], assetInfo[3])
+          :onError(onLilyError)
+          :onComplete(onLilyLoad)
+          :setUserData(love.timer.getTime())
+      else
+        logger.warn("Tried to load key that doesn't exist: '"..tostring(name).."'")
+      end
+    else
+      assets.addReference(assetList)
     end
   else
     local queue = { }
@@ -155,10 +162,11 @@ assetManager.load = function(assetList)
 end
 
 assetManager.unload = function(assetList)
+  local n = 0
   if type(assetList) == "string" then
     assets.removeReference(assetList)
+    n = n + 1
   else
-    local n = 0
     for _, name in ipairs(assetList) do
       if not assetManager.info[name] then
         for _, assetKey in ipairs(audioManager.getMergedAssets(name) or { }) do
@@ -173,8 +181,8 @@ assetManager.unload = function(assetList)
         end
       end
     end
-    logger.info("Unloaded", n, "assets!")
   end
+  logger.info("Unloaded", n, "assets!")
 end
 
 assetManager.lowMemory = assets.lowMemory()

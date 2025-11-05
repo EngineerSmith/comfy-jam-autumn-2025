@@ -6,9 +6,12 @@ signpost.__index = signpost
 local g3d = require("libs.g3d")
 
 local ui = require("util.ui")
+local input = require("util.input")
+local assetManager = require("util.assetManager")
+
 local player = require("src.player")
 
-local CANVAS_WIDTH, CANVAS_HEIGHT = 1024, 256
+local CANVAS_WIDTH, CANVAS_HEIGHT = 1024 + 256, 512
 local ratio = 150 -- pixels : 1 unit
 local signpostCanvas = lg.newCanvas(CANVAS_WIDTH, CANVAS_HEIGHT)
 
@@ -31,8 +34,43 @@ local signpostModel = g3d.newModel({
 local FADE_IN_TIME  = 0.5 -- seconds
 local FADE_OUT_TIME = 1.0 -- seconds
 
--- How should sign posts be defined in mapData.lua; just x, y, z isn't enough
---    how do we define what needs to be drawn? To think about
+
+local parseContent = function(rawContent)
+  segments = { }
+  local pattern = "%[([^%]]+)%]" -- matches test inside [tags]
+  local lastEnd = 1
+
+  local tagStart, tagEnd, tagContent = rawContent:find(pattern, lastEnd)
+  while tagStart do
+    local textPrefix = rawContent:sub(lastEnd, tagStart - 1)
+    if #textPrefix > 0 then
+      table.insert(segments, { type = "text", value = textPrefix })
+    end
+
+    local parts = { }
+    for part in tagContent:gmatch("([^%.]+)") do
+      table.insert(parts, part)
+    end
+
+    local tagType = parts[1]
+    local tagKey = parts[2]
+    
+    if tagType and tagKey then
+      table.insert(segments, { type = "tag", tag = tagType, key = tagKey })
+    end
+
+    lastEnd = tagEnd + 1
+    tagStart, tagEnd, tagContent = rawContent:find(pattern, lastEnd)
+  end
+
+  local trailingText = rawContent:sub(lastEnd)
+  if #trailingText > 0 then
+    table.insert(segments, { type = "text", value = trailingText })
+  end
+
+  return segments
+end
+
 signpost.new = function(x, y, z, radius, rotation, content, level)
   local self = setmetatable({
     x = x, y = y, z = z or 0,
@@ -41,13 +79,21 @@ signpost.new = function(x, y, z, radius, rotation, content, level)
     content = content,
     level = level,
     fade = 0.0,
+    assetCache = { }, -- assetKeys it has a reference to
   }, signpost)
   self:setState("hide")
+  self.segments = parseContent(self.content)
   return self
 end
 
 local lerp = function(a, b, t)
   return a + (b - a) * t
+end
+
+signpost.unload = function(self)
+  for assetKey in pairs(self.assetCache) do
+    assetManager.unload(assetKey) -- reduces reference count
+  end
 end
 
 signpost.setState = function(self, state)
@@ -63,6 +109,44 @@ signpost.setState = function(self, state)
       self.timer = 0.0
     end
   end
+end
+
+-- TODO replace placeholder with information
+local getCollectableDisplay = function(zoneKey)
+  if zoneKey == "zone_1" then
+    return {
+      "Zone 1 PLACEHOLDER",
+      "Leaves: 5 / 10",
+      "Gold Leaves: 1 / 2",
+    }
+  elseif zoneKey == "zone_2" then
+    return {
+      "Zone 2 PLACEHOLDER",
+      "Leaves: 0 / 25",
+    }
+  end
+  return { "Content Missing" }
+end
+
+local handleButtonTag = function(actionName)
+  local assetNames = input.getBindingAssetNames(actionName, 2)
+  if assetNames then
+    return assetNames
+  end
+  return { } -- If it fails, uh do something. TODO
+end
+
+local processSegment = function(segment)
+  if segment.type == "text" then
+    return { type = "text", content = segment.value }
+  elseif segment.type == "tag" then
+    if segment.tag == "button" then
+      return { type = "button", content = handleButtonTag(segment.key) }
+    elseif segment.tag == "collectable_count" then
+      return { type = "collectable_count", content = getCollectableDisplay(segment.key) }
+    end
+  end
+  return { type = "text", content = "ERR;TYPE:"..tostring(segment.type) }
 end
 
 signpost.update = function(self, dt)
@@ -96,6 +180,67 @@ signpost.update = function(self, dt)
 
   if self.state == "show" then self.fade = 1.0 end
   if self.state == "hide" then self.fade = 0.0 end
+
+  local shouldRecalculate = false
+
+  local currentDevice = input.isGamepadActive() or "kbm"
+
+  if self.state ~= "hide" then
+    if self.activeDevice ~= currentDevice or not self.progressedSegments then
+      self.activeDevice = currentDevice
+      shouldRecalculate = true
+    end
+  end
+
+  if shouldRecalculate then
+    local processedSegments = { }
+    local touched = { } -- tracks assets currently used by processedSegments
+    local loadKeys = { } -- Assets that need loading this frame
+    local isBlockContent = false -- Check if block content (like `collectable_count`) is present
+
+    for _, segment in ipairs(self.segments) do
+      local processed = processSegment(segment)
+
+      if processed.type == "collectable_count" then
+        isBlockContent = true
+      end
+
+      if processed.type == "button" then
+        for _, assetInfo in ipairs(processed.content) do
+          touched[assetInfo.key] = true
+          if not self.assetCache[assetInfo.key] then
+            table.insert(loadKeys, assetInfo.key)
+            self.assetCache[assetInfo.key] = true
+          end
+        end
+      end
+
+      table.insert(processedSegments, processed)
+    end
+
+    self.processedSegments = processedSegments
+    self.isBlockContent = isBlockContent
+
+    -- Load new assets
+    if #loadKeys > 0 then
+      assetManager.load(loadKeys)
+    end
+
+    -- Unload old assets
+    local keysToRemove = { }
+    for assetKey in pairs(self.assetCache) do
+      if not touched[assetKey] then -- asset no longer in use
+        table.insert(keysToRemove, assetKey)
+      end
+    end
+
+    if #keysToRemove > 0 then
+      assetManager.unload(keysToRemove) -- Reduce reference count of all keys
+      for _, key in ipairs(keysToRemove) do
+        self.assetCache[key] = nil
+      end
+    end
+  end
 end
 
 signpost.debugDraw = function(self)
@@ -111,24 +256,197 @@ signpost.debugDraw = function(self)
   lg.pop()
 end
 
+local GLYPH_BUTTON_SCALE = 2
+local GLYPH_BUTTON_WIDTH  = 64
+local GLYPH_BUTTON_HEIGHT = 64
+local BOX_PADDING = 40
+local SEGMENT_GAP = 20
+
+local getSegmentsDimensions = function(segments, font)
+  local totalWidth = 0
+  local contentHeight = 0
+  local lineHeight = font:getHeight()
+  local isBlockContent = false
+  local blockContentMaxW = 0
+  local segmentsToProcess = { }
+
+  for _, segment in ipairs(segments) do
+    if segment.type == "collectable_count" then
+      isBlockContent = true
+      for _, line in ipairs(segment.content) do
+        blockContentMaxW = math.max(blockContentMaxW, font:getWidth(line))
+      end
+      contentHeight = math.max(contentHeight, lineHeight * #segment.content)
+      break -- we break early here because collect_count should *always* be the only thing drawn
+    else
+      table.insert(segmentsToProcess, segment)
+    end
+  end
+
+  -- Only calculate inline metrics if not block content
+  for _, segment in ipairs(segmentsToProcess) do
+    if segment.type == "text" then
+      totalWidth = totalWidth + font:getWidth(segment.content)
+      contentHeight = math.max(contentHeight, lineHeight)
+    elseif segment.type == "button" then
+      local innerPadding = 16
+      local buttonSequenceWidth = 0
+      local maxButtonHeight = 0
+
+      for i, assetInfo in ipairs(segment.content) do
+        local asset = assetManager[assetInfo.key]
+        local w, h
+        if asset then -- has asset loaded
+          w, h = asset:getDimensions()
+        else
+          w, h = GLYPH_BUTTON_WIDTH, GLYPH_BUTTON_HEIGHT
+        end
+        w, h = w * GLYPH_BUTTON_SCALE, h * GLYPH_BUTTON_SCALE
+
+        buttonSequenceWidth = buttonSequenceWidth + w + (i > 1 and innerPadding or 0) -- internal padding between
+        maxButtonHeight = math.max(maxButtonHeight, h)
+      end
+      totalWidth = totalWidth + buttonSequenceWidth
+      contentHeight = math.max(contentHeight, maxButtonHeight)
+    end
+  end
+
+  if not isBlockContent and #segmentsToProcess > 1 then
+    totalWidth = totalWidth + (#segmentsToProcess - 1) * SEGMENT_GAP
+  end
+  
+  if isBlockContent then
+    totalWidth = blockContentMaxW
+  end
+
+  -- Ensure a minimum height if only text is present
+  contentHeight = math.max(contentHeight, lineHeight)
+
+  return totalWidth, contentHeight, lineHeight
+end
+
+local drawSegment = function(segment, font, xOffset, yOffset, maxLineHeight, maxTotalWidth)
+  local w, h = 0, 0
+
+  lg.push("all")
+  lg.setColor(1,1,1,1)
+
+  if segment.type == "text" then
+    local textWidth = font:getWidth(segment.content)
+    local textHeight = font:getHeight()
+    local yAlignmentOffset = math.floor((maxLineHeight - textHeight) / 2)
+
+    lg.print(segment.content, font, xOffset, yOffset + yAlignmentOffset)
+
+    w, h = textWidth, textHeight
+  elseif segment.type == "button" then
+    local padding, innerPadding = 16, 16
+    local buttonSequenceWidth = 0
+    local maxButtonHeight = 0
+
+    for _, assetInfo in ipairs(segment.content) do
+      local asset = assetManager[assetInfo.key]
+      local _, assetHeight
+      if asset then
+        _, assetHeight = asset:getDimensions()
+      else
+        _, assetHeight = GLYPH_BUTTON_WIDTH, GLYPH_BUTTON_HEIGHT
+      end
+      maxButtonHeight = math.max(maxButtonHeight, assetHeight * GLYPH_BUTTON_SCALE)
+    end
+
+    local containerHeight = maxButtonHeight
+    local yAlignmentOffset = math.floor((maxLineHeight - containerHeight) / 2)
+
+    local buttonYStart = yOffset + yAlignmentOffset + padding
+
+    for i, assetInfo in ipairs(segment.content) do
+      local asset = assetManager[assetInfo.key]
+      local assetWidth, assetHeight
+      if asset then
+        lg.draw(asset, xOffset, buttonYStart, 0, GLYPH_BUTTON_SCALE)
+        assetWidth, assetHeight = asset:getDimensions()
+      else
+        assetWidth, assetHeight = GLYPH_BUTTON_WIDTH, GLYPH_BUTTON_HEIGHT
+      end
+
+      assetWidth, assetHeight = assetWidth * GLYPH_BUTTON_SCALE, assetHeight * GLYPH_BUTTON_SCALE
+      local width = assetWidth + (i > 1 and innerPadding or 0)
+
+      xOffset = xOffset + width
+      buttonSequenceWidth = buttonSequenceWidth + width
+    end
+
+    w = buttonSequenceWidth
+    h = maxLineHeight
+  elseif segment.type == "collectable_count" then
+    local lines = segment.content
+    local lineHeight = font:getHeight()
+    local currentY = yOffset
+
+    for _, line in ipairs(lines) do
+      local lineW = font:getWidth(line)
+      local lineStartX = xOffset + (maxTotalWidth - lineW) / 2
+
+      lg.print(line, font, lineStartX, currentY)
+      currentY = currentY + lineHeight
+    end
+
+    w = maxTotalWidth
+    h = lineHeight * #lines
+  end
+  lg.pop()
+  return w, h
+end
+
 -- Ensure signpost is drawn last with transparent textures
 signpost.draw = function(self)
-  if self.state == "hide" then
+  if self.state == "hide" or not self.processedSegments then
     return
   end
 
   lg.push("all")
   lg.setCanvas(signpostCanvas)
   lg.clear(0,0,0,0)
-  lg.setColor(.1,.1,.1, .8)
-  lg.rectangle("fill", 0,0, CANVAS_WIDTH, CANVAS_HEIGHT, 16)
-  lg.setColor(1,1,1,1)
-  local font = ui.getFont(72, "fonts.regular.bold")
-  local contentWidth = font:getWidth(self.content)
-  local contentHeight = font:getHeight()
-  lg.print(self.content, font, math.floor(CANVAS_WIDTH / 2 - contentWidth / 2), math.floor(CANVAS_HEIGHT / 2 - contentHeight / 2))
+
+  local font = ui.getFont(68, "fonts.regular.bold") -- todo
+
+  local totalWidth, contentHeight, lineHeight = getSegmentsDimensions(self.processedSegments, font)
+
+  local boxWidth = math.min(totalWidth + BOX_PADDING * 2, CANVAS_WIDTH)
+  local boxHeight = contentHeight + BOX_PADDING * 2
+
+  local startX = math.floor(CANVAS_WIDTH  / 2 - boxWidth  / 2)
+  local startY = math.floor(CANVAS_HEIGHT / 2 - boxHeight / 2)
+
+  lg.setColor(.1,.1,.1, .7)
+  lg.rectangle("fill", startX, startY, boxWidth, boxHeight, 16)
+  -- print(startX, startY, boxWidth, boxHeight, ">>>>", CANVAS_WIDTH, CANVAS_HEIGHT)
+
+  if self.isBlockContent then
+    local textY = startY + BOX_PADDING
+    for _, segment in ipairs(self.processedSegments) do
+      if segment.type == "collectable_count" then
+        drawSegment(segment, font, startX + BOX_PADDING, textY, contentHeight, totalWidth)
+        break
+      end
+    end
+  else
+    local currentX = math.floor(CANVAS_WIDTH / 2 - totalWidth  / 2)
+    local textY = math.floor(CANVAS_HEIGHT / 2 - contentHeight / 2)
+
+    for i, segment in ipairs(self.processedSegments) do
+      local segmentWidth, _ = drawSegment(segment, font, currentX, textY, contentHeight, totalWidth)
+      currentX = currentX + segmentWidth
+      if i < #self.processedSegments then
+        currentX = currentX + SEGMENT_GAP
+      end
+    end
+  end
+
   lg.pop()
 
+  -- Draw 3D model with fade
   lg.push("all")
   lg.setColor(1,1,1, self.fade)
   signpostModel:setTranslation(self.x, self.y, self.z + self.level.zLevel)

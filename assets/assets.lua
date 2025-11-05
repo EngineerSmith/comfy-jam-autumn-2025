@@ -2,10 +2,13 @@ local anim8 = require("libs.anim8")
 
 local filterNearest = function(image)
   image:setFilter("nearest", "nearest")
-  image:setWrap("repeat")
 end
 
 local filterLinear = function(image)
+  image:setFilter("linear", "linear")
+end
+
+local filterLinearRepeat = function(image)
   image:setFilter("linear", "linear")
   image:setWrap("repeat")
 end
@@ -48,8 +51,8 @@ local list = {
   { path = "sprites/trees/tree_001.png", name = "sprite.trees.1", onLoad = filterLinear },
   { path = "sprites/trees/tree_002.png", name = "sprite.trees.2", onLoad = filterLinear },
   -- Textures
-  { path = "textures/texture_05.png", name = "texture.prototype.1", onLoad = filterLinear },
-  { path = "textures/texture_06.png", name = "texture.prototype.2", onLoad = filterLinear },
+  { path = "textures/texture_05.png", name = "texture.prototype.1", onLoad = filterLinearRepeat },
+  { path = "textures/texture_06.png", name = "texture.prototype.2", onLoad = filterLinearRepeat },
 -- Models
   { path = "models/kenney/Nature Kit/stump_roundDetailed.obj", name = "model.stump.1", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/stump_roundDetailed.mtl" },
   { path = "models/ground_surface.obj", name = "model.surface.1", onLoad = objLoader, "y" },
@@ -275,14 +278,14 @@ local list = {
   { path = "UI/input/switch/switch_button_x_outline.png", name = "input.switch.y", onLoad = filterLinear },
   { path = "UI/input/switch/switch_button_y_outline.png", name = "input.switch.x", onLoad = filterLinear },
   { path = "UI/input/switch/switch_button_home_outline.png", name = "input.switch.home", onLoad = filterLinear },
-  { path = "UI/input/switch/switch_button_l_outline.png", name = "input.switch.l", onLoad = filterLinear },
+  { path = "UI/input/switch/switch_button_l_outline.png", name = "input.switch.leftbutton", onLoad = filterLinear },
   { path = "UI/input/switch/switch_button_minus_outline.png", name = "input.switch.minus", onLoad = filterLinear },
   { path = "UI/input/switch/switch_button_plus_outline.png", name = "input.switch.plus", onLoad = filterLinear },
-  { path = "UI/input/switch/switch_button_r_outline.png", name = "input.switch.r", onLoad = filterLinear },
+  { path = "UI/input/switch/switch_button_r_outline.png", name = "input.switch.rightbutton", onLoad = filterLinear },
   { path = "UI/input/switch/switch_button_sl_outline.png", name = "input.switch.sl", onLoad = filterLinear },
   { path = "UI/input/switch/switch_button_sr_outline.png", name = "input.switch.sr", onLoad = filterLinear },
-  { path = "UI/input/switch/switch_button_zl_outline.png", name = "input.switch.zl", onLoad = filterLinear },
-  { path = "UI/input/switch/switch_button_zr_outline.png", name = "input.switch.zr", onLoad = filterLinear },
+  { path = "UI/input/switch/switch_button_zl_outline.png", name = "input.switch.lefttrigger", onLoad = filterLinear },
+  { path = "UI/input/switch/switch_button_zr_outline.png", name = "input.switch.righttrigger", onLoad = filterLinear },
   { path = "UI/input/switch/switch_buttons.png", name = "input.switch.buttons", onLoad = filterLinear },
   { path = "UI/input/switch/switch_buttons_all.png", name = "input.switch.buttons.all", onLoad = filterLinear },
   { path = "UI/input/switch/switch_buttons_down.png", name = "input.switch.buttons.down", onLoad = filterLinear },
@@ -314,6 +317,7 @@ local list = {
   { path = "UI/input/switch/switch_stick_l_right.png", name = "input.switch.leftstick.right", onLoad = filterLinear },
   { path = "UI/input/switch/switch_stick_l_up.png", name = "input.switch.leftstick.up", onLoad = filterLinear },
   { path = "UI/input/switch/switch_stick_l_vertical.png", name = "input.switch.leftstick.vertical", onLoad = filterLinear },
+  { path = "UI/input/switch/switch_stick_l_press.png", name = "input.switch.leftstick.press", onLoad = filterLinear },
   { path = "UI/input/switch/switch_stick_r.png", name = "input.switch.rightstick", onLoad = filterLinear },
   { path = "UI/input/switch/switch_stick_r_down.png", name = "input.switch.rightstick.down", onLoad = filterLinear },
   { path = "UI/input/switch/switch_stick_r_horizontal.png", name = "input.switch.rightstick.horizontal", onLoad = filterLinear },
@@ -321,6 +325,7 @@ local list = {
   { path = "UI/input/switch/switch_stick_r_right.png", name = "input.switch.rightstick.right", onLoad = filterLinear },
   { path = "UI/input/switch/switch_stick_r_up.png", name = "input.switch.rightstick.up", onLoad = filterLinear },
   { path = "UI/input/switch/switch_stick_r_vertical.png", name = "input.switch.rightstick.vertical", onLoad = filterLinear },
+  { path = "UI/input/switch/switch_stick_r_press.png", name = "input.switch.rightstick.press", onLoad = filterLinear },
   -- Gamepad - PLAYSTATION
   { path = "UI/input/playstation/controller_playstation3.png", name = "input.playstation.ps3", onLoad = filterLinear },
   { path = "UI/input/playstation/controller_playstation4.png", name = "input.playstation.ps4", onLoad = filterLinear },
@@ -368,8 +373,10 @@ local list = {
   { path = "UI/input/playstation/playstation5_button_options_outline.png", name = "input.playstation.ps5.options", onLoad = filterLinear },
   { path = "UI/input/playstation/playstation5_touchpad_outline.png", name = "input.playstation.ps5.touchpad", onLoad = filterLinear },
   { path = "UI/input/playstation/playstation5_touchpad_touch_outline.png", name = "input.playstation.ps5.touchpad.touch", onLoad = filterLinear },
+  { path = "UI/input/playstation/playstation_stick_l_press.png", name = "input.playstation.leftstick.press", onLoad = filterLinear },
+  { path = "UI/input/playstation/playstation_stick_r_press.png", name = "input.playstation.rightstick.press", onLoad = filterLinear },
   -- Gamepad - STEAM DECK
-  { path = "UI/input/steamdeck/controller_steamdeck.png", name = "input.steamdeck", onLoad = filterLinear },
+  { path = "UI/input/steamdeck/controller_steamdeck.png", name = "input.steamdeck.guide", onLoad = filterLinear },
   { path = "UI/input/steamdeck/steamdeck_button_a_outline.png", name = "input.steamdeck.a", onLoad = filterLinear },
   { path = "UI/input/steamdeck/steamdeck_button_b_outline.png", name = "input.steamdeck.b", onLoad = filterLinear },
   { path = "UI/input/steamdeck/steamdeck_button_x_outline.png", name = "input.steamdeck.x", onLoad = filterLinear },
@@ -401,15 +408,15 @@ local list = {
   { path = "UI/input/steamdeck/steamdeck_stick_l_right.png", name = "input.steamdeck.leftstick.right", onLoad = filterLinear },
   { path = "UI/input/steamdeck/steamdeck_stick_l_up.png", name = "input.steamdeck.leftstick.up", onLoad = filterLinear },
   { path = "UI/input/steamdeck/steamdeck_stick_l_vertical.png", name = "input.steamdeck.leftstick.vertical", onLoad = filterLinear },
-  { path = "UI/input/steamdeck/steamdeck_stick_l.png", name = "input.steamdeck.rightstick", onLoad = filterLinear },
-  { path = "UI/input/steamdeck/steamdeck_stick_l_down.png", name = "input.steamdeck.rightstick.down", onLoad = filterLinear },
-  { path = "UI/input/steamdeck/steamdeck_stick_l_horizontal.png", name = "input.steamdeck.rightstick.horizontal", onLoad = filterLinear },
-  { path = "UI/input/steamdeck/steamdeck_stick_l_left.png", name = "input.steamdeck.rightstick.left", onLoad = filterLinear },
-  { path = "UI/input/steamdeck/steamdeck_stick_l_right.png", name = "input.steamdeck.rightstick.right", onLoad = filterLinear },
-  { path = "UI/input/steamdeck/steamdeck_stick_l_up.png", name = "input.steamdeck.rightstick.up", onLoad = filterLinear },
-  { path = "UI/input/steamdeck/steamdeck_stick_l_vertical.png", name = "input.steamdeck.rightstick.vertical", onLoad = filterLinear },
-  { path = "UI/input/steamdeck/steamdeck_stick_side_l.png", name = "input.steamdeck.l3", onLoad = filterLinear },
-  { path = "UI/input/steamdeck/steamdeck_stick_side_r.png", name = "input.steamdeck.r3", onLoad = filterLinear },
+  { path = "UI/input/steamdeck/steamdeck_stick_r.png", name = "input.steamdeck.rightstick", onLoad = filterLinear },
+  { path = "UI/input/steamdeck/steamdeck_stick_r_down.png", name = "input.steamdeck.rightstick.down", onLoad = filterLinear },
+  { path = "UI/input/steamdeck/steamdeck_stick_r_horizontal.png", name = "input.steamdeck.rightstick.horizontal", onLoad = filterLinear },
+  { path = "UI/input/steamdeck/steamdeck_stick_r_left.png", name = "input.steamdeck.rightstick.left", onLoad = filterLinear },
+  { path = "UI/input/steamdeck/steamdeck_stick_r_right.png", name = "input.steamdeck.rightstick.right", onLoad = filterLinear },
+  { path = "UI/input/steamdeck/steamdeck_stick_r_up.png", name = "input.steamdeck.rightstick.up", onLoad = filterLinear },
+  { path = "UI/input/steamdeck/steamdeck_stick_r_vertical.png", name = "input.steamdeck.rightstick.vertical", onLoad = filterLinear },
+  { path = "UI/input/steamdeck/steamdeck_stick_side_l.png", name = "input.steamdeck.leftstick.press", onLoad = filterLinear },
+  { path = "UI/input/steamdeck/steamdeck_stick_side_r.png", name = "input.steamdeck.rightstick.press", onLoad = filterLinear },
   { path = "UI/input/steamdeck/steamdeck_trackpad_l_outline.png", name = "input.steamdeck.trackpad.left", onLoad = filterLinear },
   { path = "UI/input/steamdeck/steamdeck_trackpad_l_all_outline.png", name = "input.steamdeck.trackpad.left.all", onLoad = filterLinear },
   { path = "UI/input/steamdeck/steamdeck_trackpad_l_down_outline.png", name = "input.steamdeck.trackpad.left.down", onLoad = filterLinear },

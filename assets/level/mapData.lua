@@ -45,7 +45,7 @@ local mapData = {
     { level = "nest.ground", x =  3, y = 10, tag = "LEAF" },
   },
   signposts = {
-    { level = "nest.ground", x = 0, y = -7.4, z = 4, content = "Press [button.interact] to enter Nest", radius = 3.5 },
+    { level = "nest.ground", x = 0, y = -7.4, z = 4, content = "Press [button.attack]to enter Nest", radius = 3.5 },
     { level = "nest.ground", x = -23, y = 0, z = 3, content = "[collectable_count.zone_1]", radius = 5.5, rz =  math.rad(20) },
     { level = "nest.ground", x =  22, y = 0, z = 3, content = "[collectable_count.zone_2]", radius = 5.5, rz = -math.rad(20) },
   },

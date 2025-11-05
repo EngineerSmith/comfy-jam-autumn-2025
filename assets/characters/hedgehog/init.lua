@@ -18,6 +18,7 @@ return function()
   hedgehog:setStateTexture("idle", idle, 1, 0)
   hedgehog:setStateTexture("walking", walking, 2, 0.2)
   hedgehog:setStateTexture("idle_fidget", fidget, 8, 0.2)
+  hedgehog:setStateTexture("idle_fidget", fidget2, 8, 0.2)
   hedgehog:setStateTexture("idle_fidget", fidget3, 6, 0.1)
 
   return hedgehog

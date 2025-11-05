@@ -35,11 +35,11 @@ local defaultSettings = {
         targetRight = { "axis:rightx+" },
         targetUp    = { "axis:righty-" }, -- Should you be able to remap, or map the movements of the mouse
         targetDown  = { "axis:righty+" }, --   to an axis that isn't normalized? TODO POLISH?
-        accept = { "sc:space", "sc:return", "button:a" },
+        accept = { "sc:space", "sc:return", "button:a", },
         reject = { "sc:escape", "sc:backspace", "button:b" },
         pause =   { "sc:escape", "button:start" },
         unpause = { "sc:escape", "sc:backspace", "button:start", "button:back", "button:b" },
-        attack = { "sc:space", "mouse:1", "mouse:5", "button:a", "axis:triggerright+" },
+        attack = { "sc:space", "mouse:1", "button:a", "axis:triggerright+" },
       },
       deadzone = .15,
       deadzoneSquared = false,
