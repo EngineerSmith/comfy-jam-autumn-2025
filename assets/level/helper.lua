@@ -1,6 +1,19 @@
 local helper = { }
 
 local rng = love.math.newRandomGenerator(4001)
+local randomChoice = function(tbl)
+  return tbl[rng:random(#tbl)]
+end
+
+local randomRange = function(min, max)
+  return min + (max - min) * rng:random()
+end
+
+local magSqu = function(x1, y1, x2, y2)
+  local dx, dy = x1 - x2, y1 - y2
+  return dx * dx + dy * dy
+end
+
 helper.addModelClump = function(models, min, max, minScale, maxScale, level, x, y, radius, z)
   min, max = min or 2, max or 4
   minScale, maxScale = minScale or 2, maxScale or 4
@@ -87,6 +100,108 @@ helper.addLeafCircle = function(level, zone, centerX, centerY, radius, count, ta
 
     helper.addCollectable(tag, level, x, y, zone)
   end
+end
+
+
+helper.placePath = function(level, bezierCurve, pathModels, litterModels)
+  local T_INCREMENT = 0.002
+  local SEGMENT_LENGTH = 1.1
+  local SEGMENT_LENGTH_SQU = SEGMENT_LENGTH * SEGMENT_LENGTH
+
+  local PATH_WIDTH = 1.0
+  local LITTER_OFFSET = 0.3
+  local PATH_Z_POS = 0
+  local PATH_Z_JITTER = 0.05
+  local LITTER_CHANCE = 0.6
+  local LITTER_Z_POS = 0.0
+  local LITTER_Z_JITTER = 0.05
+  local LITTER_PLACEMENT_RANGE = PATH_WIDTH + LITTER_OFFSET
+
+  local placeSegmentAndLitter = function(t, x, y)
+    local nextT = math.min(t + 0.01, 1)
+    local nextX, nextY = bezierCurve:evaluate(nextT)
+
+    local tangentX, tangentY = nextX - x, nextY - y
+    if tangentX == 0 and tangentY == 0 then
+      return
+    end
+    local rotation = math.atan2(tangentY, tangentX)
+    local model = randomChoice(pathModels)
+    table.insert(helper.mapData.models, {
+      model = type(model) == "table" and model[1] or model,
+      x = x, y = y, z = randomRange(PATH_Z_POS - PATH_Z_JITTER, PATH_Z_POS + PATH_Z_JITTER),
+      rz = rotation + randomRange(-0.05, 0.05),
+      scale = type(model) == "table" and randomRange(model.scaleMin, model.scaleMax) or randomRange(0.8, 1.4),
+      level = level,
+    })
+    -- Litter
+    local normalX = -tangentY
+    local normalY =  tangentX
+    local normalMag = math.sqrt(normalX * normalX + normalY * normalY)
+    if normalMag > 0 then
+      normalX = normalX / normalMag
+      normalY = normalY / normalMag
+    else
+      return
+    end
+    -- LITTER RIGHT
+    if rng:random() < LITTER_CHANCE then -- 70% chance to place a litter clump
+      local litterDist = randomRange(0, 0.4)
+      local litterX = x + normalX * (LITTER_PLACEMENT_RANGE + litterDist)
+      local litterY = y + normalY * (LITTER_PLACEMENT_RANGE + litterDist)
+      table.insert(helper.mapData.models, {
+        model = randomChoice(litterModels),
+        x = litterX, y = litterY, z = randomRange(LITTER_Z_POS - LITTER_Z_JITTER, LITTER_Z_POS + LITTER_Z_JITTER),
+        rz = randomRange(0, 2 * math.pi),
+        scale = randomRange(0.9, 1.4),
+        level = level,
+      })
+    end
+    -- LITTER LEFT
+    if rng:random() < LITTER_CHANCE then
+      local litterDist = randomRange(0, 0.4)
+      local litterX = x + -normalX * (LITTER_PLACEMENT_RANGE + litterDist)
+      local litterY = y + -normalY * (LITTER_PLACEMENT_RANGE + litterDist)
+      table.insert(helper.mapData.models, {
+        model = randomChoice(litterModels),
+        x = litterX, y = litterY, z = randomRange(LITTER_Z_POS - LITTER_Z_JITTER, LITTER_Z_POS + LITTER_Z_JITTER),
+        rz = randomRange(0, 2 * math.pi),
+        scale = randomRange(0.9, 1.4),
+        level = level,
+      })
+    end
+  end
+
+  local currentT = 0
+  local lastX, lastY = bezierCurve:evaluate(currentT)
+  placeSegmentAndLitter(currentT, lastX, lastY)
+
+  while currentT < 1 do
+    currentT = math.min(currentT + T_INCREMENT, 1)
+    local x, y = bezierCurve:evaluate(currentT)
+    if magSqu(x, y, lastX, lastY) >= SEGMENT_LENGTH_SQU then
+      placeSegmentAndLitter(currentT, x, y)
+      lastX, lastY = x, y
+    end
+    if currentT == 1 and magSqu(x, y, lastX, lastY) > 0.1 then
+      placeSegmentAndLitter(currentT, x, y)
+    end
+  end
+end
+
+local dirtPathModels = {
+  "model.path.dirt.1",
+  "model.path.dirt.2",
+  { "model.path.dirt.3", scaleMin = 1.4, scaleMax = 2.8 },
+}
+local dirtPathLitterModels = {
+  "model.path.litter.dirt.1",
+  "model.path.litter.dirt.2",
+  "model.path.litter.dirt.3",
+  "model.path.litter.dirt.4",
+}
+helper.placeDirtPath = function(level, bezierCurve)
+  return helper.placePath(level, bezierCurve, dirtPathModels, dirtPathLitterModels)
 end
 
 return helper

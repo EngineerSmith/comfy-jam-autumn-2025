@@ -117,8 +117,18 @@ return function (path, mtlPath, uFlip, vFlip)
 
             local vertices = {}
             for i = 2, #words do
-                local v, vt, vn = words[i]:match "(%d*)/(%d*)/(%d*)"
-                v, vt, vn = tonumber(v), tonumber(vt), tonumber(vn)
+                local v, vt, vn
+
+                local v2, vn2 = words[i]:match "(%d*)//(%d*)"
+
+                if v2 and vn2 then
+                    v = tonumber(v2)
+                    vt = nil
+                    vn = tonumber(vn2)
+                else
+                    v, vt, vn = words[i]:match "(%d*)/(%d*)/(%d*)"
+                    v, vt, vn = tonumber(v), tonumber(vt), tonumber(vn)
+                end
 
                 local r, g, b, a = currentColor[1], currentColor[2], currentColor[3], currentColor[4]
 

@@ -56,6 +56,7 @@ local list = {
 -- Models
   { path = "models/kenney/Nature Kit/stump_roundDetailed.obj", name = "model.stump.1", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/stump_roundDetailed.mtl" },
   { path = "models/ground_surface.obj", name = "model.surface.1", onLoad = objLoader, "y" },
+  { path = "models/ground_surface.obj", name = "model.surface.2", onLoad = objLoader, "y", "assets/models/grass.mtl" },
   { path = "models/leaf_collectable.obj", name = "model.collectable.leaf.1", onLoad = objLoader, "z", "assets/models/leaf_collectable.mtl" },
   { path = "models/leaf_collectable.obj", name = "model.collectable.leaf.gold", onLoad = objLoader, "z", "assets/models/golden_leaf_collectable.mtl" },
   { path = "models/big_flower_pot.obj", name = "model.flower_pot.nest", onLoad = objLoader, "z", "assets/models/big_flower_pot.mtl" },
@@ -69,6 +70,14 @@ local list = {
   { path = "models/kenney/Nature Kit/path_stoneCircle.obj", name = "model.path.stone.2", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/path_stone.mtl" },
   { path = "models/kenney/Nature Kit/path_stoneCorner.obj", name = "model.path.stone.3", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/path_stone.mtl" },
   { path = "models/kenney/Nature Kit/path_stoneEnd.obj",    name = "model.path.stone.4", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/path_stone.mtl" },
+  { path = "models/splat_1.obj", name = "model.path.dirt.1", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
+  { path = "models/splat_2.obj", name = "model.path.dirt.2", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
+  { path = "models/splat_3.obj", name = "model.path.dirt.3", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
+  { path = "models/splat_3.obj", name = "model.path.dirt.3", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
+  { path = "models/cube_litter_1.obj", name = "model.path.litter.dirt.1", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
+  { path = "models/cube_litter_2.obj", name = "model.path.litter.dirt.2", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
+  { path = "models/cube_litter_3.obj", name = "model.path.litter.dirt.3", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
+  { path = "models/cube_litter_4.obj", name = "model.path.litter.dirt.4", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
 -- Audio
   -- sourceType = "static"/"stream"
   { path = "audio/ui/rollover4.ogg", name = "audio.ui.select.1", sourceType = "static", audioType = "ui", key = "audio.ui.select", volume = .5 },

@@ -9,7 +9,8 @@ local mapData = {
   },
   models = {
     --- Nest
-    { model = "model.surface.1", texture = "texture.prototype.2", level = "nest.ground", x = 0, y = 0, z = -.1 },
+    -- { model = "model.surface.1", texture = "texture.prototype.2", level = "nest.ground", x = 0, y = 0, z = -.1 },
+    { model = "model.surface.2", level = "nest.ground", x = 0, y = 0, z = -.1 },
     {
       model = "model.flower_pot.nest", level = "nest.ground", x = 0, y = 0, z = -.05, scale = 25,
       collider = { levels = { "nest.ground" }, shape = "circle", radius = 0.295, segments = 8, rotation = math.rad(22.5), tag = "POT" },
@@ -35,6 +36,16 @@ local mapData = {
         { shape = "circle", x = -0.2, y =  0.35, radius = 0.15 },
       }
     },
+    {
+      model = "model.rock.large.1", level = "nest.ground", x = -20, y = -18, z = -0.14, scale = 10, rz = math.rad(38+180), noScaleZ = true,
+      collider = {
+        levels = { "nest.ground" }, shape = "multi", tag = "ROCK",
+        { shape = "circle", x =  0,   y = -0.13, radius = 0.38 },
+        { shape = "circle", x = -0.2, y =  0.35, radius = 0.15 },
+      }
+    },
+    -- { model = "model.path.dirt.3", level = "nest.ground", x = 0, y = -10, scale = 2 },
+    -- { model = "model.path.dirt.2", level = "nest.ground", x = 0, y = -7, z = -0.05, scale = 2.1, rz = math.rad(love.math.random(0,360)), noScaleZ = true, },
   },
   colliders = {
     -- Nest
@@ -45,11 +56,16 @@ local mapData = {
     { level = "nest.ground", x =  0, y = 13, tag = "LEAF", zone = "nest" },
     { level = "nest.ground", x = -3, y = 10, tag = "LEAF", zone = "nest" },
     { level = "nest.ground", x =  3, y = 10, tag = "LEAF", zone = "nest" },
+    { level = "nest.ground", x = -14.5, y = -2, tag = "LEAF", zone = "nest" },
+    { level = "nest.ground", x = -9, y = -11.5, tag = "LEAF", zone = "nest", zOffset = 0.1 },
+    { level = "nest.ground", x = -17.5, y = -8, tag = "LEAF", zone = "nest", zOffset = 0.1 },
+    { level = "nest.ground", x = -14, y = -17, tag = "LEAF", zone = "nest" },
   },
   signposts = {
     { level = "nest.ground", x = 0, y = -7.4, z = 4, content = "Press [button.attack]to enter Nest", radius = 3.5 },
-    { level = "nest.ground", x = -23, y = 0, z = 3, content = "[collectable_count.nest]", radius = 5.5, rz =  math.rad(20) },
-    { level = "nest.ground", x =  22, y = 0, z = 3, content = "[collectable_count.nest]", radius = 5.5, rz = -math.rad(20) },
+    { level = "nest.ground", x = -8, y = -6.5, z = 3, content = "[collectable_count.nest]", radius = 5.1 },
+    { level = "nest.ground", x = -23, y = 0, z = 3, content = "[collectable_count.zone_1]", radius = 5.5, rz =  math.rad(20) },
+    { level = "nest.ground", x =  22, y = 0, z = 3, content = "[collectable_count.zone_2]", radius = 5.5, rz = -math.rad(20) },
   },
   characters = {
     ["Hedgehog.Player"] = {
@@ -86,5 +102,8 @@ helper.addGrassClump("nest.ground",  -24,  -19)
 
 -- helper.addLeafLine("nest.ground", "nest", -50, 0, -30, 0, 5)
 -- helper.addLeafCircle("nest.ground", "nest", -40, 0, 15, 12)
+
+helper.addPebbleClump("nest.ground", -10, -8)
+helper.placeDirtPath("nest.ground", love.math.newBezierCurve(0, -13, -15, -13, -23, -2))
 
 return mapData

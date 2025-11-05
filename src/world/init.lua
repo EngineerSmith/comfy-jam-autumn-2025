@@ -213,7 +213,7 @@ world.load = function()
       logger.warn("Collectable of mapData.collectables["..tostring(i).."] had invalid level. Check spelling. Ignoring collectable.")
     else
       local x, y, tag, zone = collectableInfo.x, collectableInfo.y, collectableInfo.tag, collectableInfo.zone
-      table.insert(world.collectables, collectable.new(x, y, level, tag, zone))
+      table.insert(world.collectables, collectable.new(x, y, level, tag, zone, collectableInfo.zOffset))
     end
   end
 

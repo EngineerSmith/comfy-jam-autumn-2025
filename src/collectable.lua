@@ -99,7 +99,7 @@ collectable.getTag = function(tag)
   return tags[tag]
 end
 
-collectable.new = function(x, y, level, tag, zoneName)
+collectable.new = function(x, y, level, tag, zoneName, zOffset)
   local self = setmetatable({
     x = x or 0, y = y or 0, z = level.zLevel,
     level = level,
@@ -107,7 +107,8 @@ collectable.new = function(x, y, level, tag, zoneName)
     zone = zoneName or "unknown",
     scale = 1,
     rotation = 0,
-    zOffset = 0,
+    zOffset = zOffset or 0,
+    zBob = 0,
   }, collectable)
 
   zone.addCollectable(self.zone, self.tag)
@@ -116,11 +117,11 @@ collectable.new = function(x, y, level, tag, zoneName)
 end
 
 collectable.getPosition = function(self)
-  return self.x, self.y, self.z + self.zOffset
+  return self.x, self.y, self.z + self.zOffset + self.zBob
 end
 
 collectable.getShadowPosition = function(self)
-  return self.x, self.y, self.z
+  return self.x, self.y, self.z + self.zOffset
 end
 
 collectable.getRadius = function(self)
@@ -136,7 +137,7 @@ collectable.update = function(self, dt)
   local tag = self:getTag()
 
   self.rotation = self.rotation + (tag.rotationSpeed or math.rad(90)) * dt
-  self.zOffset = math.sin(love.timer.getTime() * (tag.bobbingSpeed or 2)) * (tag.bobbingHeight or 2) + (tag.bobbingOffset or 0)
+  self.zBob = math.sin(love.timer.getTime() * (tag.bobbingSpeed or 2)) * (tag.bobbingHeight or 2) + (tag.bobbingOffset or 0)
 end
 
 collectable.collected = function(self)
