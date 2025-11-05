@@ -94,6 +94,14 @@
   "mouse.button": "$1 Mouse Button",
   "mouse.wheel": "Mouse Wheel",
 
+  
+  "zone.name.nest": "Nest",
+  "zone.name.zone_1": "Zone 1 Placeholder",
+  "zone.name.zone_2": "Zone 2 Placeholder",
+  
+  "collectable.name.LEAF": "Leaves",
+  "collectable.name.GOLDEN_LEAF": "Gold Leaves",
+
   "gamepad.xboxone": "Xbox One",
   "gamepad.xboxone.a": "A",
   "gamepad.xboxone.b": "B",

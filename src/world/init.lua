@@ -212,8 +212,8 @@ world.load = function()
     if not level then
       logger.warn("Collectable of mapData.collectables["..tostring(i).."] had invalid level. Check spelling. Ignoring collectable.")
     else
-      local x, y, tag = collectableInfo.x, collectableInfo.y, collectableInfo.tag
-      table.insert(world.collectables, collectable.new(x, y, level, tag))
+      local x, y, tag, zone = collectableInfo.x, collectableInfo.y, collectableInfo.tag, collectableInfo.zone
+      table.insert(world.collectables, collectable.new(x, y, level, tag, zone))
     end
   end
 
@@ -258,6 +258,9 @@ world.unload = function()
   world.props = { }
   world.colliders = { }
   world.collectables = { }
+  for _, signpost in ipairs(world.signposts) do
+    signpost:unload() -- release assets
+  end
   world.signposts = { }
   world.characters = { }
   world.debug = { }

@@ -8,6 +8,12 @@ local audioManager = require("util.audioManager")
 local g3d = require("libs.g3d")
 local CUBE = g3d.newModel("scenes/game/cube.obj")
 
+local zone = require("src.zone")
+zone.collectableOrder = {
+  "LEAF",
+  "GOLDEN_LEAF",
+}
+
 local tags = {
   ["LEAF"] = {
     value = 1,
@@ -93,15 +99,20 @@ collectable.getTag = function(tag)
   return tags[tag]
 end
 
-collectable.new = function(x, y, level, tag)
-  return setmetatable({
+collectable.new = function(x, y, level, tag, zoneName)
+  local self = setmetatable({
     x = x or 0, y = y or 0, z = level.zLevel,
     level = level,
     tag = tag,
+    zone = zoneName or "unknown",
     scale = 1,
     rotation = 0,
     zOffset = 0,
   }, collectable)
+
+  zone.addCollectable(self.zone, self.tag)
+
+  return self
 end
 
 collectable.getPosition = function(self)
@@ -135,6 +146,9 @@ collectable.collected = function(self)
   if tag.audioName then
     audioManager.play(tag.audioName)
   end
+
+  zone.setCollected(self.zone, self.tag)
+
   return tag.value
 end
 

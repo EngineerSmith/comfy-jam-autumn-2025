@@ -1,3 +1,5 @@
+local helper = require("assets.level.helper")
+
 local mapData = {
   levels = {
     ["nest.ground"] = { x = -100, y = -100, z = 0, width = 200, height = 200 },
@@ -39,15 +41,15 @@ local mapData = {
     { levels = { "nest.ground" }, shape = "rectangle", x = -30, y = -22, width = 60, height = 3, tag = "WALL" }, -- South wall
   },
   collectables = {
-    { level = "nest.ground", x =  0, y = 10, tag = "GOLDEN_LEAF" },
-    { level = "nest.ground", x =  0, y = 13, tag = "LEAF" },
-    { level = "nest.ground", x = -3, y = 10, tag = "LEAF" },
-    { level = "nest.ground", x =  3, y = 10, tag = "LEAF" },
+    { level = "nest.ground", x =  0, y = 10, tag = "GOLDEN_LEAF", zone = "nest" },
+    { level = "nest.ground", x =  0, y = 13, tag = "LEAF", zone = "nest" },
+    { level = "nest.ground", x = -3, y = 10, tag = "LEAF", zone = "nest" },
+    { level = "nest.ground", x =  3, y = 10, tag = "LEAF", zone = "nest" },
   },
   signposts = {
     { level = "nest.ground", x = 0, y = -7.4, z = 4, content = "Press [button.attack]to enter Nest", radius = 3.5 },
-    { level = "nest.ground", x = -23, y = 0, z = 3, content = "[collectable_count.zone_1]", radius = 5.5, rz =  math.rad(20) },
-    { level = "nest.ground", x =  22, y = 0, z = 3, content = "[collectable_count.zone_2]", radius = 5.5, rz = -math.rad(20) },
+    { level = "nest.ground", x = -23, y = 0, z = 3, content = "[collectable_count.nest]", radius = 5.5, rz =  math.rad(20) },
+    { level = "nest.ground", x =  22, y = 0, z = 3, content = "[collectable_count.nest]", radius = 5.5, rz = -math.rad(20) },
   },
   characters = {
     ["Hedgehog.Player"] = {
@@ -58,82 +60,31 @@ local mapData = {
   },
   playerCharacter = "Hedgehog.Player",
 }
+helper.mapData = mapData -- link so helper can populate mapData
 
+helper.addGrassClump("nest.ground",   11,    0.5, nil, 5.25) -- Plant pot grass
+helper.addGrassClump("nest.ground",   -7,   -6)
+helper.addGrassClump("nest.ground",   -3,  -17)
+helper.addGrassClump("nest.ground",    8,   -6)
+helper.addGrassClump("nest.ground",   14,  -19)
+helper.addGrassClump("nest.ground",   -9,    5)
+helper.addGrassClump("nest.ground",    8,    7)
+helper.addGrassClump("nest.ground",    7,  -15)
+helper.addGrassClump("nest.ground",   22,  -13)
+helper.addPebbleClump("nest.ground",   4,  -18)
+helper.addPebbleClump("nest.ground",  20,  -24)
+helper.addPebbleClump("nest.ground", -16,  -16)
+helper.addPebbleClump("nest.ground", -14,   -3.5)
+helper.addPebbleClump("nest.ground",  13,    6)
+helper.addPebbleClump("nest.ground", -13,  -25.5)
+helper.addPebbleClump("nest.ground",   9,  -18)
+helper.addPebbleClump("nest.ground",  22,  -13)
+helper.addGrassClump("nest.ground",  -12,  -16.5)
+helper.addGrassClump("nest.ground",  -25,  -10)
+helper.addPebbleClump("nest.ground", -24,  -19)
+helper.addGrassClump("nest.ground",  -24,  -19)
 
-local rng = love.math.newRandomGenerator(4001)
-local addModelClump = function(models, min, max, minScale, maxScale, level, x, y, radius, z)
-  min, max = min or 2, max or 4
-  minScale, maxScale = minScale or 2, maxScale or 4
-  radius = radius or 2
-  z = z or 0
-
-  local scaleDecimalPlace = 10
-  minScale = minScale * scaleDecimalPlace
-  maxScale = maxScale * scaleDecimalPlace
-
-  for _ = 1, rng:random(min, max) do
-    local modelName = models[rng:random(#models)]
-    local angle = rng:random() * 2 * math.pi
-    local dist = radius * math.sqrt(rng:random())
-    table.insert(mapData.models, {
-      model = modelName,
-      level = level,
-      x = x + (dist * math.cos(angle)),
-      y = y + (dist * math.sin(angle)),
-      z = z,
-      scale = rng:random(minScale, maxScale) / scaleDecimalPlace,
-      rz = rng:random() * 2 * math.pi,
-    })
-  end
-end
-
-local grassModels = {
-  "model.grass",
-  "model.grass.large",
-  "model.grass.leafs",
-  "model.grass.leafs.large",
-}
-local addGrassClump = function(...)
-  return addModelClump(grassModels, 4, 7, 2, 4, ...)
-end
-
-local pebbleModels = {
-  "model.path.stone.1",
-  "model.path.stone.2",
-  "model.path.stone.3",
-  "model.path.stone.4",
-}
-local addPebbleClump = function(...)
-  if not select(4, ...) then
-    local varargs = { ... }
-    varargs[4] = 3 -- default radius to 3
-    return addModelClump(pebbleModels, 2, 3, 1.5, 3, unpack(varargs))
-  end
-  return addModelClump(pebbleModels, 2, 3, 1.5, 3, ...)
-end
-
-
-
-addGrassClump("nest.ground",   11,    0.5, nil, 5.25) -- Plant pot grass
-addGrassClump("nest.ground",   -7,   -6)
-addGrassClump("nest.ground",   -3,  -17)
-addGrassClump("nest.ground",    8,   -6)
-addGrassClump("nest.ground",   14,  -19)
-addGrassClump("nest.ground",   -9,    5)
-addGrassClump("nest.ground",    8,    7)
-addGrassClump("nest.ground",    7,  -15)
-addGrassClump("nest.ground",   22,  -13)
-addPebbleClump("nest.ground",   4,  -18)
-addPebbleClump("nest.ground",  20,  -24)
-addPebbleClump("nest.ground", -16,  -16)
-addPebbleClump("nest.ground", -14,   -3.5)
-addPebbleClump("nest.ground",  13,    6)
-addPebbleClump("nest.ground", -13,  -25.5)
-addPebbleClump("nest.ground",   9,  -18)
-addPebbleClump("nest.ground",  22,  -13)
-addGrassClump("nest.ground",  -12,  -16.5)
-addGrassClump("nest.ground",  -25,  -10)
-addPebbleClump("nest.ground", -24,  -19)
-addGrassClump("nest.ground",  -24,  -19)
+-- helper.addLeafLine("nest.ground", "nest", -50, 0, -30, 0, 5)
+-- helper.addLeafCircle("nest.ground", "nest", -40, 0, 15, 12)
 
 return mapData

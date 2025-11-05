@@ -9,6 +9,7 @@ local ui = require("util.ui")
 local input = require("util.input")
 local assetManager = require("util.assetManager")
 
+local zone = require("src.zone")
 local player = require("src.player")
 
 local CANVAS_WIDTH, CANVAS_HEIGHT = 1024 + 256, 512
@@ -112,20 +113,8 @@ signpost.setState = function(self, state)
 end
 
 -- TODO replace placeholder with information
-local getCollectableDisplay = function(zoneKey)
-  if zoneKey == "zone_1" then
-    return {
-      "Zone 1 PLACEHOLDER",
-      "Leaves: 5 / 10",
-      "Gold Leaves: 1 / 2",
-    }
-  elseif zoneKey == "zone_2" then
-    return {
-      "Zone 2 PLACEHOLDER",
-      "Leaves: 0 / 25",
-    }
-  end
-  return { "Content Missing" }
+local getCollectableDisplay = function(zoneName)
+  return zone.prettyPrint(zoneName)
 end
 
 local handleButtonTag = function(actionName)
