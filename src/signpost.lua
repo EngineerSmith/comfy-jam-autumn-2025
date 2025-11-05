@@ -256,7 +256,7 @@ signpost.debugDraw = function(self)
   lg.pop()
 end
 
-local GLYPH_BUTTON_SCALE = 2
+local GLYPH_BUTTON_SCALE = 1
 local GLYPH_BUTTON_WIDTH  = 64
 local GLYPH_BUTTON_HEIGHT = 64
 local BOX_PADDING = 40
@@ -340,7 +340,7 @@ local drawSegment = function(segment, font, xOffset, yOffset, maxLineHeight, max
 
     w, h = textWidth, textHeight
   elseif segment.type == "button" then
-    local padding, innerPadding = 16, 16
+    local innerPadding = 16
     local buttonSequenceWidth = 0
     local maxButtonHeight = 0
 
@@ -358,7 +358,7 @@ local drawSegment = function(segment, font, xOffset, yOffset, maxLineHeight, max
     local containerHeight = maxButtonHeight
     local yAlignmentOffset = math.floor((maxLineHeight - containerHeight) / 2)
 
-    local buttonYStart = yOffset + yAlignmentOffset + padding
+    local buttonYStart = yOffset + yAlignmentOffset
 
     for i, assetInfo in ipairs(segment.content) do
       local asset = assetManager[assetInfo.key]
@@ -373,7 +373,23 @@ local drawSegment = function(segment, font, xOffset, yOffset, maxLineHeight, max
       assetWidth, assetHeight = assetWidth * GLYPH_BUTTON_SCALE, assetHeight * GLYPH_BUTTON_SCALE
       local width = assetWidth + (i > 1 and innerPadding or 0)
 
-      xOffset = xOffset + width
+      if i > 1 then
+        local lineCentreX = xOffset + innerPadding / 2
+        local lineLength = containerHeight * 0.75
+
+        local lineY1 = buttonYStart + (containerHeight - lineLength) / 2
+        local lineY2 = lineY1 + lineLength
+
+        lg.push("all")
+        lg.setColor(1,1,1, 0.6)
+        lg.setLineWidth(3)
+        lg.line(lineCentreX, lineY1, lineCentreX, lineY2)
+        lg.pop()
+
+        xOffset = xOffset + innerPadding
+      end
+
+      xOffset = xOffset + assetWidth
       buttonSequenceWidth = buttonSequenceWidth + width
     end
 
