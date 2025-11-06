@@ -96,6 +96,9 @@ local list = {
   { path = "audio/fx/collect_item_02.wav", name = "audio.fx.collect_special.1", sourceType = "static", audioType = "sfx", key = "audio.fx.collect_special", volume = 0.6 },
   { path = "audio/fx/collect_item_07.wav", name = "audio.fx.collect_special.2", sourceType = "static", audioType = "sfx", key = "audio.fx.collect_special", volume = 0.6 },
   { path = "audio/fx/collect_item_14.wav", name = "audio.fx.collect_special.3", sourceType = "static", audioType = "sfx", key = "audio.fx.collect_special", volume = 0.6 },
+
+  { path = "audio/music/fall.ogg", name = "audio.music.fall", sourceType = "stream", audioType = "music", volume = 0.3 },
+  { path = "audio/music/roundabout.ogg", name = "audio.music.roundabout", sourceType = "stream", audioType = "music", volume = 0.3 },
 -- Fonts
   { path = "fonts/Roboto_Mono/RobotoMono-Light.ttf",            name = "fonts.light" },
   { path = "fonts/Roboto_Mono/RobotoMono-LightItalic.ttf",      name = "fonts.light.italic" },

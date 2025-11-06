@@ -29,6 +29,7 @@ cam.speed = 20
 local CUBE = g3d.newModel("scenes/game/cube.obj", nil, nil, { 5, 0, 0 })
 cam:lookAt(0,1e-5,25,0,0,0)
 
+local musicPlayer = require("src.musicPlayer")
 local player = require("src.player")
 local world = require("src.world")
 
@@ -51,6 +52,8 @@ scene.load = function(roomInfo)
   -- Load/keep loaded the main menu to return
   sceneManager.preload("scenes.mainmenu")
   world.load()
+
+  musicPlayer.start()
 end
 
 scene.unload = function()
@@ -81,6 +84,7 @@ scene.resize = function(w, h)
 end
 
 scene.update = function(dt)
+  musicPlayer.update()
   world.update(dt)
 
   -- local t = love.timer.getTime()

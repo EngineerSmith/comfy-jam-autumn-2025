@@ -90,10 +90,14 @@ background.resize = function(w, h, scale)
     local initX = love.math.random(-scaledWidth, w + scaledWidth)
     local initY = love.math.random(-scaledHeight, h + scaledHeight) + love.math.random()
 
+    local color = love.math.random(70, 100) / 100
+
     table.insert(background.leaves, {
       x = initX, baseX = initX,
       y = initY,
       sprite = spriteIndex,
+
+      color = color,
 
       waveTimeOffset = love.math.random() * 2 * math.pi, -- Phase offset for sine wave
       flutterAmplitude = (love.math.random() * .4 + .6) * 15 * scale, -- Max swing
@@ -192,6 +196,7 @@ background.draw = function(scale)
       local sWidth, sHeight = sprite:getDimensions()
       local originX, originY = sWidth / 2, sHeight / 2
 
+      lg.setColor(leaf.color, leaf.color, leaf.color, 1)
       lg.draw(sprite,
         math.floor(leaf.x + originX * limitedScale),
         math.floor(leaf.y + originY * limitedScale),
@@ -200,6 +205,7 @@ background.draw = function(scale)
         originX, originY
       )
     end
+  lg.setColor(1,1,1,1)
   lg.pop()
 end
 

@@ -19,6 +19,8 @@ settingsMenu.set(suit)
 
 suit.theme = require("ui.theme.menu")
 
+local musicPlayer = require("src.musicPlayer")
+
 local scene = { }
 
 local background = require("scenes.mainmenu.background")
@@ -37,6 +39,8 @@ scene.load = function(state)
   background.load()
 
   scene.gameLily = sceneManager.preload("scenes.game")
+
+  musicPlayer.start()
 end
 
 scene.unload = function()
@@ -81,6 +85,8 @@ end
 local inputTimer, inputTimeout = 0, 0
 local inputType = nil
 scene.update = function(dt)
+  musicPlayer.update()
+
   if scene.menu == "main" then
     if not suit.gamepadActive then
       if input.baton:pressed("menuNavUp") or input.baton:pressed("menuNavDown") then

@@ -1,5 +1,7 @@
-local assets = { }
-
+local assets = {
+  "audio.music.fall",
+  "audio.music.roundabout",
+}
 
 --- Grab the models needed for mapData
 local lookup = { }
@@ -21,6 +23,14 @@ end
 
   -- Collectables
 local assetList = require("src.collectable").getAssetList()
+for _, assetKey in ipairs(assetList) do
+  if not lookup[assetKey] then
+    table.insert(assets, assetKey)
+    lookup[assetKey] = true
+  end
+end
+--- Music Player
+local assetList = require("src.musicPlayer").music
 for _, assetKey in ipairs(assetList) do
   if not lookup[assetKey] then
     table.insert(assets, assetKey)

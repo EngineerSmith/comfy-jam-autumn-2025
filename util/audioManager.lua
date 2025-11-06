@@ -102,6 +102,25 @@ audioManager.play = function(assetKey)
   end
 end
 
+audioManager.get = function(assetKey)
+  local audioInfo = audioManager.audio[assetKey]
+  if not audioInfo then
+    return nil
+  end
+  if audioInfo.audioType == "ui" or audioInfo.audioType == "sfx" then
+    local s = audioInfo[love.math.random(1, #audioInfo)]
+    local r = s.asset
+    s.asset = s.asset:clone()
+    return r
+  elseif audioInfo.audioType == "music" then
+    local s = audioInfo[1]
+    return s.asset
+  else
+    logger.error("Add", audioInfo.audioType, "audioType to audiomanager.get")
+    return audioInfo[1]
+  end
+end
+
 audioManager.setVolumeAll = function()
   for _, audioInfo in pairs(audioManager.audio) do
     if type(audioInfo) == "table" then
@@ -126,6 +145,19 @@ audioManager.setSource = function(assetKey, source)
       source:setVolume(audioManager.volume.master * audioManager.volume[audioInfo.audioType] * s.volume)
     end
   end
+end
+
+audioManager.getVolume = function(assetKey)
+  local audioInfo = audioManager.audio[assetKey]
+  if not audioInfo then
+    return nil
+  end
+  local volume = audioManager.volume.master * audioManager.volume[audioInfo.audioType]
+  if #audioInfo > 1 then
+    return volume
+  end
+  local s = audioInfo[1]
+  return volume * s.volume
 end
 
 return setmetatable(audioManager, audioManager)
