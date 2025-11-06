@@ -21,15 +21,22 @@ helper.addModelClump = function(models, min, max, minScale, maxScale, level, x, 
   z = z or 0
 
   local scaleDecimalPlace = 10
-  minScale = minScale * scaleDecimalPlace
-  maxScale = maxScale * scaleDecimalPlace
+  
 
   for _ = 1, rng:random(min, max) do
-    local modelName = models[rng:random(#models)]
+    local model = models[rng:random(#models)]
     local angle = rng:random() * 2 * math.pi
     local dist = radius * math.sqrt(rng:random())
+    local minScale, maxScale = minScale, maxScale
+    if type(model) == "table" then
+      if model.minScale then minScale = model.minScale end
+      if model.maxScale then maxScale = model.maxScale end
+    end
+    minScale = minScale * scaleDecimalPlace
+    maxScale = maxScale * scaleDecimalPlace
     table.insert(helper.mapData.models, {
-      model = modelName,
+      model = type(model) == "table" and model[1] or model,
+      texture = type(model) == "table" and model[2] or nil,
       level = level,
       x = x + (dist * math.cos(angle)),
       y = y + (dist * math.sin(angle)),
@@ -45,6 +52,9 @@ local grassModels = {
   "model.grass.large",
   "model.grass.leafs",
   "model.grass.leafs.large",
+  { "model.grass.stylized", "texture.pirateKit.colorMap", minScale = 1, maxScale = 2, },
+  { "model.grass.stylized.patch", "texture.pirateKit.colorMap", minScale = 1, maxScale = 2, },
+  { "model.grass.stylized.plant", "texture.pirateKit.colorMap", minScale = .5, maxScale = 1, },
 }
 helper.addGrassClump = function(...)
   return helper.addModelClump(grassModels, 4, 7, 2, 4, ...)

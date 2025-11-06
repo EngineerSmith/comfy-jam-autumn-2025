@@ -33,8 +33,18 @@ local loopSource = function(source)
 end
 
 local g3d = require("libs.g3d")
-local objLoader = function(objContent, up, mtlPath)
-  local model = g3d.newModel(objContent, mtlPath)
+local objLoader = function(objContent, up, mtlPath, UVFlip)
+  if mtlPath == "NIL" then mtlPath = nil end
+  local model
+  local uFlip, vFlip = false, false
+  if UVFlip == "uv" then
+    uFlip, vFlip = true, true
+  elseif UVFlip == "v" then
+    uFlip, vFlip = false, true
+  elseif UVFlip == "u" then
+    uFlip, vFlip = true, false
+  end
+  model = g3d.newModel(objContent, mtlPath, nil, nil, nil, nil, uFlip, vFlip)
   if up == "y" then
     model:setRotation(math.rad(90), 0, 0)
   elseif up == "x" then
@@ -60,6 +70,15 @@ local list = {
   { path = "models/leaf_collectable.obj", name = "model.collectable.leaf.1", onLoad = objLoader, "z", "assets/models/leaf_collectable.mtl" },
   { path = "models/leaf_collectable.obj", name = "model.collectable.leaf.gold", onLoad = objLoader, "z", "assets/models/golden_leaf_collectable.mtl" },
   { path = "models/big_flower_pot.obj", name = "model.flower_pot.nest", onLoad = objLoader, "z", "assets/models/big_flower_pot.mtl" },
+  { path = "models/splat_1.obj", name = "model.path.dirt.1", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
+  { path = "models/splat_2.obj", name = "model.path.dirt.2", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
+  { path = "models/splat_3.obj", name = "model.path.dirt.3", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
+  { path = "models/splat_3.obj", name = "model.path.dirt.3", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
+  { path = "models/cube_litter_1.obj", name = "model.path.litter.dirt.1", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
+  { path = "models/cube_litter_2.obj", name = "model.path.litter.dirt.2", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
+  { path = "models/cube_litter_3.obj", name = "model.path.litter.dirt.3", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
+  { path = "models/cube_litter_4.obj", name = "model.path.litter.dirt.4", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
+
   { path = "models/kenney/Nature Kit/pot_small.obj", name = "model.flower_pot.small", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/pot_small.mtl" },
   { path = "models/kenney/Nature Kit/grass.obj",            name = "model.grass",             onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/grass.mtl" },
   { path = "models/kenney/Nature Kit/grass_large.obj",      name = "model.grass.large",       onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/grass.mtl" },
@@ -70,14 +89,15 @@ local list = {
   { path = "models/kenney/Nature Kit/path_stoneCircle.obj", name = "model.path.stone.2", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/path_stone.mtl" },
   { path = "models/kenney/Nature Kit/path_stoneCorner.obj", name = "model.path.stone.3", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/path_stone.mtl" },
   { path = "models/kenney/Nature Kit/path_stoneEnd.obj",    name = "model.path.stone.4", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/path_stone.mtl" },
-  { path = "models/splat_1.obj", name = "model.path.dirt.1", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
-  { path = "models/splat_2.obj", name = "model.path.dirt.2", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
-  { path = "models/splat_3.obj", name = "model.path.dirt.3", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
-  { path = "models/splat_3.obj", name = "model.path.dirt.3", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
-  { path = "models/cube_litter_1.obj", name = "model.path.litter.dirt.1", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
-  { path = "models/cube_litter_2.obj", name = "model.path.litter.dirt.2", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
-  { path = "models/cube_litter_3.obj", name = "model.path.litter.dirt.3", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
-  { path = "models/cube_litter_4.obj", name = "model.path.litter.dirt.4", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
+  { path = "models/kenney/Nature Kit/pot_large.obj", name = "model.flower_pot.large", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/pot_large.mtl" },
+
+  { path = "models/kenney/Pirate Kit/grass.obj", name = "model.grass.stylized", onLoad = objLoader, "y", "NIL", "v" },
+  { path = "models/kenney/Pirate Kit/grass-patch.obj", name = "model.grass.stylized.patch", onLoad = objLoader, "y", "NIL", "v" },
+  { path = "models/kenney/Pirate Kit/grass-plant.obj", name = "model.grass.stylized.plant", onLoad = objLoader, "y", "NIL", "v" },
+  { path = "models/kenney/Pirate Kit/colormap.png", name = "texture.pirateKit.colorMap", onLoad = filterLinearRepeat },
+
+  { path = "models/kenney/Food Kit/cabbage.obj", name = "model.bush.cabbage", onLoad = objLoader, "y", "NIL", "v" },
+  { path = "models/kenney/Food Kit/colormap.png", name = "texture.foodKit.colorMap", onLoad = filterLinearRepeat },
 -- Audio
   -- sourceType = "static"/"stream"
   { path = "audio/ui/rollover4.ogg", name = "audio.ui.select.1", sourceType = "static", audioType = "ui", key = "audio.ui.select", volume = .5 },
@@ -97,8 +117,8 @@ local list = {
   { path = "audio/fx/collect_item_07.wav", name = "audio.fx.collect_special.2", sourceType = "static", audioType = "sfx", key = "audio.fx.collect_special", volume = 0.6 },
   { path = "audio/fx/collect_item_14.wav", name = "audio.fx.collect_special.3", sourceType = "static", audioType = "sfx", key = "audio.fx.collect_special", volume = 0.6 },
 
-  { path = "audio/music/fall.ogg", name = "audio.music.fall", sourceType = "stream", audioType = "music", volume = 0.3 },
-  { path = "audio/music/roundabout.ogg", name = "audio.music.roundabout", sourceType = "stream", audioType = "music", volume = 0.3 },
+  { path = "audio/music/fall.ogg", name = "audio.music.fall", sourceType = "stream", audioType = "music", volume = 0.4 },
+  { path = "audio/music/roundabout.ogg", name = "audio.music.roundabout", sourceType = "stream", audioType = "music", volume = 0.4 },
 -- Fonts
   { path = "fonts/Roboto_Mono/RobotoMono-Light.ttf",            name = "fonts.light" },
   { path = "fonts/Roboto_Mono/RobotoMono-LightItalic.ttf",      name = "fonts.light.italic" },

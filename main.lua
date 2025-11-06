@@ -129,7 +129,7 @@ love.run = function()
   -- event updates
     local quit = processEvents()
     if quit then
-      require("libs.lily").quit()
+      -- require("libs.lily").quit()
       return quit
     end
 

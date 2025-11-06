@@ -30,13 +30,13 @@ model.shader = g3d.shader
 -- this returns a new instance of the model class
 -- a model must be given a .obj file or equivalent lua table, and a texture
 -- translation, rotation, and scale are all 3d vectors and are all optional
-local function newModel(verts, mtlPath, texture, translation, rotation, scale)
+local function newModel(verts, mtlPath, texture, translation, rotation, scale, uFlip, vFlip)
     local self = setmetatable({}, model)
 
     -- if verts is a string, use it as a path to a .obj file
     -- otherwise verts is a table, use it as a model defintion
     if type(verts) == "string" then
-        verts = loadObjFile(verts, mtlPath)
+        verts = loadObjFile(verts, mtlPath, uFlip, vFlip)
     end
 
     -- if texture is a string, use it as a path to an image file

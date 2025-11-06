@@ -12,6 +12,7 @@ slickHelper.tags = {
   ROCK      = slick.newEnum({ type = "rock" }),
   LOG       = slick.newEnum({ type = "log" }),
   POT       = slick.newEnum({ type = "pot" }),
+  PLANT     = slick.newEnum({ type = "plant" }),
 }
 
 return slickHelper
