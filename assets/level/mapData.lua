@@ -3,10 +3,13 @@ local helper = require("assets.level.helper")
 local mapData = {
   levels = {
     ["nest.ground"] = { x = -100, y = -100, z = 0, width = 200, height = 200 },
-    ["nest.pot"] = { x = 20.5, y = -4.5, z = 4, width = 10, height = 10 },
+    ["nest.pot"] = { x = 20, y = -5, z = 4, width = 12, height = 12 },
   },
   transitions = {
-
+    {
+      x = 24, y = 6, width = 3, height = 6.0,
+      edgeMap = { top = "nest.ground", bottom = "nest.pot" }
+    }
   },
   models = {
     --- Nest
@@ -34,6 +37,15 @@ local mapData = {
       }
     },
     {
+      model = "model.flower_pot.small",  level = "nest.ground", x = -10, y = 20, z = 0, scale = 28, ry = math.rad(-90), rz = math.rad(-20+180),
+      collider = {
+        levels = { "nest.ground" }, shape = "multi", tag = "POT",
+        { shape = "rectangle", x = -0.2,  y = -0.1,  width = 0.2, height = 0.2,  },
+        { shape = "rectangle", x = -0.27, y = -0.15, width = 0.1, height = 0.05, },
+        { shape = "rectangle", x = -0.27, y =  0.10, width = 0.1, height = 0.05, },
+      }
+    },
+    {
       model = "model.rock.large.1", level = "nest.ground", x = 0, y = -25, z = -0.14, scale = 25, rz = math.rad(43.5), noScaleZ = true,
       collider = {
         levels = { "nest.ground" }, shape = "multi", tag = "ROCK",
@@ -49,7 +61,7 @@ local mapData = {
         { shape = "circle", x = -0.2, y =  0.35, radius = 0.15 },
       }
     },
-    -- { model = "model.path.dirt.3", level = "nest.ground", x = 0, y = -10, scale = 2 },
+    -- { model = "model.plant.leaf", level = "nest.ground", x = 0, y = -10, scale = 10 },
     -- { model = "model.path.dirt.2", level = "nest.ground", x = 0, y = -7, z = -0.05, scale = 2.1, rz = math.rad(love.math.random(0,360)), noScaleZ = true, },
     {
       model = "model.bush.cabbage", texture = "texture.foodKit.colorMap", level = "nest.ground", x = -18, y = -26.5, scale = 25, rz = love.math.random(0, 2 * math.pi),
@@ -67,10 +79,23 @@ local mapData = {
       model = "model.bush.cabbage", texture = "texture.foodKit.colorMap", level = "nest.ground", x = 15, y = -5, scale = 15, rz = love.math.random(0, 2 * math.pi),
       collider = { levels = { "nest.ground" }, shape = "circle", radius = 0.1, segments = 6, tag = "PLANT" },
     },
+    --- Transition ramp; nest.ground <-> nest.pot
+    {
+      model = "model.log", level = "nest.ground", x = 25.5, y = 8, scale = 11, z = 0, rx = math.rad(-30),
+    },
+    {
+      model = "model.bush.cabbage", texture = "texture.foodKit.colorMap", level = "nest.ground", x = 12, y = 12, scale = 23, rz = love.math.random(0, 2 * math.pi),
+      collider = { levels = { "nest.ground" }, shape = "circle", radius = 0.1, segments = 6, tag = "PLANT" },
+    },
   },
   colliders = {
     -- Nest
     { levels = { "nest.ground" }, shape = "rectangle", x = -30, y = -22, width = 60, height = 3, tag = "WALL" }, -- South wall
+    { levels = { "nest.pot"}, shape = "rectangle", x = 23, y = -5.5, width = 5, height = 1, tag = "WALL" },
+    { levels = { "nest.pot"}, shape = "rectangle", x = 31,   y = 0, width = 1, height = 5, tag = "WALL", rz = math.rad(180-25) },
+    { levels = { "nest.pot"}, shape = "rectangle", x = 21,   y = 0, width = 1, height = 5, tag = "WALL", rz = math.rad(180+25) },
+    { levels = { "nest.pot"}, shape = "rectangle", x = 30.5, y = 0, width = 1, height = 5, tag = "WALL", rz = math.rad(    25) },
+    { levels = { "nest.pot"}, shape = "rectangle", x = 19.5, y = .5, width = 1, height = 5, tag = "WALL", rz = math.rad(   -25) },
   },
   collectables = {
     { level = "nest.ground", x =  0, y = 10, tag = "GOLDEN_LEAF", zone = "nest" },
@@ -81,10 +106,13 @@ local mapData = {
     { level = "nest.ground", x = -9, y = -11.5, tag = "LEAF", zone = "nest", zOffset = 0.1 },
     { level = "nest.ground", x = -17.5, y = -8, tag = "LEAF", zone = "nest", zOffset = 0.1 },
     { level = "nest.ground", x = -14, y = -17, tag = "LEAF", zone = "nest" },
-    { level = "nest.ground", x = 12.5, y = -11.5, tag = "LEAF", zone = "nest" },
+    { level = "nest.ground", x = 12.5, y = -12, tag = "LEAF", zone = "nest" },
     { level = "nest.ground", x = 23, y = -10, tag = "LEAF", zone = "nest" },
     { level = "nest.ground", x = 31, y = -6, tag = "LEAF", zone = "nest" },
     { level = "nest.pot",    x = 25.5, y = 0.5, tag = "GOLDEN_LEAF", zone = "nest" }, -- pot large
+    { level = "nest.ground", x = 18, y = -.5, tag = "LEAF", zone = "nest" },
+    { level = "nest.ground", x = 19, y = 8, tag = "LEAF", zone = "nest" },
+    { level = "nest.ground", x = -25, y = -14, tag = "GOLDEN_LEAF", zone = "nest" },
   },
   signposts = {
     { level = "nest.ground", x = 0, y = -7.4, z = 4, content = "Press [button.attack]to enter Nest", radius = 3.5 },
@@ -139,5 +167,65 @@ helper.addPebbleClump("nest.ground", -25, -26)
 helper.addPebbleClump("nest.ground", -9, -30)
 helper.addGrassClump("nest.ground", -9, -29)
 helper.addGrassClump("nest.ground", 19.5, -28)
+
+helper.addPlant("nest.ground", 2.5, -17.5)
+helper.addPlant("nest.ground", -8, -16)
+helper.addPlant("nest.ground", -8, -3)
+helper.addPlant("nest.ground", -20, -12)
+helper.addPlant("nest.ground", 18, -17)
+helper.addPlant("nest.ground", 24, -15.5)
+helper.addPlant("nest.ground", 5, -7.5)
+helper.addPlant("nest.ground", 10.5, -4.5)
+helper.addPlant("nest.ground", 29, -11)
+helper.addPlant("nest.ground", 23.25, 11.25)
+
+helper.placeDirtPath("nest.ground", love.math.newBezierCurve(20, -4.5, 16, 0, 20, 9))
+
+helper.addGrassClump("nest.ground", 22.5, 6.5)
+helper.addGrassClump("nest.ground", 17.5, 14)
+helper.addGrassClump("nest.ground", 23.5, -6)
+helper.addGrassClump("nest.ground", 12, -8)
+helper.addGrassClump("nest.ground", 15.5, 0)
+
+helper.addPlant("nest.ground", 15, 7)
+helper.addPlant("nest.ground", 20.6, 2.5)
+helper.addPlant("nest.pot", 22.9, 2.1, -1)
+
+helper.addSmallRock("nest.ground", -5.5, -9)
+helper.addSmallRock("nest.ground", -8, -17.5)
+helper.addSmallRock("nest.ground", 17.5, -7)
+helper.addSmallRock("nest.ground", 26.5, -5)
+helper.addSmallRock("nest.ground", 0, 8)
+helper.addGrassClump("nest.ground", 12.5, 15)
+helper.addPebbleClump("nest.ground", -6.5, 10)
+helper.addLargeRock("nest.ground", -32, -12.5)
+helper.addLargeRock("nest.ground", 25, -24)
+helper.addLargeRock("nest.ground", 35.5, -16.5)
+helper.addSmallRock("nest.ground", 28, -18)
+helper.addGrassClump("nest.ground", 24, -23, 1)
+helper.addGrassClump("nest.ground", 32, -25, 0.5)
+helper.addPebbleClump("nest.ground", 31, -20)
+
+helper.addLargeRock("nest.ground", 5.5, 21)
+helper.placeDirtPath("nest.ground", love.math.newBezierCurve(-4.5, 15.5, -1.5, 16.5, -2.5, 21.5))
+helper.addGrassClump("nest.ground", 4, 15)
+helper.addGrassClump("nest.ground", -0.5, 19.5)
+helper.addPlant("nest.ground", 2.5, 15)
+helper.placeDirtPath("nest.ground", love.math.newBezierCurve(-16, 5.5, -9, 11.5, -2.5, 11.5))
+helper.addPlant("nest.ground", -6.5, 6)
+helper.addSmallRock("nest.ground", -14, 3)
+helper.addCabbage("nest.ground", -28, -17)
+helper.addPlant("nest.ground", -26.5, -5)
+helper.addLargeRock("nest.ground", 23, 22)
+helper.addCabbage("nest.ground", 15, 25)
+helper.addGrassClump("nest.ground", 24, 29.5)
+helper.addCabbage("nest.ground", 33.5, 8)
+helper.addSmallRock("nest.ground", 30, 6)
+helper.addGrassClump("nest.ground", 29, 10.5)
+helper.addPlant("nest.ground", 20.5, 17.5)
+helper.addPebbleClump("nest.ground", 12, 20)
+helper.addSmallRock("nest.ground", 11, 19)
+helper.addGrassClump("nest.ground", 33.5, 2)
+
 
 return mapData

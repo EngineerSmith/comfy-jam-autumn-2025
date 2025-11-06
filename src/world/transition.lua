@@ -4,6 +4,8 @@ transition.__index = transition
 local slick = require("libs.slick")
 local slickHelper = require("util.slickHelper")
 
+local logger = require("util.logger")
+
 transition.new = function(x, y, width, height, edgeMap)
   local minX, minY = x, y
   local maxX, maxY = x + width, y + height
@@ -84,6 +86,7 @@ transition.createWalls = function(self)
     for _, level in ipairs(self.levels) do
       level:add(definition.id, definition.x, definition.y, shape)
     end
+    -- self.edgeMap.bottom:add(definition.id, definition.x, definition.y, shape)
     table.insert(self.walls, definition.id)
   end
 end
@@ -108,9 +111,9 @@ end
 transition.checkExitEdge = function(self, character)
   local edgeName
   if     character.y < self.minY and character.previousY >= self.minY then
-    edgeName = "top"
-  elseif character.y > self.maxY and character.previousY <= self.maxY then
     edgeName = "bottom"
+  elseif character.y > self.maxY and character.previousY <= self.maxY then
+    edgeName = "top"
   elseif character.x < self.minX and character.previousX >= self.minX and
          character.y > self.minY and character.y < self.maxY then
     edgeName = "left"
@@ -162,7 +165,7 @@ transition.update = function(self, characters)
       -- Once exited remove from all levels, but the one they choose
       local targetLevel, edgeName = self:checkExitEdge(character)
       if not targetLevel then
-        logger.warn("Character exited transitions, but didn't trigger")
+        logger.warn("Character exited transitions, but didn't trigger edge exit")
         goto continue
       end
 
@@ -200,7 +203,7 @@ transition.calculateZ = function(self, character)
     return lerp(startZ, endZ, t)
   elseif self.isRampY then
     local startZ, endZ = z1, z2
-    if self.edgeMap.top == self.levels[2] then
+    if self.edgeMap.bottom == self.levels[2] then
       startZ, endZ = z2, z1
     end
 

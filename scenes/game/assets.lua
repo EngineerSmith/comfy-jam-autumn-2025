@@ -38,5 +38,12 @@ for _, assetKey in ipairs(assetList) do
   end
 end
 ---
+if lookup["model.flower.red3"] then
+  print("Found red3")
+end
+
+if lookup["model.flower.yellow3"] then
+  print("Found yellow3")
+end
 
 return assets

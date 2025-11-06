@@ -87,6 +87,13 @@ local inputType = nil
 scene.update = function(dt)
   musicPlayer.update()
 
+  if scene.CHANGE_TO_GAME then
+    if scene.gameLily and scene.gameLily:isComplete() then
+      sceneManager.changeScene("scenes.game")
+      return
+    end
+  end
+
   if scene.menu == "main" then
     if not suit.gamepadActive then
       if input.baton:pressed("menuNavUp") or input.baton:pressed("menuNavDown") then
@@ -232,7 +239,7 @@ local mainButtons = {
     end),
   mainButtonFactory("menu.new_game", function()
       suit:setGamepadPosition(1)
-      sceneManager.changeScene("scenes.game")
+      scene.CHANGE_TO_GAME = true
     end),
 }
 

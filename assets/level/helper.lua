@@ -20,10 +20,8 @@ helper.addModelClump = function(models, min, max, minScale, maxScale, level, x, 
   radius = radius or 2
   z = z or 0
 
-  local scaleDecimalPlace = 10
-  
-
-  for _ = 1, rng:random(min, max) do
+  local count = min == max and min or rng:random(min, max)
+  for _ = 1, count do
     local model = models[rng:random(#models)]
     local angle = rng:random() * 2 * math.pi
     local dist = radius * math.sqrt(rng:random())
@@ -32,11 +30,20 @@ helper.addModelClump = function(models, min, max, minScale, maxScale, level, x, 
       if model.minScale then minScale = model.minScale end
       if model.maxScale then maxScale = model.maxScale end
     end
+    local scaleDecimalPlace = 10
     minScale = minScale * scaleDecimalPlace
     maxScale = maxScale * scaleDecimalPlace
+
+    local modelName = model
+    local texture
+    if type(model) == "table" then
+      modelName = model[1]
+      texture = model[2]
+    end
+
     table.insert(helper.mapData.models, {
-      model = type(model) == "table" and model[1] or model,
-      texture = type(model) == "table" and model[2] or nil,
+      model = modelName,
+      texture = texture,
       level = level,
       x = x + (dist * math.cos(angle)),
       y = y + (dist * math.sin(angle)),
@@ -73,6 +80,89 @@ helper.addPebbleClump = function(...)
     return helper.addModelClump(pebbleModels, 2, 3, 1.5, 3, unpack(varargs))
   end
   return helper.addModelClump(pebbleModels, 2, 3, 1.5, 3, ...)
+end
+
+helper.addModel = function(models, minScale, maxScale, level, x, y, zOffset)
+local model = models[rng:random(#models)]
+  if type(model) == "table" then
+    if model.minScale then minScale = model.minScale end
+    if model.maxScale then maxScale = model.maxScale end
+  end
+  local scaleDecimalPlace = 10
+  minScale = minScale * scaleDecimalPlace
+  maxScale = maxScale * scaleDecimalPlace
+
+  local colliderCopy
+  if type(model) == "table" and model.collider then
+    colliderCopy = { }
+    for key, value in pairs(model.collider) do
+      colliderCopy[key] = value
+    end
+    colliderCopy.levels = { level }
+  end
+
+  local modelName = model
+  local texture
+  if type(model) == "table" then
+    modelName = model[1]
+    texture = model[2]
+  else
+    -- print(">", modelName)
+  end
+
+  table.insert(helper.mapData.models, {
+      model = modelName,
+      texture = texture,
+      level = level,
+      x = x,
+      y = y,
+      z = zOffset,
+      scale = rng:random(minScale, maxScale) / scaleDecimalPlace,
+      rz = rng:random() * 2 * math.pi,
+      collider = colliderCopy,
+      noScaleZ = type(model) == "table" and model.noScaleZ or nil,
+    })
+end
+
+local flowerCollider = { shape = "circle", radius = 0.036, segments = 3, tag = "PLANT", rotation = math.rad(180), }
+local plantModels = {
+  { "model.plant.leaf", minScale = 3, maxScale = 5, collider = { shape = "rectangle", x = -0.05, y = -0.05, width = 0.1, height = 0.1, tag = "PLANT" }},
+  { "model.plant.leaf.tall", minScale = 3, maxScale = 5, collider = { shape = "rectangle", x = -0.05, y = -0.05, width = 0.1, height = 0.1, tag = "PLANT" }},
+  { "model.flower.purple.1", collider = flowerCollider },
+  { "model.flower.purple.2", collider = flowerCollider },
+  { "model.flower.purple.3", collider = flowerCollider },
+  { "model.flower.red.1", collider = flowerCollider },
+  { "model.flower.red.2", collider = flowerCollider },
+  { "model.flower.red.3", collider = flowerCollider },
+  { "model.flower.yellow.1", collider = flowerCollider },
+  { "model.flower.yellow.2", collider = flowerCollider },
+  { "model.flower.yellow.3", collider = flowerCollider },
+}
+helper.addPlant = function(...)
+  return helper.addModel(plantModels, 6, 12, ...)
+end
+
+local smallRockModels = {
+  { "model.rock.small.1", collider = { shape = "circle", radius = 0.222, tag = "ROCK"} },
+  { "model.rock.small.2", collider = { shape = "multi", tag = "ROCK", { shape = "circle", x = 0.08, y = 0.08, radius = 0.1 }, { shape = "circle", x = -0.06, y = -0.08, radius = 0.1} } },
+  { "model.rock.small.3", collider = { shape = "multi", tag = "ROCK", { shape = "circle", x = 0.05, y = 0, radius = 0.15 }, { shape = "circle", x = -0.135, y = 0.05, radius = 0.07 } } },
+}
+helper.addSmallRock = function(...)
+  return helper.addModel(smallRockModels, 4, 6, ...)
+end
+
+local largeRockModels = {
+  { "model.rock.large.1", noScaleZ = true, collider = { shape = "multi", tag = "ROCK", { shape = "circle", x =  0,   y = -0.13, radius = 0.38 }, { shape = "circle", x = -0.2, y =  0.35, radius = 0.15 } } }
+}
+helper.addLargeRock = function(...)
+  return helper.addModel(largeRockModels, 8, 15, ...)
+end
+
+local cabbageModels = {
+  { "model.bush.cabbage", "texture.foodKit.colorMap", collider = { shape = "circle", radius = 0.1, segments = 6, tag = "PLANT" } }
+}
+helper.addCabbage = function(...)
+  return helper.addModel(cabbageModels, 15, 28, ...)
 end
 
 helper.addCollectable = function(tag, level, x, y, zone)

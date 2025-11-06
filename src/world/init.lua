@@ -62,20 +62,21 @@ world.load = function()
 
   world.leaves = 0
 
-  local mapData
-  do -- Load mapData
-    local chunk, errmsg = lfs.load("assets/level/mapData.lua")
-    if not chunk then
-      error(errmsg)
-      return
-    end
-    local success
-    success, mapData = pcall(chunk)
-    if not success then
-      error(mapData)
-      return
-    end
-  end
+  -- local mapData
+  -- do -- Load mapData
+  --   local chunk, errmsg = lfs.load("assets/level/mapData.lua")
+  --   if not chunk then
+  --     error(errmsg)
+  --     return
+  --   end
+  --   local success
+  --   success, mapData = pcall(chunk)
+  --   if not success then
+  --     error(mapData)
+  --     return
+  --   end
+  -- end
+  local mapData = require("assets.level.mapData")
 
   for levelName, levelInfo in pairs(mapData.levels) do
     local x, y, z, width, height = levelInfo.x, levelInfo.y, levelInfo.z, levelInfo.width, levelInfo.height

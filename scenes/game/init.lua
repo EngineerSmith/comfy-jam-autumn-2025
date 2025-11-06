@@ -133,13 +133,13 @@ scene.draw = function()
   end
 end
 
-scene.keypressed = function(_ ,key)
-  if key == "c" and love.keyboard.isDown("lcrft", "rctrl") then
+scene.keypressed = function(_, key)
+  if key == "c" and love.keyboard.isScancodeDown("lctrl", "rctrl") then
     local playerX, playerY, playerZ = player.getPosition()
-    local str = ("x = %f, y = %f"):format(playerX, playerY)
+    local str = ("x = %g, y = %g"):format(playerX, playerY)
     love.system.setClipboardText(str)
   end
-end
+end 
 
 scene.joystickadded = function(...)
   input.joystickadded(...)

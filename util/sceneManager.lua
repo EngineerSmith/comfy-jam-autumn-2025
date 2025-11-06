@@ -72,8 +72,10 @@ sceneManager.preload = function(sceneRequire)
   end
   table.insert(sceneManager.loadedScenes, sceneRequire)
 
-  local success, requiredAssets = pcall(require, sceneRequire..".assets")
-  if success then
+  local module = sceneRequire..".assets"
+  local modulePath = module:gsub("%.", "/") .. ".lua"
+  if love.filesystem.getInfo(modulePath, "file") then
+    local requiredAssets = require(sceneRequire..".assets")
     return assetManager.load(requiredAssets)
   end
   return nil
