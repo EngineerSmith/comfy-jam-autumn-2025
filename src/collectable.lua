@@ -110,6 +110,7 @@ collectable.new = function(x, y, level, tag, zoneName, zOffset)
     zOffset = zOffset or 0,
     zBob = 0,
   }, collectable)
+  self.zOffset = self.zOffset + 0.1
 
   zone.addCollectable(self.zone, self.tag)
 

@@ -11,6 +11,7 @@ local player = require("src.player")
 local signpost = require("src.signpost")
 local character = require("src.character")
 local collectable = require("src.collectable")
+local interaction = require("src.interaction")
 local colliderMulti = require("src.colliderMulti")
 local colliderCircle = require("src.colliderCircle")
 local colliderRectangle = require("src.colliderRectangle")
@@ -25,6 +26,7 @@ local world = {
   colliders = { },
   collectables = { },
   signposts = { },
+  interactions = { },
   characters = { },
   debug = { },
 
@@ -230,6 +232,21 @@ world.load = function()
     end
   end
 
+  for i, interactionInfo in ipairs(mapData.interactions) do
+    local level = world.levels[interactionInfo.level]
+    if not level then
+      logger.warn("Interaction of mapData.interactions["..tostring(i).."] had invalid level. Check spelling. Ignoring interaction.")
+    else
+      local scriptID = interactionInfo.scriptID
+      if not scriptID then
+        logger.warn("Interaction of mapData.interactions["..tostring(i).."] had missing ScriptID. Ignoring interaction.")
+      else
+        local x, y, radius = interactionInfo.x, interactionInfo.y, interactionInfo.radius
+        table.insert(world.interactions, interaction.new(level, x, y, radius, scriptID))
+      end
+    end
+  end
+
   for characterName, characterInfo in pairs(mapData.characters) do
     local character = getCharacterFactory(characterInfo.file)()
     local level = world.levels[characterInfo.level]
@@ -263,6 +280,7 @@ world.unload = function()
     signpost:unload() -- release assets
   end
   world.signposts = { }
+  world.interactions = { }
   world.characters = { }
   world.debug = { }
 end

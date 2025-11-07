@@ -112,8 +112,8 @@ local mapData = {
     { level = "nest.ground", x = -3, y = 10, tag = "LEAF", zone = "nest" },
     { level = "nest.ground", x =  3, y = 10, tag = "LEAF", zone = "nest" },
     { level = "nest.ground", x = -14.5, y = -2, tag = "LEAF", zone = "nest" },
-    { level = "nest.ground", x = -9, y = -11.5, tag = "LEAF", zone = "nest", zOffset = 0.1 },
-    { level = "nest.ground", x = -17.5, y = -8, tag = "LEAF", zone = "nest", zOffset = 0.1 },
+    { level = "nest.ground", x = -9, y = -11.5, tag = "LEAF", zone = "nest"  },
+    { level = "nest.ground", x = -17.5, y = -8, tag = "LEAF", zone = "nest" },
     { level = "nest.ground", x = -14, y = -17, tag = "LEAF", zone = "nest" },
     { level = "nest.ground", x = 12.5, y = -12, tag = "LEAF", zone = "nest" },
     { level = "nest.ground", x = 23, y = -10, tag = "LEAF", zone = "nest" },
@@ -125,10 +125,24 @@ local mapData = {
     { level = "nest.ground", x = -1, y = 17, tag = "LEAF", zone = "nest" },
   },
   signposts = {
-    { level = "nest.ground", x = 0, y = -7.4, z = 4, content = "Press [button.attack]to enter Nest", radius = 3.5 },
+    { level = "nest.ground", x = 0, y = -7.4, z = 4, content = "Press [button.interact]to enter Nest", radius = 3.5 },
     { level = "nest.ground", x = -8, y = -6.5, z = 3, content = "[collectable_count.nest]", radius = 5.1 },
     { level = "nest.ground", x = -23, y = 0, z = 3, content = "[collectable_count.zone_1]", radius = 5.5, rz =  math.rad(20) },
     { level = "nest.ground", x =  29.5, y = -6, z = 3, content = "[collectable_count.zone_2]", radius = 5.5, rz = -math.rad(30) },
+  },
+  interactions = {
+    { level = "nest.ground", x = 0, y = -8, radius = 2.2, scriptID = "enter.pot" },
+  },
+  scripts = {
+    ["enter.pot"] = {
+
+    },
+    ["exit.pot"] = {
+
+    },
+    ["event.newgame"] = { -- ran when a new game is started
+
+    },
   },
   characters = {
     ["Hedgehog.Player"] = {
