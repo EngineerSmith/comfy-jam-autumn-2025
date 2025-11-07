@@ -12,6 +12,7 @@ local signpost = require("src.signpost")
 local character = require("src.character")
 local collectable = require("src.collectable")
 local interaction = require("src.interaction")
+local scriptingEngine = require("src.scripting")
 local colliderMulti = require("src.colliderMulti")
 local colliderCircle = require("src.colliderCircle")
 local colliderRectangle = require("src.colliderRectangle")
@@ -247,6 +248,10 @@ world.load = function()
     end
   end
 
+  for scriptID, script in pairs(mapData.scripts) do
+    scriptingEngine.registerScript(scriptID, script)
+  end
+
   for characterName, characterInfo in pairs(mapData.characters) do
     local character = getCharacterFactory(characterInfo.file)()
     local level = world.levels[characterInfo.level]
@@ -291,6 +296,20 @@ local sort_ClosestMag = function(a, b)
 end
 
 world.update = function(dt)
+  scriptingEngine.update(dt) -- we want to process updates before we check for new interaction triggers
+
+  if not player.isInputBlocked then
+    local px, py, _ = player.getPosition()
+    for _, interaction in ipairs(world.interactions) do
+      if interaction:isInRange(px, py) and player.character:isInLevel(interaction.level) then
+        if interaction:isTriggered() then
+          scriptingEngine.startScript(interaction.scriptID)
+        end
+      end
+    end
+  end
+
+  -- We update player after interactions, as scripts can lock player input, and thus stopping them move this frame
   player.update(dt)
 
   for _, character in pairs(world.characters) do
@@ -309,31 +328,6 @@ world.update = function(dt)
 
   local playerCharacter = player.character
   if playerCharacter then
-    local collectablePositions = { }
-    for _, collectable in ipairs(world.collectables) do
-      if not collectable.isCollected then
-        local dx = collectable.x - playerCharacter.x
-        local dy = collectable.y - playerCharacter.y
-        local mag = math.sqrt(dx * dx + dy * dy)
-
-        table.insert(collectablePositions, {
-          mag = mag,
-          collectable:getShadowPosition() -- multiple return
-        })
-      end
-    end
-
-    table.sort(collectablePositions, sort_ClosestMag)
-
-    local shader = g3d.shader
-    local limit = math.min(#collectablePositions, COLLECTABLE_SHADOW_MAX)
-    if limit > 0 then
-      shader:send("collectablePositions", unpack(collectablePositions, 1, limit))
-      shader:send("numCollectable", limit)
-    else
-      shader:send("numCollectable", 0)
-    end
-
     for _, collectable in ipairs(world.collectables) do
       collectable:update(dt)
 
@@ -363,6 +357,31 @@ world.update = function(dt)
       else
         collectable.scale = 1
       end
+    end
+
+    local collectablePositions = { }
+    for _, collectable in ipairs(world.collectables) do
+      if not collectable.isCollected then
+        local dx = collectable.x - playerCharacter.x
+        local dy = collectable.y - playerCharacter.y
+        local mag = math.sqrt(dx * dx + dy * dy)
+
+        table.insert(collectablePositions, {
+          mag = mag,
+          collectable:getShadowPosition() -- multiple return
+        })
+      end
+    end
+
+    table.sort(collectablePositions, sort_ClosestMag)
+
+    local shader = g3d.shader
+    local limit = math.min(#collectablePositions, COLLECTABLE_SHADOW_MAX)
+    if limit > 0 then
+      shader:send("collectablePositions", unpack(collectablePositions, 1, limit))
+      shader:send("numCollectable", limit)
+    else
+      shader:send("numCollectable", 0)
     end
   end
 end

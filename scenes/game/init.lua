@@ -21,15 +21,12 @@ local mag = math.sqrt(dir[1]*dir[1]+dir[2]*dir[2]+dir[3]*dir[3])
 dir[1], dir[2], dir[3] = dir[1] / mag, dir[2] / mag, dir[3] / mag
 g3d.shader:send("lightDirection", dir)
 
-local cam = g3d.camera:current()
-cam.fov = math.rad(50)
-cam:updateProjectionMatrix()
-cam.speed = 20
+-- local CUBE = g3d.newModel("scenes/game/cube.obj", nil, nil, { 5, 0, 0 })
+-- cam:lookAt(0,1e-5,25,0,0,0)
 
-local CUBE = g3d.newModel("scenes/game/cube.obj", nil, nil, { 5, 0, 0 })
-cam:lookAt(0,1e-5,25,0,0,0)
-
+local scriptingEngine = require("src.scripting")
 local musicPlayer = require("src.musicPlayer")
+local transition = require("src.transition")
 local player = require("src.player")
 local world = require("src.world")
 
@@ -51,9 +48,15 @@ scene.load = function(roomInfo)
 
   -- Load/keep loaded the main menu to return
   sceneManager.preload("scenes.mainmenu")
+
+  player.initialisePlayerCamera()
+  player.camera:setCurrent()
+
   world.load()
 
   musicPlayer.start()
+
+  scriptingEngine.startScript("event.newgame")
 end
 
 scene.unload = function()
@@ -78,15 +81,13 @@ scene.resize = function(w, h)
   cursor.setScale(scene.scale)
   ----
 
-  local cam = g3d.camera:current()
-  cam.aspectRatio = w/h
-  cam:updateProjectionMatrix()
+  player.setAspectRatio(w / h)
 end
 
 scene.update = function(dt)
   musicPlayer.update()
   world.update(dt)
-
+  transition.update(dt)
   -- local t = love.timer.getTime()
 end
 
@@ -97,6 +98,8 @@ scene.draw = function()
     -- CUBE:draw()
     world.draw()
   lg.pop()
+
+  transition.draw()
 
   if scene.minimap.enabled then
     lg.push("all")

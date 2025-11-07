@@ -1,6 +1,7 @@
 local player = {
   lookAt = { 0, -5, 20 }, -- -1e-5
   magnet = 0.5, -- magnet * playerCharacter.size = effect radius
+  isInputBlocked = false,
 }
 
 local g3d = require("libs.g3d")
@@ -11,16 +12,33 @@ player.setCharacter = function(character)
   player.character = character
 end
 
+local lookAt = function(x, y, z)
+  local atX, atY, atZ = unpack(player.lookAt)
+  player.camera:lookAt(x + atX, y + atY, z + atZ, x, y, z)
+end
+
+player.initialisePlayerCamera = function()
+  player.camera = g3d.camera.newCamera()
+  player.camera.fov = math.rad(50)
+  player.camera:updateProjectionMatrix()
+  lookAt(player.getPosition())
+end
+
+player.setAspectRatio = function(aspectRatio)
+  player.camera.aspectRatio = aspectRatio
+  player.camera:updateProjectionMatrix()
+end
+
 player.update = function(dt)
-  local x, y = input.baton:get("move")
-  local dx, dy = -x * dt * player.character.speed, -y * dt * player.character.speed
-  if dx ~= 0 or dy ~= 0 then
-    player.character:move(dx, dy)
+  if player.character and not player.isInputBlocked then
+    local x, y = input.baton:get("move")
+    local dx, dy = -x * dt * player.character.speed, -y * dt * player.character.speed
+    if dx ~= 0 or dy ~= 0 then
+      player.character:move(dx, dy)
+    end
   end
 
-  local x, y, z = player.getPosition()
-  local atX, atY, atZ = unpack(player.lookAt)
-  g3d.camera:current():lookAt(x + atX, y + atY, z + atZ, x, y, z)
+  lookAt(player.getPosition())
 end
 
 player.getPosition = function()

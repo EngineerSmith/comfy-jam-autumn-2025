@@ -16,12 +16,12 @@ interaction.new = function(level, x, y, radius, scriptID, key)
 end
 
 interaction.isInRange = function(self, x, y)
-  local dx, dy = self.x - x, self.y - self.y
+  local dx, dy = self.x - x, self.y - y
   local magSqu = dx * dx + dy * dy
   return magSqu <= self.radiusSqu
 end
 
-interact.isTriggered = function(self)
+interaction.isTriggered = function(self)
   return input.baton:pressed(self.key)
 end
 

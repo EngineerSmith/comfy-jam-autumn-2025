@@ -12,8 +12,8 @@ end
 function camera.setCurrent(to)
     camera._current = to
 
-    to:updateProjectionMatrix()
-    to:updateViewMatrix()
+    -- to:updateProjectionMatrix()
+    -- to:updateViewMatrix()
 end
 
 function camera.newCamera()

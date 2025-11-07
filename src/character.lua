@@ -128,8 +128,11 @@ character.setStateTexture = function(self, state, texture, frameCount, frameTime
   end
 end
 
+character.faceDirection = function(self, nx, ny)
+  self.rotation = math.atan2(ny, nx) - math.rad(90)
+end
+
 character.move = function(self, dx, dy)
-  self.rotation = math.atan2(dy, dx) - math.rad(90)
 
   local finalX, finalY = self.x + dx, self.y + dy
 
@@ -159,9 +162,25 @@ character.move = function(self, dx, dy)
   if finalX ~= self.x or finalY ~= self.y then
     self:teleport(finalX, finalY)
     self.movedPreviousFrame = true
+    self:faceDirection(dx, dy)
     return true
   end
   return false
+end
+
+local movementTolerance = 1e-3
+character.canMoveTo = function(self, goalX, goalY)
+  local canMove = true
+  for level in pairs(self.levels) do
+    local actualX, actualY = level.world:check(self, goalX, goalY)
+    if math.abs(actualX - goalX) > movementTolerance or
+       math.abs(actualY - goalY) > movementTolerance
+      then
+      canMove = false
+      break
+    end
+  end
+  return canMove
 end
 
 character.teleport = function(self, x, y)

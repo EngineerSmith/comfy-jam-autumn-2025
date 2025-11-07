@@ -131,16 +131,37 @@ local mapData = {
     { level = "nest.ground", x =  29.5, y = -6, z = 3, content = "[collectable_count.zone_2]", radius = 5.5, rz = -math.rad(30) },
   },
   interactions = {
-    { level = "nest.ground", x = 0, y = -8, radius = 2.2, scriptID = "enter.pot" },
+    { level = "nest.ground", x = 0, y = -8, radius = 3.0, scriptID = "enter.pot" },
   },
   scripts = {
     ["enter.pot"] = {
-
+      { "lock" },
+      { "moveTo", "Hedgehog.Player", 0, -8 },
+      { "wait" },
+      { "glideBy", "Hedgehog.Player", 0, 3 },
+      { "sleep", 0.2 },
+      { "transition", "CircularWipe.Out", 1.0 },
+      { "wait" },
+      { "hide", "world" },
+      { "show", "nest" },
+      { "sleep", 5e-2 },
+      { "transition", "CircularWipe.In", 1.0 },
+      { "wait" },
+      -- { "unlock" },
     },
     ["exit.pot"] = {
-
+      -- { "lock" },
+      { "transition", "CircularWipe.Out", 1.0 },
+      { "wait" },
+      { "hide", "nest" },
+      { "show", "world" },
+      { "transition", "CircularWipe.In", 1.0 },
+      { "sleep", 0.2 },
+      { "glideBy", "Hedgehog.Player", 0, -3 },
+      { "wait" },
+      { "unlock" },
     },
-    ["event.newgame"] = { -- ran when a new game is started
+    ["event.newgame"] = { isMandatory = true, -- ran when a new game is started
 
     },
   },
