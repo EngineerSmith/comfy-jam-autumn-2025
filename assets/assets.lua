@@ -60,6 +60,9 @@ local list = {
   -- Trees
   { path = "sprites/trees/tree_001.png", name = "sprite.trees.1", onLoad = filterLinear },
   { path = "sprites/trees/tree_002.png", name = "sprite.trees.2", onLoad = filterLinear },
+  -- Characters
+  { path = "sprites/character/hedgehog.png", name = "sprite.hedgehog.idle", onLoad = filterNearest },
+  { path = "sprites/character/hedgehog_walking.png", name = "sprite.hedgehog.walking", onLoad = filterNearest },
   -- Textures
   { path = "textures/texture_05.png", name = "texture.prototype.1", onLoad = filterLinearRepeat },
   { path = "textures/texture_06.png", name = "texture.prototype.2", onLoad = filterLinearRepeat },
@@ -78,6 +81,8 @@ local list = {
   { path = "models/cube_litter_2.obj", name = "model.path.litter.dirt.2", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
   { path = "models/cube_litter_3.obj", name = "model.path.litter.dirt.3", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
   { path = "models/cube_litter_4.obj", name = "model.path.litter.dirt.4", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
+  { path = "models/nest_interior.obj", name = "model.nest.interior", onLoad = objLoader, "z", "assets/models/nest_interior.mtl" },
+  { path = "models/nest_interior_lightShaft.obj", name = "model.nest.interior.lightShaft", onLoad = objLoader, "z", "assets/models/nest_interior_lightShaft.mtl" },
 
   { path = "models/kenney/Nature Kit/pot_small.obj", name = "model.flower_pot.small", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/pot_small.mtl" },
   { path = "models/kenney/Nature Kit/grass.obj",            name = "model.grass",             onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/grass.mtl" },

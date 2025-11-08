@@ -29,7 +29,7 @@ end
 
 handlers["changeStage"] = function(_, toStage)
   local world = require("src.world")
-  world.stage = toStage
+  world.setStage(toStage)
   return true
 end
 

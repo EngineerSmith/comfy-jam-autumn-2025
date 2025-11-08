@@ -32,6 +32,12 @@ function camera.newCamera()
     self.direction = 0
     self.pitch = 0
 
+    -- Orbital Camera properties
+    self.orbitAzimuth = 0
+    self.orbitPitch = math.rad(20)
+    self.orbitTarget = { 0, 0, 0 }
+    self.orbitDistance = 10
+
     self.viewMatrix = newMatrix()
     self.projectionMatrix = newMatrix()
 
@@ -106,6 +112,81 @@ function camera:lookInDirection(x,y,z, directionTowards,pitchTowards)
 
     -- update the camera in the shader
     self:updateViewMatrix()
+end
+
+-- Sensitivity factor for mouse input
+local ORBIT_SENSITIVITY = 5e-3
+-- Rotational speed for joysticks; in seconds
+local ORBIT_JOYSTICK_SPEED = math.rad(120)
+-- Pitch (Vertical angle - up/down from the XY plane, z=0)
+local ORBIT_PITCH_MIN = math.rad(5)
+local ORBIT_PITCH_MAX = math.rad(30)
+-- Azimuth (horizontal angle - rotation around the Z axis)
+local ORBIT_AZIMUTH_MIN = math.rad(-45)
+local ORBIT_AZIMUTH_MAX = math.rad(45)
+
+function camera:orbitalLookAt(dx, dy, xAt, yAt, zAt, distance)
+    if xAt and yAt and zAt then
+        self.orbitTarget = { xAt, yAt, zAt }
+    end
+    if distance then
+        self.orbitDistance = distance
+    end
+
+    if dx and dy then
+        self.orbitAzimuth = self.orbitAzimuth - (dx * ORBIT_SENSITIVITY)
+        self.orbitPitch   = self.orbitPitch   + (dy * ORBIT_SENSITIVITY)
+
+        self.orbitAzimuth = math.min(ORBIT_AZIMUTH_MAX, math.max(ORBIT_AZIMUTH_MIN, self.orbitAzimuth))
+        self.orbitPitch   = math.min(ORBIT_PITCH_MAX,   math.max(ORBIT_PITCH_MIN, self.orbitPitch))
+    end
+
+    local distance = self.orbitDistance
+    local azimuth = self.orbitAzimuth
+    local pitch = self.orbitPitch
+
+    local sinPitch = math.sin(pitch)
+    local cosPitch = math.cos(pitch)
+
+    local offsetZ = distance * sinPitch
+    
+    local radiusXY = distance * cosPitch
+    local offsetX = radiusXY * math.sin(azimuth)
+    local offsetY = radiusXY * math.cos(azimuth)
+
+    local target = self.orbitTarget
+    self.position[1] = target[1] + offsetX
+    self.position[2] = target[2] + offsetY
+    self.position[3] = target[3] + offsetZ
+
+    self.target[1] = target[1]
+    self.target[2] = target[2]
+    self.target[3] = target[3]
+
+
+    -- print(">")
+    -- print(unpack(self.position))
+    -- print(unpack(self.target))
+    -- print("<")
+
+    self:updateViewMatrix()
+end
+
+function camera:orbitalJoystick(joyX, joyY, dt)
+    -- Prevent diagonal movement from being faster than straight movement by limiting vector to length 1
+    local mag = math.sqrt(joyX * joyX + joyY * joyY)
+    if mag > 1 then
+        joyX = joyX / mag
+        joyY = joyY / mag
+    end
+
+    local dxRotation = joyX * ORBIT_JOYSTICK_SPEED * dt
+    local dyRotation = joyY * ORBIT_JOYSTICK_SPEED * dt
+
+    local dxScaled = dxRotation / ORBIT_SENSITIVITY
+    local dyScaled = dyRotation / ORBIT_SENSITIVITY
+
+    self:orbitalLookAt(dxScaled, dyScaled)
 end
 
 -- recreate the camera's view matrix from its current values

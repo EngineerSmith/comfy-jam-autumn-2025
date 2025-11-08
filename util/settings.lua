@@ -40,6 +40,7 @@ local defaultSettings = {
         pause =   { "sc:escape", "button:start" },
         unpause = { "sc:escape", "sc:backspace", "button:start", "button:back", "button:b" },
         interact = { "sc:space", "mouse:1", "button:a", "axis:triggerright+" },
+        unlockCamera = { "mouse:3" },
       },
       deadzone = .15,
       deadzoneSquared = false,

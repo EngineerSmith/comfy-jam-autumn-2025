@@ -9,6 +9,7 @@ local input = {
     pairs = {
       move = { "moveRight", "moveLeft", "moveUp", "moveDown" },
       -- face = { "targetRight", "targetLeft", "moveUp", "moveDown" },
+      target = { "targetRight", "targetLeft", "targetUp", "targetDown" },
     },
     joystick = joystick,
     deadzone = settings.client.deadzone,

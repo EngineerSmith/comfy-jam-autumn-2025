@@ -9,6 +9,7 @@ uniform mat4 viewMatrix;       // handled by the camera
 uniform mat4 modelMatrix;      // models send their own model matrices when drawn
 
 uniform vec3 lightDirection;
+uniform bool disableLight;
 
 // define some varying vectors that are useful for writing custom fragment shaders
 varying vec4 worldPosition;
@@ -37,6 +38,8 @@ vec4 position(mat4 transformProjection, vec4 vertexPosition) {
     vertexColor = VertexColor;
 
     float light = max(0.0, dot(vertexNormal, lightDirection));
+    if (disableLight)
+        light = 0.0;
     vertexLight = clamp(0.3 + 0.7 * light, 0.0, 1.0);
 
     return screenPosition;

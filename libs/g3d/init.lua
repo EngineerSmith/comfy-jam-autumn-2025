@@ -61,10 +61,13 @@ if select(3, love.window.getMode()).depth then
 end
 
 local shader = g3d.shader
-shader:send("shadowRadiusX",  0.5)
-shader:send("shadowRadiusY",  0.5)
-shader:send("shadowSoftness", 0.7)
-shader:send("shadowStrength", 1.0)
+defaultShadowSettings = function()
+  shader:send("shadowRadiusX",  0.5)
+  shader:send("shadowRadiusY",  0.5)
+  shader:send("shadowSoftness", 0.7)
+  shader:send("shadowStrength", 1.0)
+end
+defaultShadowSettings()
 
 -- get rid of g3d from the global namespace and return it instead
 local g3d = g3d

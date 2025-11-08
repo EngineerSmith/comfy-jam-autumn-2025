@@ -82,6 +82,7 @@ scene.resize = function(w, h)
   ----
 
   player.setAspectRatio(w / h)
+  require("src.world.nest").setAspectRatio(w / h)
 end
 
 scene.update = function(dt)
@@ -155,6 +156,10 @@ end
 
 scene.gamepadpressed = function(...)
   input.gamepadpressed(...)
+end
+
+scene.mousemoved = function(...)
+  world.mousemoved(...)
 end
 
 return scene

@@ -1,0 +1,12 @@
+# Blender MTL File: 'nest_interior.blend'
+# Material Count: 1
+
+newmtl Light
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.991102 0.938686 0.938686
+Ks 0.500000 0.500000 0.500000
+Ke 0.495551 0.469343 0.469343
+Ni 1.450000
+d 1.000000
+illum 2

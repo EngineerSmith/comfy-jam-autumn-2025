@@ -13,6 +13,7 @@ local signpost = require("src.signpost")
 local character = require("src.character")
 local collectable = require("src.collectable")
 local interaction = require("src.interaction")
+local musicPlayer = require("src.musicPlayer")
 local scriptingEngine = require("src.scripting")
 local colliderMulti = require("src.colliderMulti")
 local colliderCircle = require("src.colliderCircle")
@@ -298,7 +299,20 @@ world.unload = function()
   nest.unload()
 end
 
-local COLLECTABLE_SHADOW_MAX = 32
+world.setStage = function(toStage)
+  local previousStage = world.stage
+  world.stage = toStage
+  if world.stage == "nest" then
+    nest.enter()
+    musicPlayer.pause()
+  end
+  if previousStage == "nest" then
+    nest.leave()
+    musicPlayer.continue()
+  end
+end
+
+COLLECTABLE_SHADOW_MAX = 32
 local sort_ClosestMag = function(a, b)
   return a.mag < b.mag
 end
@@ -453,6 +467,12 @@ world.draw = function()
     lg.setColor(1,1,1,1)
     lg.print(("Collected Leaves: %2d"):format(world.leaves), 20, 20)
   lg.pop()
+end
+
+world.mousemoved = function(...)
+  if world.stage == "nest" then
+    nest.mousemoved(...)
+  end
 end
 
 return world

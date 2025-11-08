@@ -1,6 +1,10 @@
 local assets = {
-  "audio.music.fall",
-  "audio.music.roundabout",
+-- 3D models
+  "model.nest.interior",
+  "model.nest.interior.lightShaft",
+-- Sprites
+  "sprite.hedgehog.idle",
+  "sprite.hedgehog.walking",
 }
 
 --- Grab the models needed for mapData
