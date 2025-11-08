@@ -1,3 +1,4 @@
+local nest = require("src.world.nest")
 local level = require("src.world.level")
 local transition = require("src.world.transition")
 
@@ -274,6 +275,8 @@ world.load = function()
   else
     player.setCharacter(playerCharacter)
   end
+
+  nest.load()
 end
 
 world.unload = function()
@@ -291,6 +294,8 @@ world.unload = function()
   world.interactions = { }
   world.characters = { }
   world.debug = { }
+
+  nest.unload()
 end
 
 local COLLECTABLE_SHADOW_MAX = 32
@@ -312,10 +317,10 @@ world.update = function(dt)
     end
   end
 
-  -- We update player after interactions, as scripts can lock player input, and thus stopping them move this frame
-  player.update(dt)
-
   if world.stage == "world" then
+    -- We update player after interactions, as scripts can lock player input, and thus stopping them move this frame
+    player.update(dt)
+
     for _, character in pairs(world.characters) do
       character:update(dt)
     end
@@ -388,6 +393,8 @@ world.update = function(dt)
         shader:send("numCollectable", 0)
       end
     end
+  elseif world.stage == "nest" then
+    nest.update(dt)
   end
 end
 
@@ -438,6 +445,8 @@ world.draw = function()
     for _, signpost in ipairs(world.signposts) do
       signpost:draw()
     end
+  elseif world.stage == "nest" then
+    nest.draw()
   end
   lg.push("all")
     lg.origin()

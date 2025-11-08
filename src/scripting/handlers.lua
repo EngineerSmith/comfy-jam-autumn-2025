@@ -7,7 +7,7 @@ local memory = { }
 -- Remember to clear it when the command finishes.
 
 
--- handlers has two fields
+-- handlers has two fields, or just a function; which defaults to a `start` function
 -- `start` and `update`: both functions
 -- `start(executionID, ...)` arguments of the command is passed in.
 -- `update(executionID, dt, ...)` arguments of the command is passed in.
@@ -15,21 +15,23 @@ local memory = { }
 -- `start`, and `update` return one value, `isComplete`
 
 
-handlers["lock"] = {
-  start = function(_)
-    local player = require("src.player")
-    player.isInputBlocked = true
-    return true
-  end,
-}
+handlers["lock"] = function(_)
+  local player = require("src.player")
+  player.isInputBlocked = true
+  return true
+end
 
-handlers["unlock"] = {
-  start = function(_)
-    local player = require("src.player")
-    player.isInputBlocked = false
-    return true
-  end,
-}
+handlers["unlock"] = function(_)
+  local player = require("src.player")
+  player.isInputBlocked = false
+  return true
+end
+
+handlers["changeStage"] = function(_, toStage)
+  local world = require("src.world")
+  world.stage = toStage
+  return true
+end
 
 handlers["moveTo"] = {
   start = function(_, characterName, toX, toY)
@@ -205,21 +207,10 @@ handlers["transition"] = {
   end,
 }
 
-handlers["changeStage"] = {
-  start = function(_, toStage)
-    local world = require("src.world")
-    world.stage = toStage
-    return true
-  end
-}
-
 --- handler validation
 local keysToRemove = { }
 for key, handler in pairs(handlers) do
-  if type(handler) ~= "table" then
-    logger.warn("Script handler found with non-table value. Removing: "..tostring(key).."'")
-    table.insert(keysToRemove, key)
-  else
+  if type(handler) == "table" then
     local updateType = type(handler.update)
     if updateType ~= "function" and updateType ~= "nil" then
       logger.warn("Script handler found update callback that wasn't function or nil. Removing: '"..tostring(key).."'")
@@ -236,6 +227,13 @@ for key, handler in pairs(handlers) do
         end
       end
     end
+  elseif type(handler) == "function" then
+    handlers[key] = {
+      start = handler,
+    }
+  else
+    logger.warn("Script handler found with non-table value. Removing: "..tostring(key).."'")
+    table.insert(keysToRemove, key)
   end
 end
 for _, key in ipairs(keysToRemove) do
