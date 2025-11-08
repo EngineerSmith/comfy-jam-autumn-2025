@@ -101,8 +101,9 @@ scene.draw = function()
 
   transition.draw()
 
-  if scene.minimap.enabled then
+  if scene.minimap.enabled and world.stage == "world" then
     lg.push("all")
+      lg.origin()
       lg.setCanvas(scene.minimap.canvas)
       lg.clear(.1,.1,.1, 1)
       local playerX, playerY, playerZ = player.getPosition()

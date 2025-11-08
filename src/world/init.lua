@@ -32,6 +32,7 @@ local world = {
   debug = { },
 
   leaves = 0,
+  stage = "world",
 }
 
 local characterFactories = { }
@@ -79,6 +80,7 @@ world.load = function()
   --     return
   --   end
   -- end
+  -- The above was causing issues with how `helper` rng was being seeded, and the wrong assets were being loaded, have to rely on require to cache the correct asset list
   local mapData = require("assets.level.mapData")
 
   for levelName, levelInfo in pairs(mapData.levels) do
@@ -88,6 +90,7 @@ world.load = function()
     rect.color = { 1, 1, 1, 0.5 }
     table.insert(world.debug, rect)
   end
+
   for _, transitionInfo in ipairs(mapData.transitions) do
     for edgeName, levelName in pairs(transitionInfo.edgeMap) do
       if world.levels[levelName] then
@@ -312,125 +315,130 @@ world.update = function(dt)
   -- We update player after interactions, as scripts can lock player input, and thus stopping them move this frame
   player.update(dt)
 
-  for _, character in pairs(world.characters) do
-    character:update(dt)
-  end
+  if world.stage == "world" then
+    for _, character in pairs(world.characters) do
+      character:update(dt)
+    end
 
-  for _, level in pairs(world.levels) do
-    level:update(dt)
-  end
-  for _, transition in ipairs(world.transitions) do
-    transition:update(world.characters)
-  end
-  for _, signpost in ipairs(world.signposts) do
-    signpost:update(dt)
-  end
+    for _, level in pairs(world.levels) do
+      level:update(dt)
+    end
+    for _, transition in ipairs(world.transitions) do
+      transition:update(world.characters)
+    end
+    for _, signpost in ipairs(world.signposts) do
+      signpost:update(dt)
+    end
 
-  local playerCharacter = player.character
-  if playerCharacter then
-    for _, collectable in ipairs(world.collectables) do
-      collectable:update(dt)
+    local playerCharacter = player.character
+    if playerCharacter then
+      for _, collectable in ipairs(world.collectables) do
+        collectable:update(dt)
 
-      if not collectable.isCollected and playerCharacter:isInLevel(collectable.level) then
-        local dx, dy = collectable.x - playerCharacter.x, collectable.y - playerCharacter.y
-        local mag = math.sqrt(dx * dx + dy * dy)
-        local playerRadius = playerCharacter.halfSize * playerCharacter.textureSizeMod
-        local distance = mag - playerRadius
+        if not collectable.isCollected and playerCharacter:isInLevel(collectable.level) then
+          local dx, dy = collectable.x - playerCharacter.x, collectable.y - playerCharacter.y
+          local mag = math.sqrt(dx * dx + dy * dy)
+          local playerRadius = playerCharacter.halfSize * playerCharacter.textureSizeMod
+          local distance = mag - playerRadius
 
-        if distance <= 1 then
-          local t = 1.0 - math.min(1.0, distance / 1)
-          collectable.scale = (1 - t) * 1 + t * 0.5
-        end
-
-        if distance <= .1 then -- .1 for jiggle room
-          local value = collectable:collected()
-          world.leaves = world.leaves + value
-        elseif distance <= player.magnet * playerCharacter.size then
-          local dx, dy = dx / mag, dy / mag
-          local speed = 1.5
-          if distance <= (player.magnet * playerCharacter.size)/2 then
-            speed = 4
+          if distance <= 1 then
+            local t = 1.0 - math.min(1.0, distance / 1)
+            collectable.scale = (1 - t) * 1 + t * 0.5
           end
-          collectable.x = collectable.x + -dx * speed * dt
-          collectable.y = collectable.y + -dy * speed * dt
+
+          if distance <= .1 then -- .1 for jiggle room
+            local value = collectable:collected()
+            world.leaves = world.leaves + value
+          elseif distance <= player.magnet * playerCharacter.size then
+            local dx, dy = dx / mag, dy / mag
+            local speed = 1.5
+            if distance <= (player.magnet * playerCharacter.size)/2 then
+              speed = 4
+            end
+            collectable.x = collectable.x + -dx * speed * dt
+            collectable.y = collectable.y + -dy * speed * dt
+          end
+        else
+          collectable.scale = 1
         end
+      end
+
+      local collectablePositions = { }
+      for _, collectable in ipairs(world.collectables) do
+        if not collectable.isCollected then
+          local dx = collectable.x - playerCharacter.x
+          local dy = collectable.y - playerCharacter.y
+          local mag = math.sqrt(dx * dx + dy * dy)
+
+          table.insert(collectablePositions, {
+            mag = mag,
+            collectable:getShadowPosition() -- multiple return
+          })
+        end
+      end
+
+      table.sort(collectablePositions, sort_ClosestMag)
+
+      local shader = g3d.shader
+      local limit = math.min(#collectablePositions, COLLECTABLE_SHADOW_MAX)
+      if limit > 0 then
+        shader:send("collectablePositions", unpack(collectablePositions, 1, limit))
+        shader:send("numCollectable", limit)
       else
-        collectable.scale = 1
+        shader:send("numCollectable", 0)
       end
-    end
-
-    local collectablePositions = { }
-    for _, collectable in ipairs(world.collectables) do
-      if not collectable.isCollected then
-        local dx = collectable.x - playerCharacter.x
-        local dy = collectable.y - playerCharacter.y
-        local mag = math.sqrt(dx * dx + dy * dy)
-
-        table.insert(collectablePositions, {
-          mag = mag,
-          collectable:getShadowPosition() -- multiple return
-        })
-      end
-    end
-
-    table.sort(collectablePositions, sort_ClosestMag)
-
-    local shader = g3d.shader
-    local limit = math.min(#collectablePositions, COLLECTABLE_SHADOW_MAX)
-    if limit > 0 then
-      shader:send("collectablePositions", unpack(collectablePositions, 1, limit))
-      shader:send("numCollectable", limit)
-    else
-      shader:send("numCollectable", 0)
     end
   end
 end
 
 local lg = love.graphics
 world.debugDraw = function()
-  lg.push()
-  for _, rect in ipairs(world.debug) do
-    lg.setColor(rect.color)
-    lg.rectangle("fill", unpack(rect))
-  end
-  for _, collider in ipairs(world.colliders) do
-    collider:debugDraw()
-  end
-  for _, prop in ipairs(world.props) do
-    if prop.collider then
-      prop.collider:debugDraw()
+  if world.stage == "world" then
+    lg.push()
+    for _, rect in ipairs(world.debug) do
+      lg.setColor(rect.color)
+      lg.rectangle("fill", unpack(rect))
     end
+    for _, collider in ipairs(world.colliders) do
+      collider:debugDraw()
+    end
+    for _, prop in ipairs(world.props) do
+      if prop.collider then
+        prop.collider:debugDraw()
+      end
+    end
+    for _, collectable in ipairs(world.collectables) do
+      collectable:debugDraw()
+    end
+    for _, signpost in ipairs(world.signposts) do
+      signpost:debugDraw()
+    end
+    player.character:debugDraw()
+    lg.pop()
   end
-  for _, collectable in ipairs(world.collectables) do
-    collectable:debugDraw()
-  end
-  for _, signpost in ipairs(world.signposts) do
-    signpost:debugDraw()
-  end
-  player.character:debugDraw()
-  lg.pop()
 end
 
 world.draw = function()
   lg.setColor(1,1,1,1)
 
-  for _, prop in ipairs(world.props) do
-    prop:draw()
-  end
+  if world.stage == "world" then
+    for _, prop in ipairs(world.props) do
+      prop:draw()
+    end
 
-  for _, collectable in ipairs(world.collectables) do
-    collectable:draw()
-  end
+    for _, collectable in ipairs(world.collectables) do
+      collectable:draw()
+    end
 
-  for _, character in pairs(world.characters) do
-    character:draw() -- This includes the player character
-  end
+    for _, character in pairs(world.characters) do
+      character:draw() -- This includes the player character
+    end
 
-  -- Has transparency
-  for _, signpost in ipairs(world.signposts) do
-    signpost:draw()
+    -- Has transparency
+    for _, signpost in ipairs(world.signposts) do
+      signpost:draw()
+    end
   end
-
   lg.push("all")
     lg.origin()
     lg.setColor(1,1,1,1)

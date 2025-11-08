@@ -205,6 +205,14 @@ handlers["transition"] = {
   end,
 }
 
+handlers["changeStage"] = {
+  start = function(_, toStage)
+    local world = require("src.world")
+    world.stage = toStage
+    return true
+  end
+}
+
 --- handler validation
 local keysToRemove = { }
 for key, handler in pairs(handlers) do
