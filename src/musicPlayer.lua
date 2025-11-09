@@ -12,6 +12,7 @@ local musicPlayer = {
 }
 
 local FADE_TIME = 3 -- seconds
+local FADE_TIME_PAUSE = 1-- seconds
 local FADE_BUFFER = 0.1 -- seconds
 
 local flux = require("libs.flux")
@@ -33,7 +34,7 @@ local clearTweens = function()
   end
 end
 
-local startFadeOut = function(onCompleteCallback, keepSource)
+local startFadeOut = function(onCompleteCallback, keepSource, fadeTime)
   clearTweens()
 
   if not musicPlayer.currentSource then
@@ -48,9 +49,9 @@ local startFadeOut = function(onCompleteCallback, keepSource)
   local startVolume = sourceToFade:getVolume()
 
   local fade = { t = 1 }
-  local fadeDuration = FADE_TIME
+  local fadeDuration = fadeTime
   if musicPlayer.targetVolume > 0 then
-    fadeDuration = FADE_TIME * (startVolume / musicPlayer.targetVolume)
+    fadeDuration = fadeTime * (startVolume / musicPlayer.targetVolume)
   end
 
   musicPlayer.fadeOutTween = flux.to(fade, fadeDuration, { t = 0 })
@@ -79,7 +80,7 @@ local startFadeOut = function(onCompleteCallback, keepSource)
 
 end
 
-local startFadeIn = function(assetKey)
+local startFadeIn = function(assetKey, fadeTime)
   clearTweens()
 
   musicPlayer.currentAssetKey = assetKey
@@ -93,7 +94,7 @@ local startFadeIn = function(assetKey)
   local endVolume = musicPlayer.targetVolume
 
   local fade = { t = 0 }
-  musicPlayer.fadeInTween = flux.to(fade, FADE_TIME, { t = 1 })
+  musicPlayer.fadeInTween = flux.to(fade, fadeTime, { t = 1 })
     :onupdate(function()
         if sourceToFade then
           sourceToFade:setVolume(endVolume * fade.t)
@@ -104,15 +105,16 @@ local startFadeIn = function(assetKey)
       end)
 end
 
-local startNextTrackFadeIn = function()
+local startNextTrackFadeIn = function(fadeTime)
   if musicPlayer.isPaused then
     return
   end
+  fadeTime = fadeTime or FADE_TIME
 
   musicPlayer.currentTrackIndex = musicPlayer.currentTrackIndex % #musicPlayer.music + 1
   local nextAssetKey = musicPlayer.music[musicPlayer.currentTrackIndex]
 
-  startFadeIn(nextAssetKey)
+  startFadeIn(nextAssetKey, fadeTime)
 end
 
 musicPlayer.start = function()
@@ -126,7 +128,7 @@ musicPlayer.start = function()
 
   musicPlayer.currentSource = nil
 
-  startNextTrackFadeIn()
+  startNextTrackFadeIn(FADE_TIME)
 end
 
 musicPlayer.update = function()
@@ -143,7 +145,7 @@ musicPlayer.update = function()
 
       -- Check if it is time to fade out
       if (duration - currentTime) <= (FADE_TIME + FADE_BUFFER) then
-        startFadeOut(startNextTrackFadeIn, false)
+        startFadeOut(startNextTrackFadeIn, false, FADE_TIME)
       end
     end
   end
@@ -157,7 +159,7 @@ musicPlayer.pause = function()
     return -- already paused
   end
   musicPlayer.isPaused = true
-  startFadeOut(nil, true)
+  startFadeOut(nil, true, FADE_TIME_PAUSE)
 end
 
 musicPlayer.continue = function()
@@ -170,9 +172,9 @@ musicPlayer.continue = function()
   musicPlayer.isPaused = false
 
   if not musicPlayer.currentSource or not musicPlayer.currentAssetKey then
-    startNextTrackFadeIn()
+    startNextTrackFadeIn(FADE_TIME_PAUSE)
   else
-    startFadeIn(musicPlayer.currentAssetKey)
+    startFadeIn(musicPlayer.currentAssetKey, FADE_TIME_PAUSE)
   end
 end 
 
