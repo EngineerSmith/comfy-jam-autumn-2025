@@ -207,6 +207,16 @@ handlers["transition"] = {
   end,
 }
 
+handlers["if.nest.bed.level.0"] = function()
+  local nest = require("src.world.nest")
+  return nest.bedLevel == 0
+end
+
+handlers["if.nest.bed.level.1"] = function()
+  local nest = require("sec.world.nest")
+  return next.bedLevel == 1
+end
+
 --- handler validation
 local keysToRemove = { }
 for key, handler in pairs(handlers) do

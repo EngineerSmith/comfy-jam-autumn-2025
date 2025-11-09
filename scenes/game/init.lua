@@ -159,7 +159,7 @@ scene.gamepadpressed = function(...)
 end
 
 scene.mousemoved = function(...)
-  world.mousemoved(...)
+  world.mousemoved(scene.scale, ...)
 end
 
 return scene

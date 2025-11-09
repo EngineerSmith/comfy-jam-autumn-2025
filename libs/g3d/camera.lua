@@ -21,7 +21,7 @@ function camera.newCamera()
 
     self.fov = math.pi/2
     self.nearClip = 0.01
-    self.farClip = 1000
+    self.farClip = 500
     self.aspectRatio = love.graphics.getWidth()/love.graphics.getHeight()
     self.position = {0,0,0}
     self.target = {1,0,0}
@@ -122,10 +122,11 @@ local ORBIT_JOYSTICK_SPEED = math.rad(120)
 local ORBIT_PITCH_MIN = math.rad(5)
 local ORBIT_PITCH_MAX = math.rad(30)
 -- Azimuth (horizontal angle - rotation around the Z axis)
-local ORBIT_AZIMUTH_MIN = math.rad(-45)
-local ORBIT_AZIMUTH_MAX = math.rad(45)
+local ORBIT_AZIMUTH_MIN = math.rad(-50)
+local ORBIT_AZIMUTH_MAX = math.rad(50)
 
-function camera:orbitalLookAt(dx, dy, xAt, yAt, zAt, distance)
+function camera:orbitalLookAt(dx, dy, xAt, yAt, zAt, distance, pixelScale)
+    pixelScale = pixelScale or 1.0
     if xAt and yAt and zAt then
         self.orbitTarget = { xAt, yAt, zAt }
     end
@@ -134,8 +135,8 @@ function camera:orbitalLookAt(dx, dy, xAt, yAt, zAt, distance)
     end
 
     if dx and dy then
-        self.orbitAzimuth = self.orbitAzimuth - (dx * ORBIT_SENSITIVITY)
-        self.orbitPitch   = self.orbitPitch   + (dy * ORBIT_SENSITIVITY)
+        self.orbitAzimuth = self.orbitAzimuth - (dx * ORBIT_SENSITIVITY / pixelScale)
+        self.orbitPitch   = self.orbitPitch   + (dy * ORBIT_SENSITIVITY / pixelScale)
 
         self.orbitAzimuth = math.min(ORBIT_AZIMUTH_MAX, math.max(ORBIT_AZIMUTH_MIN, self.orbitAzimuth))
         self.orbitPitch   = math.min(ORBIT_PITCH_MAX,   math.max(ORBIT_PITCH_MIN, self.orbitPitch))

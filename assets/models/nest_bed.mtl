@@ -1,0 +1,26 @@
+newmtl Leaf_Color
+Kd 0.626661 0.180718 0.038478
+
+newmtl Leaf_Color.001
+Kd 0.626661 0.180718 0.038478
+
+newmtl Leaf_Color.002
+Kd 0.626661 0.300667 0.078785
+
+newmtl Leaf_Color_Spot
+Kd 0.623961 0.146617 0.047027
+
+newmtl Leaf_Color_Spot.001
+Kd 0.623961 0.060014 0.029715
+
+newmtl Leaf_Color_Spot.002
+Kd 0.623961 0.397939 0.092498
+
+newmtl Stem_Color
+Kd 0.162642 0.025362 0.005375
+
+newmtl Stem_Color.001
+Kd 0.207915 0.039524 0.009733
+
+newmtl Stem_Color.002
+Kd 0.357915 0.068039 0.016755

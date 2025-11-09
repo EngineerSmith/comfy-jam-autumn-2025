@@ -21,6 +21,9 @@ object.new = function()
 end
 
 object.setState = function(self, state)
+  -- if self.state == state and self.currentMesh then
+  --   return
+  -- end
   self.state = state
 
   local stateData = self.stateTextures[self.state]
@@ -81,17 +84,17 @@ object.move = function(self, deltaX, deltaY, ignoreBounds)
   self.x = self.x + deltaX
   self.y = self.y + deltaY
 
-  if not ignoreBounds then
-    local mag = math.sqrt(self.x * self.x + self.y * self.y)
-    if mag > MAX_RADIUS - self.size / 1.95 then
-      local scale = (MAX_RADIUS - self.size / 1.95) / mag
-      self.x = self.x * scale
-      self.y = self.y * scale
-    end
-  end
+  -- if not ignoreBounds then
+  --   local mag = math.sqrt(self.x * self.x + self.y * self.y)
+  --   if mag > MAX_RADIUS - self.size / 1.95 then
+  --     local scale = (MAX_RADIUS - self.size / 1.95) / mag
+  --     self.x = self.x * scale
+  --     self.y = self.y * scale
+  --   end
+  -- end
 
-  local state = math.abs(deltaX) > 0 and "walk" or "idle"
-  if state == "walk" then
+  local state = math.abs(deltaX) > 0 and "walking" or "idle"
+  if state == "walking" then
     local currentFlip = self.flip
     self.flip = deltaX > 0
     if currentFlip ~= self.flip then

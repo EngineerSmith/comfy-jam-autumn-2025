@@ -7,7 +7,16 @@ local g3d = require("libs.g3d")
 local input = require("util.input")
 local assetManager = require("util.assetManager")
 
+local ai = require("src.world.nest.ai")
 local object = require("src.world.nest.object")
+
+nest.bedAssets = {
+  [0] = "model.nest.interior.bed.0",
+  [1] = "model.nest.interior.bed.1",
+  [2] = "model.nest.interior.bed.2",
+  [3] = "model.nest.interior.bed.3",
+  [4] = "model.nest.interior.bed.4",
+}
 
 nest.load = function()
   nest.bgShader = lg.newShader("src/world/vignette.glsl")
@@ -31,9 +40,31 @@ nest.load = function()
   local tex = assetManager["sprite.hedgehog.walking"]
   nest.hedgehog:setStateTexture("walking", tex, 2, 0.1)
 
+  nest.ball = object.new()
+  local tex = assetManager["sprite.ball.idle"]
+  nest.ball:setStateTexture("idle", tex, 1, 0)
+  local tex = assetManager["sprite.ball.walking"]
+  nest.ball:setStateTexture("walking", tex, 3, 0.2)
+
   nest.objects = {
     nest.hedgehog,
+    nest.ball,
   }
+
+  ai.addCharacterControl(nest.hedgehog)
+
+  -- I want all bed's to share a matrix, share with level 0 for simplicity
+  local sourceMatrix = assetManager[nest.bedAssets[0]]
+      :setTranslation(0, -1.3, 0)
+      :setRotation(0, 0, math.rad(90))
+      .matrix
+  for index, assetKey in pairs(nest.bedAssets) do
+    if index ~= 0 then
+      local model = assetManager[assetKey]
+      model.matrix = sourceMatrix
+    end
+  end
+  ai.addInteraction("interact.bed", 0, -1.3, 0.6, 0, -0.85, "interact.bed")
 end
 
 nest.unload = function()
@@ -44,17 +75,21 @@ end
 nest.enter = function()
   nest.camera:setCurrent()
   local shader = g3d.shader
-  shader:send("shadowRadiusX",  0.25)
+  shader:send("shadowRadiusX",  0.20)
   shader:send("shadowRadiusY",  0.06)
   shader:send("shadowSoftness", 0.7)
   shader:send("shadowStrength", 1.0)
 
-  nest.hedgehog.x, nest.hedgehog.y = 0, 1.7
+  nest.hedgehog.x, nest.hedgehog.y = 0, 1.5
+  nest.ball.x, nest.ball.y = 1.2, -.4
+
+  ai.timer = 1.0 -- bump timer for wander to happen sooner when character enters
 end
 
 nest.leave = function()
   require("src.player").camera:setCurrent()
   defaultShadowSettings()
+  ai.resetState()
 end
 
 nest.setAspectRatio = function(aspectRatio)
@@ -65,8 +100,6 @@ nest.setAspectRatio = function(aspectRatio)
   nest.camera:updateProjectionMatrix()
 end
 
-local timer = 0
-local toX, toY = 0, 0
 nest.update = function(dt)
   do -- background
     local expoMin, expoMax = 0.45, 0.8
@@ -82,21 +115,11 @@ nest.update = function(dt)
     end
   end
 
+  nest.ball:update(dt)
+
   nest.hedgehog:update(dt)
   -- move hedgehog after update
-  timer = timer - dt
-  if timer <= 0  then
-    local radius = love.math.random(-15, 15) / 10
-    local ang = love.math.random() * 2 * math.pi
-    toX, toY = radius * math.cos(ang), radius * math.sin(ang)
-    timer = 5.0
-  end
-
-  local dx, dy = toX - nest.hedgehog.x, toY - nest.hedgehog.y
-  local mag = math.sqrt(dx * dx + dy * dy)
-  if mag >= 0.1 then
-    nest.hedgehog:move(dx / mag * dt, dy / mag * dt)
-  end
+  ai.update(dt)
 
   local objectPositions = { }
   for _, object in ipairs(nest.objects) do
@@ -114,11 +137,24 @@ nest.update = function(dt)
     shader:send("numCollectable", 0)
   end
 
+  if input.baton:pressed("pause") then
+    ai.startBehaviour("play_ball", nest.ball)
+  end
+
   if input.baton:pressed("reject") then
+    ai.interrupt() -- we can't start our exit script, if ai is currently running one
     require("src.scripting").startScript("exit.pot")
     return
   end
 
+end
+
+nest.drawBed = function(level)
+  level = level or 0
+  for i = level, 0, -1 do
+    local model = assetManager[nest.bedAssets[i]]
+    model:draw()
+  end
 end
 
 nest.draw = function()
@@ -135,7 +171,9 @@ nest.draw = function()
     nest.camera:setCurrent()
     local interior = assetManager["model.nest.interior"]
     interior:setRotation(0, 0, math.rad(90))
-    interior:draw()
+      :draw()
+
+    nest.drawBed(4)
 
     lg.setMeshCullMode("none")
 
@@ -155,10 +193,10 @@ nest.draw = function()
   lg.pop()
 end
 
-nest.mousemoved = function(_, _, dx, dy, _)
+nest.mousemoved = function(scale, _, _, dx, dy, _)
   if dx ~= 0 and dy ~= 0 then
     if input.baton:down("unlockCamera") then
-      nest.camera:orbitalLookAt(dx, dy)
+      nest.camera:orbitalLookAt(dx, dy, nil, nil, nil, nil, scale)
     end
   end
 end

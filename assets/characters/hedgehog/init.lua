@@ -12,7 +12,7 @@ local fidget3 = love.graphics.newImage("assets/characters/hedgehog/hedgehog_fidg
 fidget3:setFilter("nearest", "nearest")
 
 return function()
-  local hedgehog = character.create("hedgehog", 12, 5, 0.31, 0.47)
+  local hedgehog = character.create("hedgehog", 8, 5, 0.31, 0.47)
   hedgehog.color = { 1, 0, 0, 1 } -- debug
 
   hedgehog:setStateTexture("idle", idle, 1, 0)

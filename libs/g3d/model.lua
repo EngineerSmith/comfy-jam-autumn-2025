@@ -100,6 +100,7 @@ function model:setTranslation(tx,ty,tz)
     self.translation[2] = ty
     self.translation[3] = tz
     self:updateMatrix()
+    return self
 end
 
 -- rotate given one 3d vector
@@ -110,6 +111,7 @@ function model:setRotation(rx,ry,rz)
     self.rotation[3] = rz
     self.rotation[4] = nil
     self:updateMatrix()
+    return self
 end
 
 -- create a quaternion from an axis and an angle

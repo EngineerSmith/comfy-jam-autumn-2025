@@ -162,6 +162,15 @@ local mapData = {
     ["event.newgame"] = { isMandatory = true, -- ran when a new game is started
 
     },
+    -- Example interaction script
+    ["interact.bed"] = { isMandatory = true,
+      { "if", "if.nest.bed.level.0", 2, 4 },
+      { "move", "ai", 0, 0 }, -- animation for level 0 bed
+      { "goto", -1, },
+      { "if", "if.nest.bed.level.1", 5, -1 },
+      { "move", "ai", 0, 0 }, -- animation for level 1 bed
+      { "ai.finishScript" }, -- tell the ai, that the script has finished
+    },
   },
   characters = {
     ["Hedgehog.Player"] = {

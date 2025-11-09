@@ -7,7 +7,10 @@ local handlers = require("src.scripting.handlers")
 local scripts = { }
 local scriptQueue = { }
 local sleepTimers = { }
+local nextInstanceID = 1
+local scriptInstances = { }
 
+local currentInstanceID = nil
 local currentExecutionID = nil
 local activeScript = nil
 local currentCommandIndex = 0
@@ -15,6 +18,25 @@ local isRunning = false
 local commandQueue = { }
 local isWaiting = false
 local blockingCommandID = nil
+
+local performJump = function(index)
+  if type(index) ~= "number" or index == 0 then
+    logger.warn("Invalid jump index: "..tostring(index))
+    return false
+  end
+  local targetIndex = index
+  if index < 0 then
+    targetIndex = #activeScript + index + 1
+  end
+
+  if targetIndex < 1 or targetIndex > #activeScript then
+    logger.warn("Calculated jump index ("..tostring(targetIndex)..") is out of bounds (1 to "..tostring(#activeScript)..")")
+    return false
+  end
+  
+  currentCommandIndex = targetIndex - 1
+  return true
+end
 
 handlers["wait"] = {
   update = function(_, _)
@@ -54,6 +76,44 @@ handlers["sleep"] = {
   end,
 }
 
+handlers["goto"] = {
+  start = function(_, index)
+    performJump(index)
+    return true
+  end,
+}
+
+handlers["if"] = {
+  start = function(_, handlerName, indexTrue, indexFalse)
+    local conditionFunc = handlers[handlerName]
+    if type(conditionFunc) == "table" then
+      conditionFunc = conditionFunc.start
+    end
+
+    if type(conditionFunc) ~= "function" then
+      logger.warn("Invalid 'if' handler name: "..tostring(handlerName))
+      return true
+    end
+
+    local result = conditionFunc()
+    if result == true then
+      if type(indexTrue) ~= "number" then
+        logger.warn("'if' command missing or invalid 'indexTrue' for handler: "..tostring(handlerName))
+      else
+        performJump(indexTrue)
+      end
+    else
+      if indexFalse ~= nil then
+        if type(indexFalse) ~= "number" then
+          logger.warn("'if' command missing or invalid 'indexFalse' for handler: "..tostring(handlerName))
+        else
+          performJump(indexFalse)
+        end
+      end
+    end
+    return true
+  end,
+}
 
 scriptingEngine.registerScript = function(scriptID, script)
   -- Ensure default, boolean values
@@ -64,20 +124,23 @@ scriptingEngine.registerScript = function(scriptID, script)
 end
 
 scriptingEngine.isInQueue = function(scriptID)
-  for _, id in ipairs(scriptQueue) do
-    if id == scriptID then
+  for _, item in ipairs(scriptQueue) do
+    if item.id == scriptID then
       return true
     end
   end
   return false
 end
 
-scriptingEngine.startScript = function(scriptID)
-  if currentExecutionID == scriptID then
-    logger.warn("Mandatory script '"..tostring(scriptID).."' is currently running.")
-    return false, "running"
+scriptingEngine.getScriptStatus = function(instanceID)
+  local instance = scriptInstances[instanceID]
+  if not instance then
+    return "unknown"
   end
+  return instance.status
+end
 
+scriptingEngine.startScript = function(scriptID, instanceID)
   local script = scripts[scriptID]
   if type(script) ~= "table" then
     if not scriptID:match("^event%.") then
@@ -87,24 +150,45 @@ scriptingEngine.startScript = function(scriptID)
   end
 
   local isMandatory = script.isMandatory
+  local newInstance = not instanceID
+
+  if newInstance then
+    instanceID = nextInstanceID
+    nextInstanceID = nextInstanceID + 1
+  end
+
+  scriptInstances[instanceID] = {
+    id = scriptID,
+    status = "running",
+    startTime = love.timer.getTime(),
+  }
 
   if isRunning then
     if isMandatory then
       local multipleQueued = script.multipleQueued
       if multipleQueued or not scriptingEngine.isInQueue(scriptID) then
-        table.insert(scriptQueue, scriptID)
+        table.insert(scriptQueue, {
+          id = scriptID,
+          instanceID = instanceID,
+        })
         logger.info("Mandatory script '"..tostring(scriptID).."' queued.")
-        return true, "queued"
+
+        scriptInstances[instanceID].status = "queued"
+
+        return instanceID, "queued"
       else
         logger.warn("Mandatory script '"..tostring(scriptID).."' tried to be queued, but is already in the queue.")
+        scriptInstances[instanceID] = nil
         return false, "alreadyQueued"
       end
     else
       logger.warn("Tried to start script while running one already!")
+      scriptInstances[instanceID] = nil
       return false, "busy"
     end
   end
 
+  currentInstanceID = instanceID
   currentExecutionID = scriptID
   activeScript = script
   currentCommandIndex = 0
@@ -113,7 +197,7 @@ scriptingEngine.startScript = function(scriptID)
 
   logger.info("Starting script: "..tostring(scriptID))
   scriptingEngine.executeNextCommand()
-  return true, "running"
+  return instanceID, "running"
 end
 
 local _id = 0
@@ -259,12 +343,57 @@ scriptingEngine.update = function(dt)
   end
 end
 
+scriptingEngine.interruptScript = function(instanceID)
+  local instance = scriptInstances[instanceID]
+  if not instance then
+    logger.warn("Attempted to interrupt unknown script instance: "..tostring(instanceID))
+    return false
+  end
+
+  if instance.status == "finished" then
+    logger.warn("Attempted to interrupt finished script instance: "..tostring(instanceID))
+    return false
+  end
+
+  if instanceID == currentInstanceID then
+    logger.info("Interrupting currently running script instance: "..tostring(instanceID))
+    scriptingEngine.stopScript()
+    return true
+  elseif instance.status == "queued" then
+    local index
+    for i, item in ipairs(scriptQueue) do
+      if item.id == instanceID then
+        index = i
+        break
+      end
+    end
+    if index then
+      table.remove(scriptQueue, index)
+      instance.status = "interrupted"
+      logger.info("Removed queued script instance: "..tostring(instanceID))
+      return true
+    else
+      logger.warn("Queued script instance "..tostring(instanceID).." not found in queue table")
+      return false
+    end
+  end
+
+  -- 
+  return false
+end
+
 scriptingEngine.stopScript = function()
   if not isRunning then
     return
   end
   logger.info("Script finished: '"..tostring(currentExecutionID).."'")
 
+  if currentInstanceID and scriptInstances[currentInstanceID] then
+    scriptInstances[currentInstanceID].status = "finished"
+    scriptInstances[currentInstanceID].finishTime = love.timer.getTime()
+  end
+
+  currentInstanceID = nil
   currentExecutionID = nil
   activeScript = nil
   currentCommandIndex = 0
@@ -274,9 +403,11 @@ scriptingEngine.stopScript = function()
   blockingCommandID = nil
 
   if #scriptQueue > 0 then
-    local nextScriptID = table.remove(scriptQueue, 1)
+    local nextItem = table.remove(scriptQueue, 1)
+    local nextScriptID = nextItem.id
+
     logger.info("Starting next script from queue: '"..tostring(nextScriptID).."'")
-    scriptingEngine.startScript(nextScriptID)
+    scriptingEngine.startScript(nextScriptID, nextItem.instanceID)
   end
 end
 

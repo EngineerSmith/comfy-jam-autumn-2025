@@ -63,6 +63,8 @@ local list = {
   -- Characters
   { path = "sprites/character/hedgehog.png", name = "sprite.hedgehog.idle", onLoad = filterNearest },
   { path = "sprites/character/hedgehog_walking.png", name = "sprite.hedgehog.walking", onLoad = filterNearest },
+  { path = "sprites/character/ball.png", name = "sprite.ball.idle", onLoad = filterNearest },
+  { path = "sprites/character/ball_walking.png", name = "sprite.ball.walking", onLoad = filterNearest },
   -- Textures
   { path = "textures/texture_05.png", name = "texture.prototype.1", onLoad = filterLinearRepeat },
   { path = "textures/texture_06.png", name = "texture.prototype.2", onLoad = filterLinearRepeat },
@@ -83,6 +85,12 @@ local list = {
   { path = "models/cube_litter_4.obj", name = "model.path.litter.dirt.4", onLoad = objLoader, "z", "assets/models/dirt.mtl" },
   { path = "models/nest_interior.obj", name = "model.nest.interior", onLoad = objLoader, "z", "assets/models/nest_interior.mtl" },
   { path = "models/nest_interior_lightShaft.obj", name = "model.nest.interior.lightShaft", onLoad = objLoader, "z", "assets/models/nest_interior_lightShaft.mtl" },
+  -- bed
+  { path = "models/nest_bed_0.obj", name = "model.nest.interior.bed.0", onLoad = objLoader, "z", "assets/models/nest_bed.mtl" },
+  { path = "models/nest_bed_1.obj", name = "model.nest.interior.bed.1", onLoad = objLoader, "z", "assets/models/nest_bed.mtl" },
+  { path = "models/nest_bed_2.obj", name = "model.nest.interior.bed.2", onLoad = objLoader, "z", "assets/models/nest_bed.mtl" },
+  { path = "models/nest_bed_3.obj", name = "model.nest.interior.bed.3", onLoad = objLoader, "z", "assets/models/nest_bed.mtl" },
+  { path = "models/nest_bed_4.obj", name = "model.nest.interior.bed.4", onLoad = objLoader, "z", "assets/models/nest_bed.mtl" },
 
   { path = "models/kenney/Nature Kit/pot_small.obj", name = "model.flower_pot.small", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/pot_small.mtl" },
   { path = "models/kenney/Nature Kit/grass.obj",            name = "model.grass",             onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/grass.mtl" },
