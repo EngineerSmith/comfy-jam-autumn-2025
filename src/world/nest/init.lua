@@ -40,6 +40,9 @@ nest.bedButton = {
   animationTimeMax = 0.4,
   cooldownTime = 1.0,
   cooldown = 0,
+  --
+  disabled = 0,
+  disabledTime = 1.1,
 }
 
 nest.load = function()
@@ -224,7 +227,9 @@ nest.update = function(dt, scale)
     nest.bedButton.isHovered = mouseX >= buttonX and mouseX <= buttonX + buttonWidth and
                       mouseY >= buttonY and mouseY <= buttonY + buttonHeight
 
-    if nest.bedButton.cooldown == 0 then
+    local isDisabled = not (nest.bedButton.disabled == 0 and nest.bedButton.cooldown == 0)
+
+    if not isDisabled then
       if not wasHovered and nest.bedButton.isHovered then
         cursor.switch("hand")
       elseif wasHovered and not nest.bedButton.isHovered then
@@ -234,11 +239,15 @@ nest.update = function(dt, scale)
       cursor.switch("arrow")
     end
 
-    if canAfford and input.baton:down("bedPurchase") and nest.bedButton.cooldown == 0 and ((input.isMouseActive() and nest.bedButton.isHovered) or input.isGamepadActive()) then
+    local bool = input.baton:down("bedPurchase") and ((input.isMouseActive() and nest.bedButton.isHovered) or input.isGamepadActive())
+
+    if canAfford and bool and not isDisabled then
       nest.bedButton.percentage = nest.bedButton.percentage + dt / 2.0 -- seconds until full
       if nest.bedButton.percentage > 1 then
         nest.bedButton.percentage = 1
       end
+    elseif not canAfford and bool and not isDisabled then
+      nest.bedButton.disabled = nest.bedButton.disabledTime
     else
       nest.bedButton.percentage = nest.bedButton.percentage - dt / 0.8 -- seconds until empty
       if nest.bedButton.percentage < 0 then
@@ -263,10 +272,13 @@ nest.update = function(dt, scale)
     end
     nest.bedButton.cooldown = nest.bedButton.cooldown - dt
     if nest.bedButton.cooldown < 0 then
-      if nest.bedButton.isHovered then
-        cursor.switch("hand")
-      end
+      cursor.switchIf(nest.bedButton.isHovered and not isDisabled, "hand")
       nest.bedButton.cooldown = 0
+    end
+    nest.bedButton.disabled = nest.bedButton.disabled - dt
+    if nest.bedButton.disabled < 0 then
+      cursor.switchIf(nest.bedButton.isHovered and not isDisabled, "hand")
+      nest.bedButton.disabled = 0
     end
   end
   --
@@ -332,9 +344,14 @@ nest.drawUi = function(scale)
     return
   end
 
-  local color = .1
+  local color =  { .1, .1, .1 }
   if nest.bedButton.isHovered then
-    color = .2
+    color = { .2, .2, .2 }
+  end
+
+  local disabledT = 1 - nest.bedButton.disabled / nest.bedButton.disabledTime
+  if disabledT > 0 then
+    color[1] = (1 - disabledT) / 1.5
   end
 
   local font = nest.bedButton.textFont
@@ -346,6 +363,13 @@ nest.drawUi = function(scale)
 
   local percentage = nest.bedButton.percentage
 
+  local scale, opacity = 1, 1
+  local animT = 1 - nest.bedButton.purchaseAnimationTime / nest.bedButton.animationTimeMax
+  if animT ~= 1.0 then
+    scale = 1 + math.sin(animT + math.pi) * .2
+    opacity = 1 - animT
+  end
+
   local time = love.timer.getTime()
   local amp = percentage * nest.bedButton.wiggleMaxOffset
   local rotationalAmp = percentage * nest.bedButton.wiggleMaxRotation
@@ -356,11 +380,15 @@ nest.drawUi = function(scale)
   local centreX, centreY = buttonWidth / 2, buttonHeight / 2
   local rotation = math.sin(time * nest.bedButton.wiggleSpeed) * rotationalAmp
 
-  local animT = 1 - nest.bedButton.purchaseAnimationTime / nest.bedButton.animationTimeMax
-  local scale = 1 + math.sin(animT + math.pi) * .2
-  local opacity = 1 - animT
-  if animT == 1 then
-    opacity = 1
+  if disabledT ~= 1.0 then
+    local remainingT = 1 - disabledT
+    amp = amp + (nest.bedButton.wiggleMaxOffset * 3.0 * remainingT)
+    rotationalAmp = rotationalAmp + (nest.bedButton.wiggleMaxRotation * 3.0 * remainingT)
+
+    local eSpeed = nest.bedButton.wiggleSpeed * 1.5
+    offsetX = math.sin(time * eSpeed) * amp
+    offsetY = math.sin(time * eSpeed * 1.5) * amp
+    rotation = math.sin(time * eSpeed) * rotationalAmp
   end
 
   if nest.bedButton.cooldown ~= 0 and nest.bedButton.cooldown < 0.3 then
@@ -374,11 +402,10 @@ nest.drawUi = function(scale)
       lg.translate(buttonX + offsetX, buttonY + offsetY)
       lg.translate(centreX, centreY)
       lg.rotate(rotation)
-      if animT ~= 1.0 then
-        lg.scale(scale)
-      end
+      lg.scale(scale)
       lg.translate(-centreX, -centreY)
-      lg.setColor(color, color, color, opacity)
+      local r, g, b = unpack(color)
+      lg.setColor(r, g, b, opacity)
       lg.rectangle("fill", 0, 0, buttonWidth, buttonHeight, 16)
       lg.setStencilMode("test", 1)
       lg.setColor(.08, .58, .08, 1, opacity) -- green
