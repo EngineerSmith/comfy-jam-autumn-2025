@@ -87,7 +87,7 @@ end
 
 scene.update = function(dt)
   musicPlayer.update()
-  world.update(dt)
+  world.update(dt, scene.scale)
   transition.update(dt)
   -- local t = love.timer.getTime()
 end
@@ -97,7 +97,7 @@ scene.draw = function()
   -- love.graphics.clear(33/255, 117/255, 7/255)
   lg.push("all")
     -- CUBE:draw()
-    world.draw()
+    world.draw(scene.scale)
   lg.pop()
 
   transition.draw()

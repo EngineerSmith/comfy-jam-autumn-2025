@@ -67,6 +67,7 @@ world.load = function()
   collectable.load() -- load assets
 
   world.leaves = 0
+  world.currencyLeaves = 0
 
   -- local mapData
   -- do -- Load mapData
@@ -317,7 +318,7 @@ local sort_ClosestMag = function(a, b)
   return a.mag < b.mag
 end
 
-world.update = function(dt)
+world.update = function(dt, scale)
   scriptingEngine.update(dt) -- we want to process updates before we check for new interaction triggers
 
   if not player.isInputBlocked then
@@ -368,6 +369,7 @@ world.update = function(dt)
           if distance <= .1 then -- .1 for jiggle room
             local value = collectable:collected()
             world.leaves = world.leaves + value
+            world.currencyLeaves = world.currencyLeaves + value
           elseif distance <= player.magnet * playerCharacter.size then
             local dx, dy = dx / mag, dy / mag
             local speed = 1.5
@@ -408,7 +410,7 @@ world.update = function(dt)
       end
     end
   elseif world.stage == "nest" then
-    nest.update(dt)
+    nest.update(dt, scale)
   end
 end
 
@@ -439,7 +441,7 @@ world.debugDraw = function()
   end
 end
 
-world.draw = function()
+world.draw = function(scale)
   lg.setColor(1,1,1,1)
 
   if world.stage == "world" then
@@ -461,11 +463,12 @@ world.draw = function()
     end
   elseif world.stage == "nest" then
     nest.draw()
+    nest.drawUi(scale)
   end
   lg.push("all")
     lg.origin()
     lg.setColor(1,1,1,1)
-    lg.print(("Collected Leaves: %2d"):format(world.leaves), 20, 20)
+    lg.print(("Collected Leaves: %2d\nUnspent Leaves: %d"):format(world.leaves, world.currencyLeaves), 20, 20)
   lg.pop()
 end
 

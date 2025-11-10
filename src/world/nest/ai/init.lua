@@ -236,7 +236,15 @@ ai.update = function(dt)
       ai.timer = 0
       local consumed = false
       if love.math.random() <= INTERACT_CHANCE then
-        --
+        local name = getRandomWeightedInteraction()
+        if name then
+          consumed = true
+          local interaction = ai.interaction[name]
+          interaction.lastVisit = love.timer.getTime()
+          ai.target = { interaction.x, interaction.y }
+          ai.scriptID = interaction.scriptID
+          ai.state = "interact"
+        end
       end
       if not consumed then
         local toX, toY = ai.getWanderPoint()

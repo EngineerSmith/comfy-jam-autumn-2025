@@ -213,8 +213,8 @@ handlers["if.nest.bed.level.0"] = function()
 end
 
 handlers["if.nest.bed.level.1"] = function()
-  local nest = require("sec.world.nest")
-  return next.bedLevel == 1
+  local nest = require("src.world.nest")
+  return nest.bedLevel == 1
 end
 
 --- handler validation

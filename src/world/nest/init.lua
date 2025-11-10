@@ -5,6 +5,7 @@ local lg = love.graphics
 local g3d = require("libs.g3d")
 
 local input = require("util.input")
+local cursor = require("util.cursor")
 local assetManager = require("util.assetManager")
 
 local ai = require("src.world.nest.ai")
@@ -18,7 +19,32 @@ nest.bedAssets = {
   [4] = "model.nest.interior.bed.4",
 }
 
+nest.bedLevels = {
+  [0] = 5,
+  [1] = 0,
+  [2] = 0,
+  [3] = 0,
+  [4] = 0,
+}
+
+nest.bedButton = {
+  text = "Upgrade Bed: %d leaves",
+  percentage = 0,
+  isHovered = false,
+  --
+  wiggleSpeed = 30.0,
+  wiggleMaxOffset = 3.0,
+  wiggleMaxRotation = 0.05,
+  --
+  purchaseAnimationTime = 0.0,
+  animationTimeMax = 0.4,
+  cooldownTime = 1.0,
+  cooldown = 0,
+}
+
 nest.load = function()
+  nest.bedLevel = -1 -- cutscene raises bedLevel to 0
+
   nest.bgShader = lg.newShader("src/world/vignette.glsl")
   nest.bgShader:send("centerColor", { 0.16, 0.11, 0.08 })
   nest.bgShader:send("edgeColor", { 0.008, 0.006, 0.005 })
@@ -70,6 +96,10 @@ end
 nest.unload = function()
   nest.bgShader = nil
   nest.bgMesh = nil
+
+  nest.bedButton.textFont = nil
+  nest.bedButton.percentage = 0
+  nest.bedButton.isHovered = false
 end
 
 nest.enter = function()
@@ -84,12 +114,20 @@ nest.enter = function()
   nest.ball.x, nest.ball.y = 1.2, -.4
 
   ai.timer = 1.0 -- bump timer for wander to happen sooner when character enters
+
+  nest.bedButton.textFont = nil
+  nest.bedButton.percentage = 0
+  nest.bedButton.isHovered = false
 end
 
 nest.leave = function()
   require("src.player").camera:setCurrent()
   defaultShadowSettings()
   ai.resetState()
+
+  nest.bedButton.textFont = nil
+  nest.bedButton.percentage = 0
+  nest.bedButton.isHovered = false
 end
 
 nest.setAspectRatio = function(aspectRatio)
@@ -100,7 +138,7 @@ nest.setAspectRatio = function(aspectRatio)
   nest.camera:updateProjectionMatrix()
 end
 
-nest.update = function(dt)
+nest.update = function(dt, scale)
   do -- background
     local expoMin, expoMax = 0.45, 0.8
     local offset = expoMin + (expoMax - expoMin) / 2.0
@@ -141,6 +179,98 @@ nest.update = function(dt)
     ai.startBehaviour("play_ball", nest.ball)
   end
 
+  local world = require("src.world") -- no sin is too far
+  local cost = nest.bedLevels[nest.bedLevel + 1]
+  if cost == nil then cost = math.huge end
+  local canAfford = world.currencyLeaves >= cost
+
+  -- bed button
+  local noMoreBedUpgrades = nest.bedButton.cooldown < 0.3 and nest.bedLevel >= #nest.bedLevels
+  if not noMoreBedUpgrades then
+    local font = lg.getFont()
+    local text = nest.bedButton.textFormatted
+    if nest.bedButton.cooldown <= 0.31 then
+      text = nest.bedButton.text:format(cost)
+    end
+    if not text then text = "it shouldn't reach here" end
+
+    local buttonPadding = 10 * scale
+    local buttonPaddingTop = 8 * scale
+
+    local textWidth = font:getWidth(text)
+    local textHeight = font:getHeight()
+    local textX = math.floor(lg.getWidth() / 2 - textWidth / 2)
+    local textY = buttonPaddingTop * 1.6 -- magic number sin
+
+    nest.bedButton.textX, nest.bedButton.textY = textX, textY
+    nest.bedButton.textFormatted = text
+    nest.bedButton.textFont = font
+
+    local buttonWidth = buttonPadding * 2 + textWidth
+    local buttonHeight = textHeight + buttonPaddingTop
+
+    local buttonX = math.floor(lg.getWidth() / 2 - buttonWidth / 2)
+    local buttonY = buttonPadding
+
+    nest.bedButton.buttonX, nest.bedButton.buttonY = buttonX, buttonY
+    nest.bedButton.buttonWidth, nest.bedButton.buttonHeight = buttonWidth, buttonHeight
+
+    -- Make text relational to buttons
+    nest.bedButton.textX = nest.bedButton.textX - buttonX
+    nest.bedButton.textY = nest.bedButton.textY - buttonY
+
+    local mouseX, mouseY = love.mouse.getPosition()
+    local wasHovered = nest.bedButton.isHovered
+    nest.bedButton.isHovered = mouseX >= buttonX and mouseX <= buttonX + buttonWidth and
+                      mouseY >= buttonY and mouseY <= buttonY + buttonHeight
+
+    if nest.bedButton.cooldown == 0 then
+      if not wasHovered and nest.bedButton.isHovered then
+        cursor.switch("hand")
+      elseif wasHovered and not nest.bedButton.isHovered then
+        cursor.switch("arrow")
+      end
+    else
+      cursor.switch("arrow")
+    end
+
+    if canAfford and input.baton:down("bedPurchase") and nest.bedButton.cooldown == 0 and ((input.isMouseActive() and nest.bedButton.isHovered) or input.isGamepadActive()) then
+      nest.bedButton.percentage = nest.bedButton.percentage + dt / 2.0 -- seconds until full
+      if nest.bedButton.percentage > 1 then
+        nest.bedButton.percentage = 1
+      end
+    else
+      nest.bedButton.percentage = nest.bedButton.percentage - dt / 0.8 -- seconds until empty
+      if nest.bedButton.percentage < 0 then
+        nest.bedButton.percentage = 0
+      end
+    end
+    
+    if nest.bedButton.percentage == 1 then
+      nest.bedButton.purchaseAnimationTime = nest.bedButton.animationTimeMax
+      nest.bedButton.percentage = 0
+      nest.bedButton.cooldown = nest.bedButton.animationTimeMax + nest.bedButton.cooldownTime
+
+      if canAfford then
+        world.currencyLeaves = world.currencyLeaves - cost
+        nest.bedLevel = nest.bedLevel + 1
+      end
+    end
+
+    nest.bedButton.purchaseAnimationTime = nest.bedButton.purchaseAnimationTime - dt
+    if nest.bedButton.purchaseAnimationTime < 0 then
+      nest.bedButton.purchaseAnimationTime = 0
+    end
+    nest.bedButton.cooldown = nest.bedButton.cooldown - dt
+    if nest.bedButton.cooldown < 0 then
+      if nest.bedButton.isHovered then
+        cursor.switch("hand")
+      end
+      nest.bedButton.cooldown = 0
+    end
+  end
+  --
+
   if input.baton:pressed("reject") then
     ai.interrupt() -- we can't start our exit script, if ai is currently running one
     require("src.scripting").startScript("exit.pot")
@@ -173,7 +303,7 @@ nest.draw = function()
     interior:setRotation(0, 0, math.rad(90))
       :draw()
 
-    nest.drawBed(4)
+    nest.drawBed(nest.bedLevel)
 
     lg.setMeshCullMode("none")
 
@@ -191,6 +321,73 @@ nest.draw = function()
     lg.setColor(1, 1, 1, 0.025)
     lightShaft:draw()
   lg.pop()
+end
+
+-- This is a cardinal sin, but game jams require sin to be committed to git
+nest.drawUi = function(scale)
+  if not nest.bedButton.textFont then
+    return -- update loop hasn't ran
+  end
+  if nest.bedButton.cooldown < 0.3 and nest.bedLevel >= #nest.bedLevels then
+    return
+  end
+
+  local color = .1
+  if nest.bedButton.isHovered then
+    color = .2
+  end
+
+  local font = nest.bedButton.textFont
+  local textX, textY = nest.bedButton.textX, nest.bedButton.textY
+  local text = nest.bedButton.textFormatted
+
+  local buttonX, buttonY = nest.bedButton.buttonX, nest.bedButton.buttonY
+  local buttonWidth, buttonHeight = nest.bedButton.buttonWidth, nest.bedButton.buttonHeight
+
+  local percentage = nest.bedButton.percentage
+
+  local time = love.timer.getTime()
+  local amp = percentage * nest.bedButton.wiggleMaxOffset
+  local rotationalAmp = percentage * nest.bedButton.wiggleMaxRotation
+
+  local offsetX = math.sin(time * nest.bedButton.wiggleSpeed) * amp
+  local offsetY = math.sin(time * nest.bedButton.wiggleSpeed * 1.5) * amp
+
+  local centreX, centreY = buttonWidth / 2, buttonHeight / 2
+  local rotation = math.sin(time * nest.bedButton.wiggleSpeed) * rotationalAmp
+
+  local animT = 1 - nest.bedButton.purchaseAnimationTime / nest.bedButton.animationTimeMax
+  local scale = 1 + math.sin(animT + math.pi) * .2
+  local opacity = 1 - animT
+  if animT == 1 then
+    opacity = 1
+  end
+
+  if nest.bedButton.cooldown ~= 0 and nest.bedButton.cooldown < 0.3 then
+    opacity = 1 - nest.bedButton.cooldown / 0.3
+  end
+
+  if nest.bedButton.cooldown == 0 or nest.bedButton.cooldown >= nest.bedButton.cooldownTime or nest.bedButton.cooldown < 0.3 then
+    lg.push("all")
+      lg.setStencilMode("draw", 1)
+      lg.setColorMask(true)
+      lg.translate(buttonX + offsetX, buttonY + offsetY)
+      lg.translate(centreX, centreY)
+      lg.rotate(rotation)
+      if animT ~= 1.0 then
+        lg.scale(scale)
+      end
+      lg.translate(-centreX, -centreY)
+      lg.setColor(color, color, color, opacity)
+      lg.rectangle("fill", 0, 0, buttonWidth, buttonHeight, 16)
+      lg.setStencilMode("test", 1)
+      lg.setColor(.08, .58, .08, 1, opacity) -- green
+      lg.rectangle("fill", 0, 0, buttonWidth * percentage, buttonHeight)
+      lg.setStencilMode("off")
+      lg.setColor(1,1,1, opacity)
+      lg.print(text, font, textX, textY)
+    lg.pop()
+  end
 end
 
 nest.mousemoved = function(scale, _, _, dx, dy, _)
