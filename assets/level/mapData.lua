@@ -164,12 +164,23 @@ local mapData = {
     },
     -- Example interaction script
     ["interact.bed"] = { isMandatory = true,
-      { "if", "if.nest.bed.level.0", 2, 4 },
-      { "move", "ai", 0, 0 }, -- animation for level 0 bed
-      { "goto", -1, },
-      { "if", "if.nest.bed.level.1", 5, -1 },
-      { "move", "ai", 0, 0 }, -- animation for level 1 bed
-      { "ai.finishScript" }, -- tell the ai, that the script has finished
+      -- { "if", "if.nest.bed.level.0", 2, 8 },
+      { "moveAI",  0,  -0.4 }, -- animation for level 0 bed
+      { "moveAI", -0.4, 0 },
+      { "wait" }, { "sleep", 0.1 },
+      { "moveAI",  0.8, 0 },
+      { "wait" }, { "sleep", 0.1 },
+      { "moveAI", -0.4, 0 },
+      { "wait" }, { "sleep", 0.3 },
+      { "aiState", "sleep" },
+      { "sleep", 3.0 },
+      { "aiState", "idle" },
+      { "sleep", 1.65 },
+      { "moveAI", 0, 0.4 },
+      -- { "goto", -1, },
+      -- { "if", "if.nest.bed.level.1", 5, -1 },
+      -- { "moveAI", 0, 0 }, -- animation for level 1 bed
+      { "wait" }
     },
   },
   characters = {

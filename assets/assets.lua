@@ -63,6 +63,9 @@ local list = {
   -- Characters
   { path = "sprites/character/hedgehog.png", name = "sprite.hedgehog.idle", onLoad = filterNearest },
   { path = "sprites/character/hedgehog_walking.png", name = "sprite.hedgehog.walking", onLoad = filterNearest },
+  { path = "sprites/character/hedgehog_sleep_start.png", name = "sprite.hedgehog.sleep.start", onLoad = filterNearest },
+  { path = "sprites/character/hedgehog_sleep_loop.png", name = "sprite.hedgehog.sleep.loop", onLoad = filterNearest },
+  { path = "sprites/character/hedgehog_sleep_exit.png", name = "sprite.hedgehog.sleep.exit", onLoad = filterNearest },
   { path = "sprites/character/ball.png", name = "sprite.ball.idle", onLoad = filterNearest },
   { path = "sprites/character/ball_walking.png", name = "sprite.ball.walking", onLoad = filterNearest },
   -- Textures

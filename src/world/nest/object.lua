@@ -14,33 +14,68 @@ object.new = function()
     movedPreviousFrame = false,
     size = 0.5,
     idleTriggerTime = 3.0,
+    currentFrame = 1,
+    timer = 0,
+    idleTimer = 0,
   }, object)
 
   self:setState("idle")
   return self
 end
 
-object.setState = function(self, state)
-  -- if self.state == state and self.currentMesh then
-  --   return
-  -- end
-  self.state = state
+object.playCurrentSubState = function(self)
+  local stateDataGroup = self.stateTextures[self.state]
+  if not stateDataGroup then
+    self.stateData = nil
+    return
+  end
 
-  local stateData = self.stateTextures[self.state]
-  if stateData then
-    self.stateData = stateData[love.math.random(#stateData)]
+  local subStateDataArray = stateDataGroup[self.subState]
+  if subStateDataArray and #subStateDataArray > 0 then
+    self.stateData = subStateDataArray[love.math.random(#subStateDataArray)]
     self.timer = 0
     self.currentFrame = 1
     self.currentMesh = self.stateData.meshes[self.currentFrame]
+  else
+    self.stateData = nil
+  end
+end
+
+object.setState = function(self, state, force)
+  if state == nil then
+    return
   end
 
-  if state == "idle" then
+  if self.state == state and self.subState ~= "exit" and not force then
+    return
+  end
+
+  local oldStateData = self.stateTextures[self.state]
+  if oldStateData and oldStateData.exit and self.subState ~= "exit" then
+    self.nextState = state
+    self.subState = "exit"
+    self:playCurrentSubState()
+  else
+    self.state = state
+    self.nextState = nil
     self.idleTimer = 0
+    
+    local newStateData = self.stateTextures[self.state]
+    if newStateData and newStateData.start then
+      self.subState = "start"
+      self:playCurrentSubState()
+    elseif newStateData and newStateData.loop then
+      self.subState = "loop"
+      self:playCurrentSubState()
+    else
+      self.subState = nil
+      self.stateData = nil
+    end
   end
 end
 
 local createPlaneForQuad = require("src.createPlaneForQuad")
-object.setStateTexture = function(self, state, texture, frameCount, frameTime)
+object.setStateTexture = function(self, state, subState, texture, frameCount, frameTime)
   local textureWidth, textureHeight = texture:getDimensions()
 
   local paddingNormWidth  = 1 / textureWidth
@@ -67,16 +102,22 @@ object.setStateTexture = function(self, state, texture, frameCount, frameTime)
   if not self.stateTextures[state] then
     self.stateTextures[state] = { }
   end
+  if not self.stateTextures[state][subState] then
+    self.stateTextures[state][subState] = { }
+  end
 
-  table.insert(self.stateTextures[state],  {
+  table.insert(self.stateTextures[state][subState],  {
     texture = texture,
     frameTime = frameTime,
     frameCount = frameCount,
     meshes = meshes,
   })
 
+  -- if self.state == state and self.subState == subState then
+  --   self:playCurrentSubState()
+  -- end
   if self.state == state then
-    self:setState(self.state)
+    self:setState(self.state, true)
   end
 end
 
@@ -129,18 +170,19 @@ object.setFlip = function(self, flipped)
 end
 
 object.update = function(self, dt)
-  if self.movedPreviousFrame and self.state == "idle" then
-    self:setState("walking")
-  elseif not self.movedPreviousFrame and self.state == "walking" then
-    self:setState("idle")
+  if self.stateTextures["walking"] then
+    if self.movedPreviousFrame and self.state == "idle" then
+      self:setState("walking")
+    elseif not self.movedPreviousFrame and self.state == "walking" then
+      self:setState("idle")
+    end
   end
   self.movedPreviousFrame = false
 
-  if self.state == "idle" then
+  if self.state == "idle" and self.subState == "loop" then
     self.idleTimer = self.idleTimer + dt
     if self.idleTimer >= self.idleTriggerTime then
-      local fidgetData = self.stateTextures["idle_fidget"]
-      if fidgetData then
+      if self.stateTextures["idle_fidget"] then
         self:setState("idle_fidget")
       else
         self.idleTimer = 0
@@ -148,21 +190,53 @@ object.update = function(self, dt)
     end
   end
 
-  if self.stateData and self.stateData.frameCount > 1 then
-    self.timer = self.timer + dt
-    while self.timer >= self.stateData.frameTime do
-      self.timer = self.timer - self.stateData.frameTime
-      self.currentFrame = self.currentFrame + 1
-      if self.state == "idle_fidget" and self.currentFrame == self.stateData.frameCount then
-        self:setState("idle")
-        break
-      elseif self.currentFrame > self.stateData.frameCount then
-        self:setState(self.state)
+  if not self.stateData or self.stateData.frameCount <= 1 then
+    return
+  end
+
+  self.timer = self.timer + dt
+  while self.timer >= self.stateData.frameTime do
+    self.timer = self.timer - self.stateData.frameTime
+    self.currentFrame = self.currentFrame + 1
+
+    if self.currentFrame > self.stateData.frameCount then
+      local currentSubState = self.subState
+      if currentSubState == "start" then
+        local stateDataGroup = self.stateTextures[self.state]
+        if stateDataGroup and stateDataGroup.loop then
+          self.subState = "loop"
+          self:playCurrentSubState()
+        else
+          if self.state == "idle_fidget" then
+            self:setState("idle")
+            break
+          else
+            self.currentFrame = self.stateData.frameCount
+            self.stateData = nil
+            break
+          end
+        end
+      elseif currentSubState == "loop" then
+        self:playCurrentSubState()
+      elseif currentSubState == "exit" then
+        local nextState = self.nextState
+        self.state = nextState
+        self.nextState = nil
+        self.subState = nil
+        self:setState(nextState)
         break
       else
+        -- No sub-state defined, default to looping - this is a fallback, shouldn't happen if I didn't miss anything
+        self.currentFrame = 1
         self.currentMesh = self.stateData.meshes[self.currentFrame]
       end
     end
+
+    -- If we're still in a valid frame, update mesh
+    if self.stateData and self.currentFrame <= self.stateData.frameCount then
+      self.currentMesh = self.stateData.meshes[self.currentFrame]
+    end
+
   end
 end
 

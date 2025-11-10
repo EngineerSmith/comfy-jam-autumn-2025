@@ -3,6 +3,7 @@ local nest = { }
 local lg = love.graphics
 
 local g3d = require("libs.g3d")
+local flux = require("libs.flux")
 
 local input = require("util.input")
 local cursor = require("util.cursor")
@@ -47,6 +48,7 @@ nest.bedButton = {
 
 nest.load = function()
   nest.bedLevel = -1 -- cutscene raises bedLevel to 0
+  nest.bedVisualLevel = nest.bedLevel
 
   nest.bgShader = lg.newShader("src/world/vignette.glsl")
   nest.bgShader:send("centerColor", { 0.16, 0.11, 0.08 })
@@ -65,15 +67,21 @@ nest.load = function()
 
   nest.hedgehog = object.new()
   local tex = assetManager["sprite.hedgehog.idle"]
-  nest.hedgehog:setStateTexture("idle", tex, 1, 0)
+  nest.hedgehog:setStateTexture("idle", "loop", tex, 1, 0)
   local tex = assetManager["sprite.hedgehog.walking"]
-  nest.hedgehog:setStateTexture("walking", tex, 2, 0.1)
+  nest.hedgehog:setStateTexture("walking", "loop", tex, 2, 0.1)
+  local tex = assetManager["sprite.hedgehog.sleep.start"]
+  nest.hedgehog:setStateTexture("sleep", "start", tex, 6, 0.2)
+  local tex = assetManager["sprite.hedgehog.sleep.loop"]
+  nest.hedgehog:setStateTexture("sleep", "loop", tex, 2, 0.2)
+  local tex = assetManager["sprite.hedgehog.sleep.exit"]
+  nest.hedgehog:setStateTexture("sleep", "exit", tex, 8, 0.2)
 
   nest.ball = object.new()
   local tex = assetManager["sprite.ball.idle"]
-  nest.ball:setStateTexture("idle", tex, 1, 0)
+  nest.ball:setStateTexture("idle", "loop", tex, 1, 0)
   local tex = assetManager["sprite.ball.walking"]
-  nest.ball:setStateTexture("walking", tex, 3, 0.2)
+  nest.ball:setStateTexture("walking", "loop", tex, 3, 0.2)
 
   nest.objects = {
     nest.hedgehog,
@@ -82,18 +90,11 @@ nest.load = function()
 
   ai.addCharacterControl(nest.hedgehog)
 
-  -- I want all bed's to share a matrix, share with level 0 for simplicity
-  local sourceMatrix = assetManager[nest.bedAssets[0]]
+  for _, assetKey in pairs(nest.bedAssets) do
+    assetManager[assetKey]
       :setTranslation(0, -1.3, 0)
       :setRotation(0, 0, math.rad(90))
-      .matrix
-  for index, assetKey in pairs(nest.bedAssets) do
-    if index ~= 0 then
-      local model = assetManager[assetKey]
-      model.matrix = sourceMatrix
-    end
   end
-  ai.addInteraction("interact.bed", 0, -1.3, 0.6, 0, -0.85, "interact.bed")
 end
 
 nest.unload = function()
@@ -263,6 +264,10 @@ nest.update = function(dt, scale)
       if canAfford then
         world.currencyLeaves = world.currencyLeaves - cost
         nest.bedLevel = nest.bedLevel + 1
+        flux.to(nest, 1, { bedVisualLevel = nest.bedLevel })
+        if nest.bedLevel == 0 then -- Make the interaction available
+          ai.addInteraction("interact.bed", 0, -1.3, 0.6, 0, -0.85, "interact.bed")
+        end
       end
     end
 
@@ -293,8 +298,26 @@ end
 
 nest.drawBed = function(level)
   level = level or 0
-  for i = level, 0, -1 do
+
+  local logicLevel = math.floor(level)
+  local fractionalProgress = level - logicLevel
+
+  for i = logicLevel, 0, -1 do
     local model = assetManager[nest.bedAssets[i]]
+    model:setScale(1.0)
+    model:draw()
+  end
+
+  if fractionalProgress > 0 and logicLevel + 1 <= #nest.bedAssets then
+    local nextLevel = logicLevel + 1
+    local model = assetManager[nest.bedAssets[nextLevel]]
+
+    local currentScale = fractionalProgress
+    local bounceFactor = 1.2
+    if currentScale > 0.9 then
+      currentScale = 1.0 + math.sin((currentScale - .9) * math.pi * bounceFactor) * 0.1
+    end
+    model:setScale(currentScale)
     model:draw()
   end
 end
@@ -315,7 +338,7 @@ nest.draw = function()
     interior:setRotation(0, 0, math.rad(90))
       :draw()
 
-    nest.drawBed(nest.bedLevel)
+    nest.drawBed(nest.bedVisualLevel)
 
     lg.setMeshCullMode("none")
 
@@ -336,7 +359,7 @@ nest.draw = function()
 end
 
 -- This is a cardinal sin, but game jams require sin to be committed to git
-nest.drawUi = function(scale)
+nest.drawUi = function(windowScale)
   if not nest.bedButton.textFont then
     return -- update loop hasn't ran
   end
@@ -406,7 +429,7 @@ nest.drawUi = function(scale)
       lg.translate(-centreX, -centreY)
       local r, g, b = unpack(color)
       lg.setColor(r, g, b, opacity)
-      lg.rectangle("fill", 0, 0, buttonWidth, buttonHeight, 16)
+      lg.rectangle("fill", 0, 0, buttonWidth, buttonHeight, 8 * windowScale)
       lg.setStencilMode("test", 1)
       lg.setColor(.08, .58, .08, 1, opacity) -- green
       lg.rectangle("fill", 0, 0, buttonWidth * percentage, buttonHeight)

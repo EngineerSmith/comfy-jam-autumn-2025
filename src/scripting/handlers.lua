@@ -207,6 +207,44 @@ handlers["transition"] = {
   end,
 }
 
+handlers["moveAI"] = {
+  start = function(executionID, dx, dy)
+    if dx == 0 and dy == 0 then
+      return true
+    end
+    local ai = require("src.world.nest.ai")
+    local moveID = ai.moveBy(dx, dy)
+    if moveID == -1 then
+      logger.warn("Received -1 from ai.moveBy in script")
+      return true
+    end
+    if ai.isMoveFinished(moveID) then
+      return true
+    end
+    memory[executionID] = moveID
+    return false
+  end,
+  update = function(executionID, _, _, _)
+    local moveID = memory[executionID]
+    local ai = require("src.world.nest.ai")
+    if ai.isMoveFinished(moveID) then
+      memory[executionID] = nil -- clear memory
+      return true
+    end
+    return false
+  end,
+}
+
+handlers["aiState"] = function(_, newState)
+  local ai = require("src.world.nest.ai")
+  if not ai.character then
+    logger.warn("AI had no character")
+    return true
+  end
+  ai.character:setState(newState)
+  return true
+end
+
 handlers["if.nest.bed.level.0"] = function()
   local nest = require("src.world.nest")
   return nest.bedLevel == 0

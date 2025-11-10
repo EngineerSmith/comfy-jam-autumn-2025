@@ -86,7 +86,7 @@ behaviours["play_ball"] = {
 
       local walkingStateData = ball.stateTextures["walking"]
       if walkingStateData then
-        walkingStateData[1].frameTime = dynamicFrameTime
+        walkingStateData["loop"][1].frameTime = dynamicFrameTime
       end
 
       ---- flip

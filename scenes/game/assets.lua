@@ -10,6 +10,9 @@ local assets = {
 -- Sprites
   "sprite.hedgehog.idle",
   "sprite.hedgehog.walking",
+  "sprite.hedgehog.sleep.start",
+  "sprite.hedgehog.sleep.loop",
+  "sprite.hedgehog.sleep.exit",
   "sprite.ball.idle",
   "sprite.ball.walking",
 }

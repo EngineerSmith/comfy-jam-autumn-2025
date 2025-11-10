@@ -9,7 +9,14 @@ local ai = {
   interaction = { },
   queue = { },
   currentBehaviour = nil,
+
+  scriptMoveQueue = { },
+  currentScriptMove = nil,
+  completedScriptMoves = { },
+  scriptMoveCounter = 0,
 }
+
+local logger = require("util.logger")
 
 local behaviours = require("src.world.nest.ai.behaviours")
 
@@ -19,7 +26,7 @@ local AI_AT_IDLE = 3.0 -- seconds
 local MAX_TRIES_WANDER = 50
 local MIN_WANDER_DIST = 0.05
 
-local INTERACT_CHANCE = 0.3 -- 0..1
+local INTERACT_CHANCE = 0.2 -- 0..1
 local RECENCY_TIME = 10.0 -- seconds
 
 
@@ -41,12 +48,17 @@ ai.addExclusionZone = function(x, y, r)
 end
 
 ai.addInteraction = function(name, x, y, r, interactX, interactY, scriptID)
+  if ai.interaction[name] then
+    logger.warn("Tried to add existing interaction: "..name)
+    return
+  end
   ai.addExclusionZone(x, y, r)
   ai.interaction[name] = {
     x = interactX, y = interactY,
     scriptID = scriptID,
     lastVisit = 0,
   }
+  logger.info("Added interaction "..name)
 end
 
 ai.startBehaviour = function(behaviourID, ...)
@@ -68,6 +80,40 @@ ai.triggerInteraction = function(name, isPriority)
     table.insert(ai.queue, action)
   end
 end
+
+ai.moveBy = function(dx, dy)
+  if ai.state ~= "script" then
+    logger.warn("ai.moveby called while not in 'script' state. State: "..ai.state)
+    return -1
+  end
+
+  dx = dx or 0
+  dy = dy or 0
+
+  local moveID = ai.scriptMoveCounter
+  ai.scriptMoveCounter = ai.scriptMoveCounter + 1
+
+  if dx == 0 and dy == 0 then
+    ai.completedScriptMove[moveID] = true
+    return moveID
+  end
+
+  local task = {
+    id = moveID,
+    dx = dx,
+    dy = dy,
+  }
+  table.insert(ai.scriptMoveQueue, task)
+  return moveID
+end
+
+ai.isMoveFinished = function(id)
+  if id == -1 then
+    return true
+  end
+  return ai.completedScriptMoves[id] == true
+end
+
 
 local isInExclusionZone = function(px, py)
   for _, circle in ipairs(ai.exclusionCircles) do
@@ -113,6 +159,8 @@ ai.getWanderPoint = function()
   assert(ai.character, "Tried to get wander point with no character")
   local startX, startY = ai.character.x, ai.character.y
 
+  local isStuck = isInExclusionZone(startX, startY)
+
   for _ = 1, MAX_TRIES_WANDER do
     local ang = love.math.random() * 2 * math.pi
     local rad = ai.wanderCircle.r * math.sqrt(love.math.random())
@@ -120,7 +168,11 @@ ai.getWanderPoint = function()
     local y = ai.wanderCircle.y + rad * math.sin(ang)
     local dx, dy = x - startX, y - startY
     local magSqu = dx * dx + dy * dy
-    if magSqu > MIN_WANDER_DIST and not isInExclusionZone(x, y) and not doesPathIntersectExclusion(startX, startY, x, y) then
+    local isDestinationValid = not isInExclusionZone(x, y)
+    -- If we are currently stuck, we only require the destination to be valid
+    --  to allow the AI to move out of the zone. Otherwise, check for path intersection.
+    local isPathValid = isStuck or not doesPathIntersectExclusion(startX, startY, x, y)
+    if magSqu > MIN_WANDER_DIST and isDestinationValid and isPathValid then
       return x, y
     end
   end
@@ -145,20 +197,34 @@ end
 local getRandomWeightedInteraction = function()
   local availableInteractions = { }
   local totalWeight = 0
+  local validCount = 0
 
   for name, interaction in pairs(ai.interaction) do
     if interaction.scriptID then
+      validCount = validCount + 1
       local weight = calculateInteractionWeight(interaction)
       table.insert(availableInteractions, {
         name = name,
         weight = weight,
+        lastVisit = interaction.lastVisit,
       })
       totalWeight = totalWeight + weight
     end
   end
 
-  if totalWeight == 0 then
+  if validCount == 0 then
     return nil -- no valid interactions
+  end
+
+  if validCount == 1 then
+    local onlyInteraction = availableInteractions[1]
+    local timeSinceVisit = love.timer.getTime() - onlyInteraction.lastVisit
+
+    if timeSinceVisit < RECENCY_TIME then
+      return nil
+    else
+      return onlyInteraction.name
+    end
   end
 
   local r = love.math.random() * totalWeight
@@ -173,6 +239,13 @@ local getRandomWeightedInteraction = function()
   return availableInteractions[#availableInteractions].name
 end
 
+local resetScriptMoveState = function()
+  ai.scriptMoveQueue = { }
+  ai.currentScriptMove = nil
+  ai.completedScriptMoves = { }
+  -- ai.scriptMoveCounter = 0 -- if we reset the moveCounter; it could introduce bugs if some how an old script checks
+end
+
 ai.finishedScript = function()
   if ai.state ~= "script" then
     return
@@ -180,6 +253,8 @@ ai.finishedScript = function()
   ai.state = "idle"
   ai.scriptInstanceID = nil
   ai.character.x, ai.character.y = unpack(ai.target) -- Ensure character is back before it started the script
+
+  resetScriptMoveState()
 end
 
 ai.resetState = function()
@@ -188,6 +263,8 @@ ai.resetState = function()
   ai.timer = 0
   ai.currentBehaviour = nil
   ai.queue = { } -- clear pending queue
+
+  resetScriptMoveState()
 end
 
 ai.interrupt = function()
@@ -218,10 +295,10 @@ ai.update = function(dt)
       ai.timer = 0
       if action.type == "interaction" and ai.interaction[action.name] then
         local interaction = ai.interaction[action.name]
+        interaction.lastVisit = love.timer.getTime()
         ai.target = { interaction.x, interaction.y } -- Reach target even if it means phasing through exclusion zones;; todo path finding?
         ai.scriptID = interaction.scriptID
         ai.state = "interact"
-        interaction.lastVisit = love.timer.getTime()
         return
       elseif action.type == "behaviour" then
         ai.currentBehaviour = {
@@ -253,10 +330,42 @@ ai.update = function(dt)
       end
     end
   elseif ai.state == "script" then
-    local scriptingEngine = require("src.scripting")
-    local status = scriptingEngine.getScriptStatus(ai.scriptInstanceID)
-    if status == "finished" then
-      ai.finishedScript()
+    local isMoving = false
+    if ai.currentScriptMove then
+      isMoving = true
+      local move = ai.currentScriptMove
+      local toX, toY = move.toX, move.toY
+      local startX, startY = ai.character.x, ai.character.y
+      local dx, dy = toX - startX, toY - startY
+      local mag = math.sqrt(dx * dx + dy * dy)
+      local speed = ai.speed * dt
+      if mag >= speed then
+        local normalX, normalY = dx / mag, dy / mag
+        ai.character:move(normalX * speed, normalY * speed)
+      else
+        ai.character.x = toX
+        ai.character.y = toY
+        ai.completedScriptMoves[move.id] = true
+        ai.currentScriptMove = nil
+        isMoving = false
+      end
+    elseif #ai.scriptMoveQueue > 0 then
+      local task = table.remove(ai.scriptMoveQueue, 1)
+      local toX = ai.character.x + task.dx
+      local toY = ai.character.y + task.dy
+      ai.currentScriptMove = {
+        id = task.id,
+        toX = toX,
+        toY = toY,
+      }
+      isMoving = true
+    end
+    if not isMoving then
+      local scriptingEngine = require("src.scripting")
+      local status = scriptingEngine.getScriptStatus(ai.scriptInstanceID)
+      if status == "finished" then
+        ai.finishedScript()
+      end
     end
   elseif ai.state == "wander" or ai.state == "interact" then
     local toX, toY = unpack(ai.target)
@@ -278,11 +387,10 @@ ai.update = function(dt)
       if ai.state == "wander" then
         ai.state = "idle"
       elseif ai.state == "interact" and ai.scriptID ~= nil then
-        -- Call startScript here
+        ai.state = "script"
         local scriptingEngine = require("src.scripting")
         local instanceID = scriptingEngine.startScript(ai.scriptID)
         if instanceID then
-          ai.state = "script"
           ai.scriptInstanceID = instanceID
         else
           ai.state = "idle"
