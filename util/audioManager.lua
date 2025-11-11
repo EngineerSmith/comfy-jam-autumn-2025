@@ -80,17 +80,25 @@ audioManager.getMergedAssets = function(assetKey)
   return keys
 end
 
-audioManager.play = function(assetKey)
+audioManager.play = function(assetKey, volumeMod)
   local audioInfo = audioManager.audio[assetKey]
   if not audioInfo then
     logger.warn("Tried to play", assetKey, "but that asset hasn't been registered with the audio manager!")
     return
   end
+
+  volumeMod = volumeMod or 1.0
+
   if audioInfo.audioType == "ui" or audioInfo.audioType == "sfx" then
     local s = audioInfo[love.math.random(1, #audioInfo)]
+    local volume = s.asset:getVolume() 
+    if volumeMod ~= 1.0 then
+      s.asset:setVolume(volume * volumeMod)
+    end
     s.asset:play()
     local r = s.asset
     s.asset = s.asset:clone()
+    s.asset:setVolume(volume)
     return r
   elseif audioInfo.audioType == "music" then
     local s = audioInfo[1]

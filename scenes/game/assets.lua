@@ -18,6 +18,8 @@ local assets = {
   "sprite.hedgehog.alert.exit",
   "sprite.ball.idle.loop",
   "sprite.ball.walking.loop",
+-- Audio
+  "audio.fx.softImpact",
 }
 
 --- Grab the models needed for mapData

@@ -2,6 +2,46 @@ local behaviours = { }
 
 local flux = require("libs.flux")
 
+local audioManager = require("util.audioManager")
+-- audioManager.play("audio.fx.softImpact")
+
+local rateLimitHistory = { }
+local playRateLimited = function(assetKey, limit, timeWindow, volumeMod)
+
+  if volumeMod == 0 then
+    return -- nothing to play if volume is 0
+  end
+
+  if not rateLimitHistory[assetKey] then
+    rateLimitHistory[assetKey] = { }
+  end
+  local history = rateLimitHistory[assetKey]
+  local currentTime = love.timer.getTime()
+
+  local oldestIndex = 1
+  for i, timestamp in ipairs(history) do
+    if currentTime - timestamp >= timeWindow then
+      oldestIndex = i + 1
+    else
+      break
+    end
+  end
+
+  if oldestIndex > 1 then
+    for i = 1, oldestIndex - 1 do
+      table.remove(history, 1)
+    end
+  end
+
+  if #history < limit then
+    table.insert(history, currentTime)
+    audioManager.play(assetKey, volumeMod)
+    return true
+  else
+    return false
+  end
+end
+
 behaviours["play_ball"] = {
   initialise = function(ai, ballObject)
     return {
@@ -11,6 +51,7 @@ behaviours["play_ball"] = {
       kicksLeft = 3,
       step = "move_to_ball",
       timer = 0,
+      canHitFloor = false,
       -- Physics State
       vx = 0, vy = 0, vz = 0,
       gravity = -2.0,
@@ -18,6 +59,9 @@ behaviours["play_ball"] = {
       finalKickFriction = 0.4, -- harsh friction for final kick before we transition back
       restitution = 0.7,
       boundingRadius = 1.67,
+      --
+      MIN_IMPACT_VEL = 0.1,
+      MAX_IMPACT_VEL = 2.0,
     }
   end,
   update = function(dt, behaviourState)
@@ -46,6 +90,11 @@ behaviours["play_ball"] = {
     ball.z = ball.z + state.vz * dt
 
     if ball.z < 0 then
+      if state.canHitFloor then
+        playRateLimited("audio.fx.softImpact", 3, 1.0)
+        state.canHitFloor = false
+      end
+
       ball.z = 0
       ball.vz = -state.vz * state.restitution
       if math.abs(state.vz) < 0.1 then -- dampen
@@ -67,6 +116,9 @@ behaviours["play_ball"] = {
         local penetration = ballMag - state.boundingRadius
         ball.x = ball.x - penetration * normalX
         ball.y = ball.y - penetration * normalY
+
+        local volumeMod = math.min(1.0, math.max(0.0, (velNorm - state.MIN_IMPACT_VEL) / (state.MAX_IMPACT_VEL - state.MIN_IMPACT_VEL)))
+        playRateLimited("audio.fx.softImpact", 3, 1.0, volumeMod)
       end
     end
 
@@ -74,8 +126,8 @@ behaviours["play_ball"] = {
     if planarSpeedSqu > 0.001 then
       ---- animation speed
       local MAX_SPEED_FOR_ANIM = 2.0 -- speed where animation is fastest
-      local MAX_FRAME_TIME = 0.30 -- slowest frame time
-      local MIN_FRAME_TIME = 0.03 -- fastest frame time
+      local MAX_FRAME_TIME = 0.20 -- slowest frame time
+      local MIN_FRAME_TIME = 0.02 -- fastest frame time
 
       local normalisedSpeed = math.min(1, math.sqrt(planarSpeedSqu) / MAX_SPEED_FOR_ANIM)
       local invSpeed = 1.0 - normalisedSpeed
@@ -128,7 +180,7 @@ behaviours["play_ball"] = {
       local mag = math.sqrt(dx * dx + dy * dy)
 
       -- close enough to kick
-      if distToActualBall < moveSpeed * 2 then
+      if distToActualBall < moveSpeed * 5 then
         if state.kicksLeft > 0 then
           -- stop ball
           state.vx, state.vy, state.vz = 0, 0, 0 -- ensures we don't build up too much speed
@@ -139,9 +191,12 @@ behaviours["play_ball"] = {
 
           state.vx = kickForce * math.cos(kickAngle)
           state.vy = kickForce * math.sin(kickAngle)
-          state.vz = 0.75 + love.math.random() * 0.5 - 0.25
+          state.vz = 1.25 + love.math.random() * 0.5 - 0.25
+
+          state.canHitFloor = true
 
           state.kicksLeft = state.kicksLeft - 1
+          playRateLimited("audio.fx.softImpact", 3, 1.0)
         end
         state.step = "wait_for_ball"
         state.timer = 0

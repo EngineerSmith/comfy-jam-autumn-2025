@@ -26,8 +26,12 @@ local AI_AT_IDLE = 3.0 -- seconds
 local MAX_TRIES_WANDER = 50
 local MIN_WANDER_DIST = 0.05
 
-local INTERACT_CHANCE = 0.2 -- 0 to 0.5
-local INTERACT_CHANCE = 0.1 -- 0 to 0.5
+-- Chance must max to 1; where chance is calculated
+-- interact < wander < 1 - behaviour
+-- 0.2 < x < (1 - 0.15)
+local INTERACT_CHANCE  = 0.20
+local BEHAVIOUR_CHANCE = 0.15
+
 local RECENCY_TIME = 10.0 -- seconds
 
 

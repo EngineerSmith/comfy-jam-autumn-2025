@@ -1,6 +1,7 @@
 local handlers = { }
 
 local logger = require("util.logger")
+local audioManager = require("util.audioManager")
 
 local memory = { }
 -- Use memory by `memory[executionID] = { }` to have information between functions/steps.
@@ -253,6 +254,11 @@ end
 handlers["if.nest.bed.level.1"] = function()
   local nest = require("src.world.nest")
   return nest.bedLevel == 1
+end
+
+
+handlers["playAudio"] = function(_, assetKey)
+  audioManager.play(assetKey)
 end
 
 --- handler validation

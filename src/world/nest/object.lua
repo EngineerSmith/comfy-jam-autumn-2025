@@ -5,14 +5,14 @@ local flux = require("libs.flux")
 
 local MAX_RADIUS = 1.7
 
-object.new = function()
+object.new = function(size)
   local self = setmetatable({
     x = 0, y = 0, z = 0,
     flip = true,
     flipRZ = math.rad(-180),
     stateTextures = { },
     movedPreviousFrame = false,
-    size = 0.5,
+    size = size or 0.5,
     idleTriggerTime = 3.0,
     currentFrame = 1,
     timer = 0,

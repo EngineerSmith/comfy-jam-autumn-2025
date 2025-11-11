@@ -99,7 +99,7 @@ nest.load = function()
   nest.hedgehog = object.new()
   setTextureStates(nest.hedgehog, "sprite.hedgehog", hedgehogTextureStates)
 
-  nest.ball = object.new()
+  nest.ball = object.new(0.35)
   setTextureStates(nest.ball, "sprite.ball", ballTextureStates)
 
   nest.objects = {
