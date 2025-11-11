@@ -26,7 +26,8 @@ local AI_AT_IDLE = 3.0 -- seconds
 local MAX_TRIES_WANDER = 50
 local MIN_WANDER_DIST = 0.05
 
-local INTERACT_CHANCE = 0.2 -- 0..1
+local INTERACT_CHANCE = 0.2 -- 0 to 0.5
+local INTERACT_CHANCE = 0.1 -- 0 to 0.5
 local RECENCY_TIME = 10.0 -- seconds
 
 
@@ -255,6 +256,17 @@ local getRandomWeightedInteraction = function()
   return availableInteractions[#availableInteractions].name
 end
 
+local getRandomBehaviour = function()
+  local behaviourIDs = { }
+  for id in pairs(behaviours) do
+    table.insert(behaviourIDs, id)
+  end
+  if #behaviourIDs == 0 then
+    return nil
+  end
+  return behaviourIDs[love.math.random(1, #behaviourIDs)]
+end
+
 local resetScriptMoveState = function()
   ai.scriptMoveQueue = { }
   ai.currentScriptMove = nil
@@ -340,7 +352,8 @@ ai.update = function(dt)
     if ai.timer >= AI_AT_IDLE then
       ai.timer = 0
       local consumed = false
-      if love.math.random() <= INTERACT_CHANCE then
+      local chance = love.math.random()
+      if chance <= INTERACT_CHANCE then
         local name = getRandomWeightedInteraction()
         if name then
           consumed = true
@@ -350,12 +363,23 @@ ai.update = function(dt)
           ai.scriptID = interaction.scriptID
           ai.state = "interact"
         end
+      elseif chance >= 1 - BEHAVIOUR_CHANCE then
+        local behaviourID = getRandomBehaviour()
+        if behaviourID and behaviourID == "play_ball" then
+          consumed = true
+          ai.currentBehaviour = {
+            id = behaviourID,
+            state = behaviours[behaviourID].initialise(ai, require("src.world.nest").ball)
+          }
+          ai.state = "behaviour"
+        end
       end
       if not consumed then
         local toX, toY = ai.getWanderPoint()
         ai.target = { toX, toY }
         ai.state = "wander"
       end
+      return
     end
   elseif ai.state == "script" then
     local isMoving = false
