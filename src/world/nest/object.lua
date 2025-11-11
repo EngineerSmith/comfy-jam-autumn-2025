@@ -207,13 +207,18 @@ object.update = function(self, dt)
           self.subState = "loop"
           self:playCurrentSubState()
         else
-          if self.state == "idle_fidget" then
+          -- Check if we should fall back to default state
+          if self.state ~= "idle" and self.stateTextures["idle"] then
             self:setState("idle")
-            break
           else
-            self.currentFrame = self.stateData.frameCount
-            self.stateData = nil
-            break
+            if self.state == "idle_fidget" then
+              self:setState("idle")
+              break
+            else
+              self.currentFrame = self.stateData.frameCount
+              self.stateData = nil
+              break
+            end
           end
         end
       elseif currentSubState == "loop" then

@@ -8,13 +8,16 @@ local assets = {
   "model.nest.interior.bed.3",
   "model.nest.interior.bed.4",
 -- Sprites
-  "sprite.hedgehog.idle",
-  "sprite.hedgehog.walking",
+  "sprite.hedgehog.idle.loop",
+  "sprite.hedgehog.walking.loop",
   "sprite.hedgehog.sleep.start",
   "sprite.hedgehog.sleep.loop",
   "sprite.hedgehog.sleep.exit",
-  "sprite.ball.idle",
-  "sprite.ball.walking",
+  "sprite.hedgehog.alert.start",
+  "sprite.hedgehog.alert.loop",
+  "sprite.hedgehog.alert.exit",
+  "sprite.ball.idle.loop",
+  "sprite.ball.walking.loop",
 }
 
 --- Grab the models needed for mapData

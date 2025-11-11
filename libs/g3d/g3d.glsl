@@ -39,7 +39,7 @@ vec4 position(mat4 transformProjection, vec4 vertexPosition) {
 
     float light = max(0.0, dot(vertexNormal, lightDirection));
     if (disableLight)
-        light = 0.0;
+        light = 0.5;
     vertexLight = clamp(0.3 + 0.7 * light, 0.0, 1.0);
 
     return screenPosition;

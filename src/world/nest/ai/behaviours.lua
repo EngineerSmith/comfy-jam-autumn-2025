@@ -16,7 +16,7 @@ behaviours["play_ball"] = {
       gravity = -2.0,
       friction = 0.8,
       finalKickFriction = 0.4, -- harsh friction for final kick before we transition back
-      restitution = 0.5,
+      restitution = 0.7,
       boundingRadius = 1.67,
     }
   end,

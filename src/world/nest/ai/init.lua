@@ -81,6 +81,22 @@ ai.triggerInteraction = function(name, isPriority)
   end
 end
 
+ai.triggerScript = function(scriptID, isPriority)
+  if not scriptID then
+    logger.warn("ai.triggerScript called with invalid scriptID: "..tostring(scriptID))
+    return
+  end
+  local action = {
+    type = "script",
+    scriptID = scriptID,
+  }
+  if isPriority then
+    table.insert(ai.queue, 1, action)
+  else
+    table.insert(ai.queue, action)
+  end
+end
+
 ai.moveBy = function(dx, dy)
   if ai.state ~= "script" then
     logger.warn("ai.moveby called while not in 'script' state. State: "..ai.state)
@@ -299,6 +315,18 @@ ai.update = function(dt)
         ai.target = { interaction.x, interaction.y } -- Reach target even if it means phasing through exclusion zones;; todo path finding?
         ai.scriptID = interaction.scriptID
         ai.state = "interact"
+        return
+      elseif action.type == "script" then
+        local scriptingEngine = require("src.scripting")
+        ai.target = { ai.character.x, ai.character.y }
+        ai.state = "script"
+        local instanceID = scriptingEngine.startScript(action.scriptID)
+        if instanceID then
+          ai.scriptInstanceID = instanceID
+        else
+          logger.warn("AI couldn't start direct script: "..action.scriptID)
+          ai.state = "idle"
+        end
         return
       elseif action.type == "behaviour" then
         ai.currentBehaviour = {

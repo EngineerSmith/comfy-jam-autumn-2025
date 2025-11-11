@@ -46,6 +46,37 @@ nest.bedButton = {
   disabledTime = 1.1,
 }
 
+local hedgehogTextureStates = {
+  idle = { loop = { frames = 1, duration = 0 } },
+  walking = { loop = { frames = 2, duration = 0.1 } },
+  sleep = {
+    start = { frames = 6 },
+    loop  = { frames = 2 },
+    exit  = { frames = 8 },
+  },
+  alert = {
+    start = { frames = 4, duration = 0.1 },
+    loop  = { frames = 6 },
+    exit  = { frames = 3, duration = 0.1 },
+  },
+}
+
+local ballTextureStates = {
+  idle = { loop = { frames = 1, duration = 0 } },
+  walking = { loop = { frames = 8 } },
+}
+
+local setTextureStates = function(object, texturePath, textureStates)
+  for stateName, subStates in pairs(textureStates) do
+    local assetKeyPrefix = texturePath .. "." .. stateName
+    for subState, properties in pairs(subStates) do
+      local assetKey = assetKeyPrefix .. "." .. subState
+      local tex = assetManager[assetKey]
+      object:setStateTexture(stateName, subState, tex, properties.frames, properties.duration or 0.2)
+    end
+  end
+end
+
 nest.load = function()
   nest.bedLevel = -1 -- cutscene raises bedLevel to 0
   nest.bedVisualLevel = nest.bedLevel
@@ -66,22 +97,10 @@ nest.load = function()
   nest.camera:orbitalLookAt(nil, nil, 0, 0, 0.5, 2.7)
 
   nest.hedgehog = object.new()
-  local tex = assetManager["sprite.hedgehog.idle"]
-  nest.hedgehog:setStateTexture("idle", "loop", tex, 1, 0)
-  local tex = assetManager["sprite.hedgehog.walking"]
-  nest.hedgehog:setStateTexture("walking", "loop", tex, 2, 0.1)
-  local tex = assetManager["sprite.hedgehog.sleep.start"]
-  nest.hedgehog:setStateTexture("sleep", "start", tex, 6, 0.2)
-  local tex = assetManager["sprite.hedgehog.sleep.loop"]
-  nest.hedgehog:setStateTexture("sleep", "loop", tex, 2, 0.2)
-  local tex = assetManager["sprite.hedgehog.sleep.exit"]
-  nest.hedgehog:setStateTexture("sleep", "exit", tex, 8, 0.2)
+  setTextureStates(nest.hedgehog, "sprite.hedgehog", hedgehogTextureStates)
 
   nest.ball = object.new()
-  local tex = assetManager["sprite.ball.idle"]
-  nest.ball:setStateTexture("idle", "loop", tex, 1, 0)
-  local tex = assetManager["sprite.ball.walking"]
-  nest.ball:setStateTexture("walking", "loop", tex, 3, 0.2)
+  setTextureStates(nest.ball, "sprite.ball", ballTextureStates)
 
   nest.objects = {
     nest.hedgehog,
@@ -268,6 +287,9 @@ nest.update = function(dt, scale)
         if nest.bedLevel == 0 then -- Make the interaction available
           ai.addInteraction("interact.bed", 0, -1.3, 0.6, 0, -0.85, "interact.bed")
         end
+        -- Tell ai to investigate change; since we're forcing them into the queue; do in opposite order of wanting to be ran in
+        ai.triggerInteraction("interact.bed", true)
+        ai.triggerScript("ai.alert", true)
       end
     end
 
