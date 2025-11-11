@@ -110,6 +110,10 @@ audioManager.play = function(assetKey, volumeMod)
   end
 end
 
+audioManager.startLoop = function(assetKey)
+  
+end
+
 audioManager.get = function(assetKey)
   local audioInfo = audioManager.audio[assetKey]
   if not audioInfo then

@@ -16,10 +16,17 @@ local assets = {
   "sprite.hedgehog.alert.start",
   "sprite.hedgehog.alert.loop",
   "sprite.hedgehog.alert.exit",
+  "sprite.hedgehog.jump.start",
   "sprite.ball.idle.loop",
   "sprite.ball.walking.loop",
 -- Audio
   "audio.fx.softImpact",
+  "audio.fx.chip",
+  "audio.fx.upgradeSuccess",
+  "audio.fx.errorBuzz",
+  "audio.fx.footstep.grass",
+  "audio.fx.snore",
+  "audio.music.retroReggae",
 }
 
 --- Grab the models needed for mapData

@@ -210,6 +210,7 @@ object.update = function(self, dt)
           -- Check if we should fall back to default state
           if self.state ~= "idle" and self.stateTextures["idle"] then
             self:setState("idle")
+            break
           else
             if self.state == "idle_fidget" then
               self:setState("idle")

@@ -2,6 +2,7 @@ local ai = {
   speed = 0.8,
   state = "idle",
   timer = 0,
+  walkSoundTimer = 0,
   wanderCircle = {
     x = 0, y = 0, r = 1.5,
   },
@@ -14,9 +15,12 @@ local ai = {
   currentScriptMove = nil,
   completedScriptMoves = { },
   scriptMoveCounter = 0,
+
+  randomScripts = { }
 }
 
 local logger = require("util.logger")
+local audioManager = require("util.audioManager")
 
 local behaviours = require("src.world.nest.ai.behaviours")
 
@@ -26,11 +30,13 @@ local AI_AT_IDLE = 3.0 -- seconds
 local MAX_TRIES_WANDER = 50
 local MIN_WANDER_DIST = 0.05
 
+local WALK_SOUND_INTERVAL = 0.2
+
 -- Chance must max to 1; where chance is calculated
--- interact < wander < 1 - behaviour
--- 0.2 < x < (1 - 0.15)
+-- interact < script < wander < 1 - behaviour
 local INTERACT_CHANCE  = 0.20
 local BEHAVIOUR_CHANCE = 0.15
+local RANDOM_SCRIPT_CHANCE = 0.10
 
 local RECENCY_TIME = 10.0 -- seconds
 
@@ -100,6 +106,15 @@ ai.triggerScript = function(scriptID, isPriority)
   else
     table.insert(ai.queue, action)
   end
+end
+
+ai.addRandomScript = function(scriptID)
+  if not scriptID then
+    logger.warn("ai.addRandomScript called with invalid scriptID: "..tostring(scriptID))
+    return
+  end
+  table.insert(ai.randomScripts, scriptID)
+  logger.info("Added random script ", scriptID)
 end
 
 ai.moveBy = function(dx, dy)
@@ -271,6 +286,13 @@ local getRandomBehaviour = function()
   return behaviourIDs[love.math.random(1, #behaviourIDs)]
 end
 
+local getRandomScriptID = function()
+  if #ai.randomScripts == 0 then
+    return nil
+  end
+  return ai.randomScripts[love.math.random(1, #ai.randomScripts)]
+end
+
 local resetScriptMoveState = function()
   ai.scriptMoveQueue = { }
   ai.currentScriptMove = nil
@@ -320,6 +342,9 @@ ai.update = function(dt)
   if not ai.character then
     return -- character not get set; nothing to update
   end
+
+  local isCurrentlyMoving = false
+
   if ai.state == "idle" then
     ai.timer = ai.timer + dt
     if #ai.queue > 0 then
@@ -367,6 +392,22 @@ ai.update = function(dt)
           ai.scriptID = interaction.scriptID
           ai.state = "interact"
         end
+      elseif chance <= INTERACT_CHANCE + RANDOM_SCRIPT_CHANCE then
+        local scriptID = getRandomScriptID()
+        if scriptID then
+          consumed = true
+          local scriptingEngine = require("src.scripting")
+          ai.target = { ai.character.x, ai.character.y }
+          ai.state = "script"
+          local instanceID = scriptingEngine.startScript(scriptID)
+          if instanceID then
+            ai.scriptInstanceID = instanceID
+          else
+            logger.warn("AI Couldn't start random script: "..scriptID)
+            ai.state = "idle"
+            consumed = false
+          end
+        end
       elseif chance >= 1 - BEHAVIOUR_CHANCE then
         local behaviourID = getRandomBehaviour()
         if behaviourID and behaviourID == "play_ball" then
@@ -398,6 +439,7 @@ ai.update = function(dt)
       if mag >= speed then
         local normalX, normalY = dx / mag, dy / mag
         ai.character:move(normalX * speed, normalY * speed)
+        isCurrentlyMoving = true
       else
         ai.character.x = toX
         ai.character.y = toY
@@ -436,6 +478,7 @@ ai.update = function(dt)
     if mag >= speed then
       local normX, normY = dx / mag, dy / mag
       ai.character:move(normX * speed, normY * speed, true)
+      isCurrentlyMoving = true
     else -- Reached wander point
       ai.character.x = toX
       ai.character.y = toY
@@ -461,7 +504,9 @@ ai.update = function(dt)
   elseif ai.state == "behaviour" then
     if ai.currentBehaviour and behaviours[ai.currentBehaviour.id] then
       local behaviourLogic = behaviours[ai.currentBehaviour.id]
-      local isFinished = not behaviourLogic.update(dt, ai.currentBehaviour.state)
+      local isFinished, hasMovedCharacter = behaviourLogic.update(dt, ai.currentBehaviour.state)
+      isFinished = not isFinished
+      isCurrentlyMoving = hasMovedCharacter == true
 
       if isFinished then
         ai.currentBehaviour = nil
@@ -472,6 +517,20 @@ ai.update = function(dt)
       ai.currentBehaviour = nil
       ai.state = "idle"
     end
+  end
+
+  if isCurrentlyMoving then
+    ai.walkSoundTimer = ai.walkSoundTimer + dt
+    if ai.walkSoundTimer >= WALK_SOUND_INTERVAL then
+      local maxRadius = ai.wanderCircle.r
+      local minRadius = -maxRadius
+      local t = (ai.character.y - minRadius) / (maxRadius - minRadius)
+      local volumeMod = math.max(0.1, t)
+      audioManager.play("audio.fx.footstep.grass", volumeMod)
+      ai.walkSoundTimer = ai.walkSoundTimer - WALK_SOUND_INTERVAL
+    end
+  else
+    ai.walkSoundTimer = 0
   end
 end
 

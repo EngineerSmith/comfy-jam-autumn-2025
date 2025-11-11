@@ -257,8 +257,19 @@ handlers["if.nest.bed.level.1"] = function()
 end
 
 
-handlers["playAudio"] = function(_, assetKey)
-  audioManager.play(assetKey)
+handlers["playAudio"] = function(_, assetKey, volumeMod)
+  audioManager.play(assetKey, volumeMod)
+  return true
+end
+
+handlers["aiFootstep"] = function()
+  local ai = require("src.world.nest.ai")
+  local maxRadius = ai.wanderCircle.r
+  local minRadius = -maxRadius
+  local t = (ai.character.y - minRadius) / (maxRadius - minRadius)
+  local volumeMod = math.max(0.1, t)
+  audioManager.play("audio.fx.footstep.grass", volumeMod)
+  return true
 end
 
 --- handler validation

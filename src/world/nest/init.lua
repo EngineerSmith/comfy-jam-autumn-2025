@@ -8,9 +8,14 @@ local flux = require("libs.flux")
 local input = require("util.input")
 local cursor = require("util.cursor")
 local assetManager = require("util.assetManager")
+local audioManager = require("util.audioManager")
 
 local ai = require("src.world.nest.ai")
 local object = require("src.world.nest.object")
+
+local SOUND_PULSE_CHARGE = "audio.fx.chip"
+local SOUND_PURCHASE     = "audio.fx.upgradeSuccess"
+local SOUND_DISABLE      = "audio.fx.errorBuzz"
 
 nest.bedAssets = {
   [0] = "model.nest.interior.bed.0",
@@ -32,6 +37,9 @@ nest.bedButton = {
   text = "Upgrade Bed: %d leaves",
   percentage = 0,
   isHovered = false,
+  pulseTimer = 0,
+  minPulseDelay = 0.05, -- fastest
+  maxPulseDelay = 0.30, -- slowest
   --
   wiggleSpeed = 30.0,
   wiggleMaxOffset = 3.0,
@@ -59,6 +67,7 @@ local hedgehogTextureStates = {
     loop  = { frames = 6 },
     exit  = { frames = 3, duration = 0.1 },
   },
+  jump = { start = { frames = 5 } },
 }
 
 local ballTextureStates = {
@@ -108,6 +117,8 @@ nest.load = function()
   }
 
   ai.addCharacterControl(nest.hedgehog)
+  ai.addRandomScript("ai.jump")
+  -- ai.addRandomScript("ai.alert")
 
   for _, assetKey in pairs(nest.bedAssets) do
     assetManager[assetKey]
@@ -134,13 +145,27 @@ nest.enter = function()
   shader:send("shadowStrength", 1.0)
 
   nest.hedgehog.x, nest.hedgehog.y = 0, 1.5
-  nest.ball.x, nest.ball.y = 1.2, -.4
+  nest.ball.z = 0 -- in case ball was kicked while leaving
 
   ai.timer = 1.0 -- bump timer for wander to happen sooner when character enters
 
   nest.bedButton.textFont = nil
   nest.bedButton.percentage = 0
   nest.bedButton.isHovered = false
+  nest.bedButton.pulseTimer = 0
+
+  -- Change musicKey in fadeOutMusic function too
+  local musicKey = "audio.music.retroReggae"
+  nest.music = audioManager.get(musicKey)
+  nest.music:setLooping(true)
+  nest.music:setVolume(0)
+  nest.music:play()
+  local targetVolume = audioManager.getVolume(musicKey)
+  local fade = { t = 0 }
+  flux.to(fade, 2, { t = 1 })
+    :onupdate(function()
+      nest.music:setVolume(targetVolume * fade.t)
+    end)
 end
 
 nest.leave = function()
@@ -151,6 +176,21 @@ nest.leave = function()
   nest.bedButton.textFont = nil
   nest.bedButton.percentage = 0
   nest.bedButton.isHovered = false
+  nest.bedButton.pulseTimer = 0
+end
+
+nest.fadeOutMusic = function()
+  local currentVolume = nest.music:getVolume()
+  local fade = { t = 1 }
+  flux.to(fade, 2, { t = 0 })
+    :onupdate(function()
+      nest.music:setVolume(currentVolume * fade.t)
+    end)
+    :oncomplete(function()
+      nest.music:stop()
+      nest.music:setVolume(audioManager.getVolume("audio.music.retroReggae"))
+      nest.music = nil
+    end)
 end
 
 nest.setAspectRatio = function(aspectRatio)
@@ -259,20 +299,44 @@ nest.update = function(dt, scale)
       cursor.switch("arrow")
     end
 
-    local bool = input.baton:down("bedPurchase") and ((input.isMouseActive() and nest.bedButton.isHovered) or input.isGamepadActive())
+    local previousPercentage = nest.bedButton.percentage
+    local isInputDown = input.baton:down("bedPurchase") and ((input.isMouseActive() and nest.bedButton.isHovered) or input.isGamepadActive())
 
-    if canAfford and bool and not isDisabled then
+    if canAfford and isInputDown and not isDisabled then
       nest.bedButton.percentage = nest.bedButton.percentage + dt / 2.0 -- seconds until full
       if nest.bedButton.percentage > 1 then
         nest.bedButton.percentage = 1
       end
-    elseif not canAfford and bool and not isDisabled then
+    elseif not canAfford and isInputDown and not isDisabled then
       nest.bedButton.disabled = nest.bedButton.disabledTime
+      audioManager.play(SOUND_DISABLE)
     else
       nest.bedButton.percentage = nest.bedButton.percentage - dt / 0.8 -- seconds until empty
       if nest.bedButton.percentage < 0 then
         nest.bedButton.percentage = 0
       end
+    end
+
+    local currentPercentage = nest.bedButton.percentage
+    local percentageChange = currentPercentage - previousPercentage
+    local THRESHOLD = 1e-4
+
+    if percentageChange > THRESHOLD then
+      local pulseDelay = nest.bedButton.maxPulseDelay - (nest.bedButton.maxPulseDelay - nest.bedButton.minPulseDelay) * currentPercentage
+      nest.bedButton.pulseTimer = nest.bedButton.pulseTimer + dt
+      if nest.bedButton.pulseTimer >= pulseDelay then
+        audioManager.play(SOUND_PULSE_CHARGE)
+        nest.bedButton.pulseTimer = 0
+      end
+    elseif percentageChange < -THRESHOLD then
+      local unwindDelay = 0.15
+      nest.bedButton.pulseTimer = nest.bedButton.pulseTimer + dt
+      if nest.bedButton.pulseTimer >= unwindDelay then
+        audioManager.play(SOUND_PULSE_CHARGE)
+        nest.bedButton.pulseTimer = 0
+      end
+    else
+      nest.bedButton.pulseTimer = 0
     end
     
     if nest.bedButton.percentage == 1 then
@@ -290,6 +354,8 @@ nest.update = function(dt, scale)
         -- Tell ai to investigate change; since we're forcing them into the queue; do in opposite order of wanting to be ran in
         ai.triggerInteraction("interact.bed", true)
         ai.triggerScript("ai.alert", true)
+
+        audioManager.play(SOUND_PURCHASE)
       end
     end
 
@@ -311,6 +377,7 @@ nest.update = function(dt, scale)
   --
 
   if input.baton:pressed("reject") then
+    nest.fadeOutMusic()
     ai.interrupt() -- we can't start our exit script, if ai is currently running one
     require("src.scripting").startScript("exit.pot")
     return

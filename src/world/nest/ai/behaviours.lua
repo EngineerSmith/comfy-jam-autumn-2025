@@ -69,9 +69,11 @@ behaviours["play_ball"] = {
     local char = state.character
     local ball = state.ball
 
+    local yVolumeMod = math.min(1.0, math.max(0.0, math.abs(ball.y) / state.boundingRadius))
+
     if behaviourState.kicksLeft <= 0  and state.vx * state.vx + state.vy * state.vy < 0.001 and ball.z <= 0.01 then
       ball:setState("idle")
-      return false
+      return false, false
     end
 
     state.vz = state.vz + state.gravity * dt
@@ -91,7 +93,7 @@ behaviours["play_ball"] = {
 
     if ball.z < 0 then
       if state.canHitFloor then
-        playRateLimited("audio.fx.softImpact", 3, 1.0)
+        playRateLimited("audio.fx.softImpact", 3, 1.0, yVolumeMod)
         state.canHitFloor = false
       end
 
@@ -118,7 +120,7 @@ behaviours["play_ball"] = {
         ball.y = ball.y - penetration * normalY
 
         local volumeMod = math.min(1.0, math.max(0.0, (velNorm - state.MIN_IMPACT_VEL) / (state.MAX_IMPACT_VEL - state.MIN_IMPACT_VEL)))
-        playRateLimited("audio.fx.softImpact", 3, 1.0, volumeMod)
+        playRateLimited("audio.fx.softImpact", 3, 1.0, volumeMod * yVolumeMod)
       end
     end
 
@@ -163,6 +165,8 @@ behaviours["play_ball"] = {
       ball:setState("idle")
     end
 
+    local hasMovedCharacter = false
+
     if state.step == "move_to_ball" then
       local LOOKAHEAD_TIME = 0.5
       local planarSpeed = math.sqrt(state.vx*state.vx + state.vy*state.vy)
@@ -196,13 +200,14 @@ behaviours["play_ball"] = {
           state.canHitFloor = true
 
           state.kicksLeft = state.kicksLeft - 1
-          playRateLimited("audio.fx.softImpact", 3, 1.0)
+          playRateLimited("audio.fx.softImpact", 3, 1.0, yVolumeMod)
         end
         state.step = "wait_for_ball"
         state.timer = 0
       else
         local normX, normY = dx / mag, dy / mag
         char:move(normX * moveSpeed, normY * moveSpeed, false)
+        hasMovedCharacter = true
       end
     elseif state.step == "wait_for_ball" then
       state.timer = state.timer + dt
@@ -211,11 +216,11 @@ behaviours["play_ball"] = {
         if state.kicksLeft > 0 then
           state.step = "move_to_ball"
         else
-          return false -- finished playing
+          return false, hasMovedCharacter -- finished playing
         end
       end
     end
-    return true -- behaviour is ongoing
+    return true, hasMovedCharacter -- behaviour is ongoing
   end,
 }
 
