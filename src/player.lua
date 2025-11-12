@@ -29,12 +29,23 @@ player.setAspectRatio = function(aspectRatio)
   player.camera:updateProjectionMatrix()
 end
 
+local inPhase = false
 player.update = function(dt)
   if player.character and not player.isInputBlocked then
+
+    if input.baton:pressed("debugButton") then
+      inPhase = not inPhase
+      if inPhase then
+        print("Entered phase")
+      else
+        print("Exited phase")
+      end
+    end
+
     local x, y = input.baton:get("move")
     local dx, dy = -x * dt * player.character.speed, -y * dt * player.character.speed
     if dx ~= 0 or dy ~= 0 then
-      player.character:move(dx, dy)
+      player.character:move(dx, dy, inPhase)
     end
   end
 

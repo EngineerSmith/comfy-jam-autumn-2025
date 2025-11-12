@@ -132,7 +132,9 @@ character.faceDirection = function(self, nx, ny)
   self.rotation = math.atan2(ny, nx) - math.rad(90)
 end
 
-character.move = function(self, dx, dy)
+local noCollision = function() return false end
+
+character.move = function(self, dx, dy, inPhase)
 
   local finalX, finalY = self.x + dx, self.y + dy
 
@@ -142,7 +144,7 @@ character.move = function(self, dx, dy)
 
     local currentGoalX, currentGoalY = finalX, finalY
     for level in pairs(self.levels) do
-      local actualX, actualY = level.world:move(self, currentGoalX, currentGoalY)
+      local actualX, actualY = level.world:move(self, currentGoalX, currentGoalY, inPhase and noCollision or nil)
       if actualX ~= currentGoalX or actualY ~= currentGoalY then
         currentGoalX, currentGoalY = actualX, actualY
         worldsMadeChange = true
@@ -189,6 +191,11 @@ character.teleport = function(self, x, y)
   end
   self.previousX, self.previousY = self.x, self.y
   self.x, self.y = x, y
+end
+
+character.teleportBy = function(self, dx, dy)
+  local x, y = dx + self.x, dy + self.y
+  self:teleport(x, y)
 end
 
 character.update = function(self, dt)

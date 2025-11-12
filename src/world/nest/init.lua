@@ -39,7 +39,7 @@ nest.bedButton = {
   isHovered = false,
   pulseTimer = 0,
   minPulseDelay = 0.05, -- fastest
-  maxPulseDelay = 0.30, -- slowest
+  maxPulseDelay = 0.20, -- slowest
   --
   wiggleSpeed = 30.0,
   wiggleMaxOffset = 3.0,

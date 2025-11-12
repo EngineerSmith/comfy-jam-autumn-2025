@@ -41,7 +41,8 @@ local defaultSettings = {
         unpause = { "sc:escape", "sc:backspace", "button:start", "button:back", "button:b" },
         interact = { "sc:space", "mouse:1", "button:a", "axis:triggerright+" },
         unlockCamera = { "mouse:3" },
-        bedPurchase = { "button:y", "mouse:1", "sc:space" }
+        bedPurchase = { "button:y", "mouse:1", "sc:space" },
+        debugButton = { "sc:tab", "button:dpleft" },
       },
       deadzone = .15,
       deadzoneSquared = false,
