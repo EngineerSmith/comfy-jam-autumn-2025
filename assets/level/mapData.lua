@@ -2,19 +2,26 @@ local helper = require("assets.level.helper")
 
 local mapData = {
   levels = {
-    ["nest.ground"] = { x = -100, y = -100, z = 0, width = 200, height = 200 },
+    ["nest.ground"] = { x = -60, y = -60, z = 0, width = 120, height = 120 },
     ["nest.pot"] = { x = 20, y = -5, z = 4, width = 12, height = 12 },
+    ["zone1.ground"] = { x = -130, y = -50, z = 0, width = 100, height = 100 },
+    ["zone1.upper"] = { x = -160, y = -50, z = 5, width = 100, height = 100 },
   },
   transitions = {
     {
-      x = 24, y = 6, width = 3, height = 6.0,
+      x = 24, y = 6, width = 3, height = 6,
       edgeMap = { top = "nest.ground", bottom = "nest.pot" }
-    }
+    },
+    {
+      x = -32, y = -1, width = 3, height = 9,
+      edgeMap = { left = "zone1.ground", right = "nest.ground" },
+    },
   },
   models = {
     --- Nest
     -- { model = "model.surface.1", texture = "texture.prototype.2", level = "nest.ground", x = 0, y = 0, z = -.1 },
     { model = "model.surface.2", level = "nest.ground", x = 0, y = 0, z = -.1 },
+    { model = "model.surface.2", level = "zone1.ground", x = -50, y = 0, z = -.1 },
     {
       model = "model.flower_pot.nest", level = "nest.ground", x = 0, y = 0, z = -.05, scale = 25,
       collider = { levels = { "nest.ground" }, shape = "circle", radius = 0.295, segments = 8, rotation = math.rad(22.5), tag = "POT" },
@@ -102,6 +109,8 @@ local mapData = {
     { levels = { "nest.pot" }, shape = "rectangle", x = 21,   y = 0, width = 1, height = 5, tag = "WALL", rz = math.rad(180+25) },
     { levels = { "nest.pot" }, shape = "rectangle", x = 30.5, y = 0, width = 1, height = 5, tag = "WALL", rz = math.rad(    25) },
     { levels = { "nest.pot" }, shape = "rectangle", x = 19.5, y = .5, width = 1, height = 5, tag = "WALL", rz = math.rad(   -25) },
+    { levels = { "nest.ground", "zone1.ground" }, shape = "rectangle", x = -31, y = -51, width = 1, height = 50, tag = "WALL" },
+    -- { levels = { "nest.ground", "zone1.ground" }, shape = }
   },
   collectables = {
     { level = "nest.ground", x =  0, y = 10, tag = "GOLDEN_LEAF", zone = "nest" }, -- behind nest pot
@@ -120,6 +129,7 @@ local mapData = {
     { level = "nest.ground", x = 19, y = 8, tag = "LEAF", zone = "nest" },
     { level = "nest.ground", x = -25, y = -14, tag = "GOLDEN_LEAF", zone = "nest" }, -- Hidden under cabbage on the left of the nest pot
     { level = "nest.ground", x = -1, y = 17, tag = "LEAF", zone = "nest" },
+    { level = "nest.ground", x = -23.5, y = 0, tag = "LEAF", zone = "nest" },
   },
   signposts = {
     { level = "nest.ground", x = 0, y = -7.4, z = 4, content = "Press [button.interact]to enter Nest", radius = 3.5 },
@@ -215,8 +225,8 @@ local mapData = {
   characters = {
     ["Hedgehog.Player"] = {
       file = "assets/characters/hedgehog/init.lua",
-      level = "nest.ground",
-      x = 0, y = -10,
+      level = "zone1.ground", --"nest.ground",
+      x = -42, y = 0, -- 0, -10
     }
   },
   playerCharacter = "Hedgehog.Player",

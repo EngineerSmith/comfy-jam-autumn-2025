@@ -98,7 +98,11 @@ local model = models[rng:random(#models)]
     for key, value in pairs(model.collider) do
       colliderCopy[key] = value
     end
-    colliderCopy.levels = { level }
+    if type(level) == "string" then
+      colliderCopy.levels = { level }
+    else
+      colliderCopy.levels = level
+    end
   end
 
   local modelName = model
@@ -109,25 +113,30 @@ local model = models[rng:random(#models)]
   else
     -- print(">", modelName)
   end
+  
+  local modelLevel = level
+  if type(level) == "table" then
+    modelLevel = level[1]
+  end
 
   table.insert(helper.mapData.models, {
       model = modelName,
       texture = texture,
-      level = level,
+      level = modelLevel,
       x = x,
       y = y,
       z = zOffset,
       scale = rng:random(minScale, maxScale) / scaleDecimalPlace,
       rz = rng:random() * 2 * math.pi,
       collider = colliderCopy,
-      noScaleZ = type(model) == "table" and model.noScaleZ or nil,
+      noScaleZ = type(model) == "table" and model.noScaleZ == true,
     })
 end
 
 local flowerCollider = { shape = "circle", radius = 0.036, segments = 3, tag = "PLANT", rotation = math.rad(180), }
 local plantModels = {
-  { "model.plant.leaf", minScale = 3, maxScale = 5, collider = { shape = "rectangle", x = -0.05, y = -0.05, width = 0.1, height = 0.1, tag = "PLANT" }},
-  { "model.plant.leaf.tall", minScale = 3, maxScale = 5, collider = { shape = "rectangle", x = -0.05, y = -0.05, width = 0.1, height = 0.1, tag = "PLANT" }},
+  { "model.plant.leaf", minScale = 3, maxScale = 5, collider = { shape = "rectangle", width = 0.1, height = 0.1, tag = "PLANT" }},
+  { "model.plant.leaf.tall", minScale = 3, maxScale = 5, collider = { shape = "rectangle", width = 0.1, height = 0.1, tag = "PLANT" }},
   { "model.flower.purple.1", collider = flowerCollider },
   { "model.flower.purple.2", collider = flowerCollider },
   { "model.flower.purple.3", collider = flowerCollider },
@@ -163,6 +172,44 @@ local cabbageModels = {
 }
 helper.addCabbage = function(...)
   return helper.addModel(cabbageModels, 15, 28, ...)
+end
+
+local cliffModels = {
+  { "model.cliff.rock", collider = { shape = "rectangle", width = 1, height = .16, tag = "ROCK" } },
+}
+helper.addCliff = function(level, x, y, zOffset, rz)
+  local model = cliffModels[rng:random(#cliffModels)]
+  local modelName = model[1]
+  local colliderCopy
+  if model.collider then
+    colliderCopy = { }
+    for key, value in pairs(model.collider) do
+      colliderCopy[key] = value
+    end
+    if type(level) == "string" then
+      colliderCopy.levels = { level }
+    else
+      colliderCopy.levels = level
+    end
+  end
+  local modelLevel = level
+  if type(level) == "table" then
+    modelLevel = level[1]
+  end
+
+  local scale = model.scale or 5
+
+  table.insert(helper.mapData.models, {
+      model = modelName,
+      level = modelLevel,
+      x = x,
+      y = y,
+      z = zOffset,
+      scale = scale,
+      rz = rz or 0,
+      collider = colliderCopy,
+      noScaleZ = model.noScaleZ == true,
+    })
 end
 
 helper.addCollectable = function(tag, level, x, y, zone)

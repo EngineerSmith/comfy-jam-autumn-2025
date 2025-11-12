@@ -4,16 +4,18 @@ colliderRectangle.__index = colliderRectangle
 local slick = require("libs.slick")
 local slickHelper = require("util.slickHelper")
 
-colliderRectangle.new = function(x, y, width, height, tag, levels)
+colliderRectangle.new = function(x, y, width, height, tag, levels, xOffset, yOffset)
   if type(tag) == "string" then
     tag = slickHelper.tags[tag]
   end
+  xOffset, yOffset = xOffset or 0, yOffset or 0
 
-  local shape = slick.newRectangleShape(0, 0, width, height, tag)
+  local shape = slick.newRectangleShape(xOffset, yOffset, width, height, tag)
   local self = setmetatable({
       shape = shape,
       levels = levels,
       x = x, y = y, width = width, height = height,
+      xOffset = xOffset, yOffset = yOffset,
       rotation = 0,
     }, colliderRectangle)
 
@@ -51,6 +53,7 @@ colliderRectangle.debugDraw = function(self)
   lg.setColor(0,0,1,0.5)
   lg.translate(self.x, self.y)
   lg.rotate(self.rotation)
+  lg.translate(self.xOffset, self.yOffset)
   lg.rectangle("fill", 0, 0, self.width, self.height)
   lg.pop()
 end

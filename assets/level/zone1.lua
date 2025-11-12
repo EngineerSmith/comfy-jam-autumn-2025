@@ -1,2 +1,45 @@
 local helper = require("assets.level.helper")
 
+helper.placeDirtPath("zone1.ground", love.math.newBezierCurve(-32, 3.5, -42.1, -1.5,-48, -1))
+helper.addLeafCircle("zone1.ground", "zone_1", -42.5, -9, 3, 8)
+helper.addPlant("zone1.ground", -42.5, -9)
+helper.addGrassClump("zone1.ground", -38, -11)
+helper.addPebbleClump("zone1.ground", -36.5, -4.5)
+helper.addGrassClump("zone1.ground", -37, -21)
+helper.addGrassClump("zone1.ground", -48, -7)
+helper.addLargeRock("zone1.ground", -45, -20)
+helper.addPlant("zone1.ground", -37, -13.5)
+helper.addCabbage("zone1.ground", -38, -18.5)
+helper.addGrassClump("zone1.ground", -49, -14)
+helper.addLeafLine("zone1.ground", "zone_1", -33, 3, -45.9, -1, 3)
+helper.addCabbage("zone1.ground", -33, 10)
+helper.addLargeRock({ "nest.ground", "zone1.ground" }, -31.5, 15.6)
+helper.placeDirtPath("zone1.ground", love.math.newBezierCurve(-48, -1, -53, -2, -56.5, -7.5, -62.5, -13.5))
+helper.addLeafLine("zone1.ground", "zone_1", -51.3, -2.3, -59, -10, 3)
+helper.addCliff({ "zone1.ground", "zone1.upper" }, -52, 2.5, 0, math.rad(30))
+helper.addCliff({ "zone1.ground", "zone1.upper" }, -56.1, .1, 0, math.rad(30))
+local length = 3
+for y = 0, length * 5, 5 do
+  helper.addCliff({ "zone1.ground", "zone1.upper" }, -50, 6 + y, 0, math.rad(90))
+end
+helper.addCliff({ "zone1.ground", "zone1.upper" }, -48, 24, 0, math.rad(30))
+local length = 3
+for x = 0, length * 5, 5 do
+  helper.addCliff({ "zone1.ground", "zone1.upper" }, -46 + x, 25)
+end
+helper.addCabbage("zone1.ground", -32.8, 20)
+helper.addCabbage({ "zone1.ground", "zone1.upper" }, -30.5, 26.5, 5)
+helper.addCabbage({ "zone1.ground", "zone1.upper" }, -29, 34, 5)
+helper.addSmallRock("zone1.upper", -58, 1.5)
+local length = 5
+for x = 0, length * -5, -5 do
+ helper.addCliff({ "zone1.ground", "zone1.upper" }, -60 + x, -1)
+end
+helper.addSmallRock("zone1.upper", -53, 22)
+helper.addSmallRock("zone1.upper", -48.5, 26.5)
+helper.addCabbage("zone1.upper", -55, 22)
+helper.addCabbage("zone1.upper", -49, 28)
+helper.addLargeRock("zone1.upper", -62, 21)
+helper.addCabbage("zone1.ground", -29, 22)
+helper.addPebbleClump("zone1.ground", -56, 0)
+helper.addSmallRock("zone1.ground", -59, -1.5)

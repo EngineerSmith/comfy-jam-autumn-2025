@@ -180,11 +180,22 @@ nest.leave = function()
 end
 
 nest.fadeOutMusic = function()
+  if not nest.music then
+    return
+  end
   local currentVolume = nest.music:getVolume()
+  if currentVolume == 0 then
+    nest.music:stop()
+    nest.music:setVolume(audioManager.getVolume("audio.music.retroReggae"))
+    nest.must = nil
+    return
+  end
   local fade = { t = 1 }
   flux.to(fade, 2, { t = 0 })
     :onupdate(function()
-      nest.music:setVolume(currentVolume * fade.t)
+      if nest.music then
+        nest.music:setVolume(currentVolume * fade.t)
+      end
     end)
     :oncomplete(function()
       nest.music:stop()

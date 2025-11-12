@@ -125,6 +125,9 @@ local list = {
   { path = "models/kenney/Nature Kit/rock_smallFlatA.obj", name = "model.rock.small.1", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/rock_smallFlat.mtl" },
   { path = "models/kenney/Nature Kit/rock_smallFlatB.obj", name = "model.rock.small.2", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/rock_smallFlat.mtl" },
   { path = "models/kenney/Nature Kit/rock_smallFlatC.obj", name = "model.rock.small.3", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/rock_smallFlat.mtl" },
+  -- { path = "models/kenney/Nature Kit/cliff_half_rock.obj", name = "model.cliff.rock.half", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/cliff_half_rock.mtl" },
+  -- { path = "models/kenney/Nature Kit/cliff_top_rock.obj", name = "model.cliff.rock", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/cliff_top_rock.mtl" },
+  { path = "models/cliff_top_plane.obj", name = "model.cliff.rock", onLoad = objLoader, "z", "assets/models/cliff_top_plane.mtl" },
 
   { path = "models/kenney/Pirate Kit/grass.obj", name = "model.grass.stylized", onLoad = objLoader, "y", "NIL", "v" },
   { path = "models/kenney/Pirate Kit/grass-patch.obj", name = "model.grass.stylized.patch", onLoad = objLoader, "y", "NIL", "v" },

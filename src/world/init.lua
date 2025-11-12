@@ -151,10 +151,12 @@ world.load = function()
           logger.warn("MapData's Model["..i.."]'s collider had no valid levels, ignoring. Model will appear without collider.")
         else
           if colliderInfo.shape == "rectangle" then
+            local xOffset, yOffset = colliderInfo.x or 0, colliderInfo.y or 0
+            xOffset, yOffset = xOffset * scale, yOffset * scale
             local width, height, tag = colliderInfo.width, colliderInfo.height, colliderInfo.tag
             width, height = width * scale, height * scale
             local halfWidth, halfHeight = width / 2, height / 2
-            collider = colliderRectangle.new(x-halfWidth, y-halfHeight, width, height, tag, levels)
+            collider = colliderRectangle.new(x, y, width, height, tag, levels, -halfWidth+xOffset, -halfHeight+yOffset)
           elseif colliderInfo.shape == "circle" then
             local radius, segments, rotation, tag = colliderInfo.radius, colliderInfo.segments, colliderInfo.rotation, colliderInfo.tag
             radius = radius * scale

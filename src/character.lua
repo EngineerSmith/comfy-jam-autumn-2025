@@ -128,15 +128,43 @@ character.setStateTexture = function(self, state, texture, frameCount, frameTime
   end
 end
 
-character.faceDirection = function(self, nx, ny)
-  self.rotation = math.atan2(ny, nx) - math.rad(90)
+local SNAP_STEP = 360 / 16
+local snapAngleTo16Directions = function(nx, ny)
+  if math.abs(nx) < 1e-3 and math.abs(ny) < 1e-3 then
+    return nil -- No significant movement
+  end
+
+  local rawAngleDeg = math.deg(math.atan2(ny, nx))
+
+  return math.floor((rawAngleDeg / SNAP_STEP) + 0.5) * SNAP_STEP
 end
 
-local noCollision = function() return false end
+local getSnappedVector = function(x, y, snappedDeg)
+  local mag = math.sqrt(x * x + y * y)
+  local snappedRad = math.rad(snappedDeg)
+  local snappedX = math.cos(snappedRad) * mag
+  local snappedY = math.sin(snappedRad) * mag
+  return snappedX, snappedY
+end
+
+character.faceDirection = function(self, nx, ny)
+  local snappedDeg = snapAngleTo16Directions(nx, ny)
+  if snappedDeg then
+    self.rotation = math.rad(snappedDeg - 90) -- graphic faces up, account for this
+  end
+end
+
+local noCollisions = function() return false end
 
 character.move = function(self, dx, dy, inPhase)
+  local snappedDeg = snapAngleTo16Directions(dx, dy)
+  if not snappedDeg then
+    return
+  end
 
-  local finalX, finalY = self.x + dx, self.y + dy
+  local snappedDx, snappedDy = getSnappedVector(dx, dy, snappedDeg)
+
+  local finalX, finalY = self.x + snappedDx, self.y + snappedDy
 
   local worldsMadeChange, MAX_ITERATIONS = false, 10
   for i = 1, MAX_ITERATIONS do
@@ -144,7 +172,7 @@ character.move = function(self, dx, dy, inPhase)
 
     local currentGoalX, currentGoalY = finalX, finalY
     for level in pairs(self.levels) do
-      local actualX, actualY = level.world:move(self, currentGoalX, currentGoalY, inPhase and noCollision or nil)
+      local actualX, actualY = level.world:move(self, currentGoalX, currentGoalY, inPhase and noCollisions or nil)
       if actualX ~= currentGoalX or actualY ~= currentGoalY then
         currentGoalX, currentGoalY = actualX, actualY
         worldsMadeChange = true
@@ -164,7 +192,7 @@ character.move = function(self, dx, dy, inPhase)
   if finalX ~= self.x or finalY ~= self.y then
     self:teleport(finalX, finalY)
     self.movedPreviousFrame = true
-    self:faceDirection(dx, dy)
+    self:faceDirection(snappedDx, snappedDy)
     return true
   end
   return false
