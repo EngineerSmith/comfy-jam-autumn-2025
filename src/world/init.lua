@@ -91,7 +91,9 @@ world.load = function()
     world.levels[levelName] = level.new(levelName, x, y, width, height, z)
     local rect = { unpack(world.levels[levelName].rect) }
     rect.color = { 1, 1, 1, 0.5 }
-    table.insert(world.debug, rect)
+    if levelName == "zone1.rock" then
+      table.insert(world.debug, rect)
+    end
   end
 
   for _, transitionInfo in ipairs(mapData.transitions) do

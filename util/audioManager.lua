@@ -87,12 +87,10 @@ audioManager.play = function(assetKey, volumeMod)
     return
   end
 
-  volumeMod = volumeMod or 1.0
-
   if audioInfo.audioType == "ui" or audioInfo.audioType == "sfx" then
     local s = audioInfo[love.math.random(1, #audioInfo)]
     local volume = s.asset:getVolume() 
-    if volumeMod ~= 1.0 then
+    if type(volumeMod) == "number" and volumeMod ~= 1.0 then
       s.asset:setVolume(volume * volumeMod)
     end
     s.asset:play()
@@ -110,10 +108,6 @@ audioManager.play = function(assetKey, volumeMod)
   end
 end
 
-audioManager.startLoop = function(assetKey)
-  
-end
-
 audioManager.get = function(assetKey)
   local audioInfo = audioManager.audio[assetKey]
   if not audioInfo then
@@ -129,6 +123,22 @@ audioManager.get = function(assetKey)
     return s.asset
   else
     logger.error("Add", audioInfo.audioType, "audioType to audiomanager.get")
+    return audioInfo[1]
+  end
+end
+
+audioManager.resetVolume = function(assetKey)
+    local audioInfo = audioManager.audio[assetKey]
+  if not audioInfo then
+    return nil
+  end
+  if audioInfo.audioType == "ui" or audioInfo.audioType == "sfx" then
+    local targetVolume = audioManager.getVolume(assetKey)
+    for _, s in ipairs(audioInfo) do
+      s.asset:setVolume(targetVolume)
+    end
+  else
+    logger.error("Add", audioInfo.audioType, "audioType to audiomanager.resetVolume")
     return audioInfo[1]
   end
 end
@@ -165,7 +175,7 @@ audioManager.getVolume = function(assetKey)
     return nil
   end
   local volume = audioManager.volume.master * audioManager.volume[audioInfo.audioType]
-  if #audioInfo > 1 then
+  if #audioInfo < 1 then
     return volume
   end
   local s = audioInfo[1]

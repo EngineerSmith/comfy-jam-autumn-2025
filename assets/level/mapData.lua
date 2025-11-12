@@ -5,7 +5,8 @@ local mapData = {
     ["nest.ground"] = { x = -60, y = -60, z = 0, width = 120, height = 120 },
     ["nest.pot"] = { x = 20, y = -5, z = 4, width = 12, height = 12 },
     ["zone1.ground"] = { x = -130, y = -50, z = 0, width = 100, height = 100 },
-    ["zone1.upper"] = { x = -160, y = -50, z = 5, width = 100, height = 100 },
+    ["zone1.upper"] = { x = -120, y = -20, z = 5, width = 80, height = 100 },
+    ["zone1.rock"] = { x = -41.5, y = 12.5, z = 4.1, width = 3, height = 3 },
   },
   transitions = {
     {
@@ -14,8 +15,12 @@ local mapData = {
     },
     {
       x = -32, y = -1, width = 3, height = 9,
-      edgeMap = { left = "zone1.ground", right = "nest.ground" },
+      edgeMap = { left = "zone1.ground", right = "nest.ground" }
     },
+    {
+      x = -41.5, y = 4.75, width = 3.5, height = 7,
+      edgeMap = { top = "zone1.rock", bottom = "zone1.ground" }
+    }
   },
   models = {
     --- Nest
@@ -99,6 +104,17 @@ local mapData = {
         { shape = "circle", x = -0.2, y =  0.35, radius = 0.15 },
       }
     },
+    { --- Transition ramp; nest.ground <-> nest.pot
+      model = "model.log", level = "zone1.ground", x = -40, y = 9, scale = 11, z = 0, rx = math.rad(30),
+    },
+    { -- This is the whole of level zone1.rock
+      model = "model.rock.tall.1", level = "zone1.ground", x = -40, y = 13, scale = 6, rz = math.rad(-80),
+      -- collider = { levels = { "zone1.ground" }, shape = "circle", radius = 0.25, segments = 6, tag = "ROCK" },
+    },
+    {
+      model = "model.rock.tall.1", level = "zone1.ground", x = -49, y = 13, scale = 6, rz = math.rad(90),
+      collider = { levels = { "zone1.ground" }, shape = "circle", radius = 0.25, segments = 6, tag = "ROCK" },
+    },
   },
   colliders = {
     -- Nest
@@ -111,6 +127,9 @@ local mapData = {
     { levels = { "nest.pot" }, shape = "rectangle", x = 19.5, y = .5, width = 1, height = 5, tag = "WALL", rz = math.rad(   -25) },
     { levels = { "nest.ground", "zone1.ground" }, shape = "rectangle", x = -31, y = -51, width = 1, height = 50, tag = "WALL" },
     -- { levels = { "nest.ground", "zone1.ground" }, shape = }
+    { levels = { "zone1.ground" }, shape = "rectangle", x = -41.5, y = 11, width = 0.25, height = 2, tag = "ROCK" },
+    { levels = { "zone1.ground", "zone1.rock" }, shape = "rectangle", x = -41.5, y = 14.5, width = 2, height = 0.25, tag = "ROCK" },
+    { levels = { "zone1.rock" }, shape = "rectangle", x = -38.5, y = 12.5, width = 0.25, height = 2, tag = "ROCK" },
   },
   collectables = {
     { level = "nest.ground", x =  0, y = 10, tag = "GOLDEN_LEAF", zone = "nest" }, -- behind nest pot

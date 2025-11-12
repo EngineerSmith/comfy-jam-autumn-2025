@@ -128,6 +128,7 @@ local list = {
   -- { path = "models/kenney/Nature Kit/cliff_half_rock.obj", name = "model.cliff.rock.half", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/cliff_half_rock.mtl" },
   -- { path = "models/kenney/Nature Kit/cliff_top_rock.obj", name = "model.cliff.rock", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/cliff_top_rock.mtl" },
   { path = "models/cliff_top_plane.obj", name = "model.cliff.rock", onLoad = objLoader, "z", "assets/models/cliff_top_plane.mtl" },
+  { path = "models/kenney/Nature Kit/rock_tallF.obj", name = "model.rock.tall.1", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/rock_tallF.mtl" },
 
   { path = "models/kenney/Pirate Kit/grass.obj", name = "model.grass.stylized", onLoad = objLoader, "y", "NIL", "v" },
   { path = "models/kenney/Pirate Kit/grass-patch.obj", name = "model.grass.stylized.patch", onLoad = objLoader, "y", "NIL", "v" },

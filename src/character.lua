@@ -1,7 +1,9 @@
 local slick = require("libs.slick")
-local slickHelper = require("util.slickHelper")
 
 local logger = require("util.logger")
+local slickHelper = require("util.slickHelper")
+local audioManager = require("util.audioManager")
+
 local colliderCircle = require("src.colliderCircle")
 
 local character = {
@@ -251,6 +253,9 @@ character.update = function(self, dt)
     while self.timer >= self.stateData.frameTime do
       self.timer = self.timer - self.stateData.frameTime
       self.currentFrame = self.currentFrame + 1
+      if self.state == "walking" then
+        audioManager.play("audio.fx.footstep.grass")
+      end
       if self.state == "idle_fidget" and self.currentFrame == self.stateData.frameCount then
         self:setState("idle")
         break
