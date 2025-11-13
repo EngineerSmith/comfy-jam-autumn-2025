@@ -46,48 +46,90 @@ local getWallID = function(edgeName)
 end
 
 local wallDepth = 0.1 -- increase depth if there is jitter and phasing through walls, ideal starting values: 1, 2
+local cornerRadius = 0.1
 transition.createWalls = function(self)
   local minX, minY, maxX, maxY = self.minX, self.minY, self.maxX,  self.maxY
   local halfDepth = wallDepth / 2
-  local wallDefinitions = { }
+  local shapes = { }
 
+  local totalWidth = maxX - minX
+  local totalHeight = maxY - minY
+  local centreX = minX + totalWidth / 2
+  local centreY = minY + totalHeight / 2
+
+  local lengthReduction = 2 * cornerRadius
+
+  local maxRX = halfDepth + totalWidth / 2
+  local maxRY = halfDepth + totalHeight / 2
+
+  -- Top Wall
   if not self.edgeMap.top then
-    wallDefinitions.top = {
-      id = getWallID("top"),
-      x = minX + (maxX - minX) / 2, y = minY - halfDepth,
-      w = maxX - minX, h = wallDepth,
-    }
-  end
-  if not self.edgeMap.bottom then
-    wallDefinitions.bottom = {
-      id = getWallID("bottom"),
-      x = minX + (maxX - minX) / 2, y = maxY + halfDepth,
-      w = maxX - minX, h = wallDepth,
-    }
-  end
-  if not self.edgeMap.left then
-    wallDefinitions.left = {
-      id = getWallID("left"),
-      x = minX - halfDepth, y = minY + (maxY - minY) / 2,
-      w = wallDepth, h = maxY - minY,
-    }
-  end
-  if not self.edgeMap.right then
-    wallDefinitions.right = {
-      id = getWallID("right"),
-      x = maxX + halfDepth, y = minY + (maxY - minY) / 2,
-      w = wallDepth, h = maxY - minY,
-    }
-  end
-
-  for edgeName, definition in pairs(wallDefinitions) do
-    local shape = slick.newRectangleShape(-definition.w / 2, -definition.h / 2, definition.w, definition.h, slickHelper.tags.WALL)
-
-    for _, level in ipairs(self.levels) do
-      level:add(definition.id, definition.x, definition.y, shape)
+    local wallWidth = totalWidth - lengthReduction
+    local rY = -maxRY
+    if wallWidth > 0 then
+      local shape = slick.newRectangleShape(- wallWidth / 2, rY - halfDepth / 2, wallWidth, wallDepth, slickHelper.tags.WALL)
+      table.insert(shapes, shape)
     end
-    -- self.edgeMap.bottom:add(definition.id, definition.x, definition.y, shape)
-    table.insert(self.walls, definition.id)
+  end
+  -- Bottom Wall
+  if not self.edgeMap.bottom then
+    local wallWidth = totalWidth - lengthReduction
+    local rY = maxRY
+    if wallWidth > 0 then
+      local shape = slick.newRectangleShape(- wallWidth / 2, rY - halfDepth / 2, wallWidth, wallDepth, slickHelper.tags.WALL)
+      table.insert(shapes, shape)
+    end
+  end
+  -- Left Wall
+  if not self.edgeMap.left then
+    local wallHeight = totalHeight - lengthReduction
+    local rX = -maxRX
+    if wallHeight > 0 then
+      local shape = slick.newRectangleShape(rX - halfDepth, - wallHeight / 2, wallDepth, wallHeight, slickHelper.tags.WALL)
+      table.insert(shapes, shape)
+    end
+  end
+  -- Right Wall
+  if not self.edgeMap.right then
+    local wallHeight = totalHeight - lengthReduction
+    local rX = maxRX
+    if wallHeight > 0 then
+      local shape = slick.newRectangleShape(rX - halfDepth, - wallHeight / 2, wallDepth, wallHeight, slickHelper.tags.WALL)
+      table.insert(shapes, shape)
+    end
+  end
+  -- Top Left Corner
+  if not self.edgeMap.top or not self.edgeMap.left then
+    local rX, rY = -maxRX, -maxRY
+    local shape = slick.newCircleShape(rX, rY, cornerRadius, nil, slickHelper.tags.WALL)
+    table.insert(shapes, shape)
+  end
+  -- Top Right Corner
+  if not self.edgeMap.top or not self.edgeMap.right then
+    local rX, rY = maxRX, -maxRY
+    local shape = slick.newCircleShape(rX, rY, cornerRadius, nil, slickHelper.tags.WALL)
+    table.insert(shapes, shape)
+  end
+  -- Bottom Left Corner
+  if not self.edgeMap.bottom or not self.edgeMap.left then
+    local rX, rY = -maxRX, maxRY
+    local shape = slick.newCircleShape(rX, rY, cornerRadius, nil, slickHelper.tags.WALL)
+    table.insert(shapes, shape)
+  end
+  -- Bottom Right Corner
+  if not self.edgeMap.bottom or not self.edgeMap.right then
+    local rX, rY = maxRX, maxRY
+    local shape = slick.newCircleShape(rX, rY, cornerRadius, nil, slickHelper.tags.WALL)
+    table.insert(shapes, shape)
+  end
+
+  if #shapes > 0 then
+    local shapeGroup = slick.newShapeGroup(unpack(shapes))
+    local groupID = getWallID("group")
+    for _, level in ipairs(self.levels) do
+      level:add(groupID, centreX, centreY, shapeGroup)
+    end
+    table.insert(self.walls, groupID)
   end
 end
 
