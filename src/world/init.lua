@@ -92,7 +92,7 @@ world.load = function()
     local rect = { unpack(world.levels[levelName].rect) }
     rect.color = { 1, 1, 1, 0.5 }
     if levelName == "zone1.rock" then
-      table.insert(world.debug, rect)
+    table.insert(world.debug, rect)
     end
   end
 
@@ -356,40 +356,41 @@ world.update = function(dt, scale)
 
     local playerCharacter = player.character
     if playerCharacter then
-      for _, collectable in ipairs(world.collectables) do
-        collectable:update(dt)
+      if not player.isInputBlocked then
+        for _, collectable in ipairs(world.collectables) do
+          if not collectable.isCollected and playerCharacter:isInLevel(collectable.level) then
+            local dx, dy = collectable.x - playerCharacter.x, collectable.y - playerCharacter.y
+            local mag = math.sqrt(dx * dx + dy * dy)
+            local playerRadius = playerCharacter.halfSize * playerCharacter.textureSizeMod
+            local distance = mag - playerRadius
 
-        if not collectable.isCollected and playerCharacter:isInLevel(collectable.level) then
-          local dx, dy = collectable.x - playerCharacter.x, collectable.y - playerCharacter.y
-          local mag = math.sqrt(dx * dx + dy * dy)
-          local playerRadius = playerCharacter.halfSize * playerCharacter.textureSizeMod
-          local distance = mag - playerRadius
-
-          if distance <= 1 then
-            local t = 1.0 - math.min(1.0, distance / 1)
-            collectable.scale = (1 - t) * 1 + t * 0.5
-          end
-
-          if distance <= .1 then -- .1 for jiggle room
-            local value = collectable:collected()
-            world.leaves = world.leaves + value
-            world.currencyLeaves = world.currencyLeaves + value
-          elseif distance <= player.magnet * playerCharacter.size then
-            local dx, dy = dx / mag, dy / mag
-            local speed = 1.5
-            if distance <= (player.magnet * playerCharacter.size)/2 then
-              speed = 4
+            if distance <= 1 then
+              local t = 1.0 - math.min(1.0, distance / 1)
+              collectable.scale = (1 - t) * 1 + t * 0.5
             end
-            collectable.x = collectable.x + -dx * speed * dt
-            collectable.y = collectable.y + -dy * speed * dt
+
+            if distance <= .1 then -- .1 for jiggle room
+              local value = collectable:collected()
+              world.leaves = world.leaves + value
+              world.currencyLeaves = world.currencyLeaves + value
+            elseif distance <= player.magnet * playerCharacter.size then
+              local dx, dy = dx / mag, dy / mag
+              local speed = 1.5
+              if distance <= (player.magnet * playerCharacter.size)/2 then
+                speed = 4
+              end
+              collectable.x = collectable.x + -dx * speed * dt
+              collectable.y = collectable.y + -dy * speed * dt
+            end
+          else
+            collectable.scale = 1
           end
-        else
-          collectable.scale = 1
         end
       end
 
       local collectablePositions = { }
       for _, collectable in ipairs(world.collectables) do
+        collectable:update(dt)
         if not collectable.isCollected then
           local dx = collectable.x - playerCharacter.x
           local dy = collectable.y - playerCharacter.y

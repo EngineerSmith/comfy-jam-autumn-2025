@@ -198,6 +198,9 @@ nest.fadeOutMusic = function()
       end
     end)
     :oncomplete(function()
+      if not nest.music then
+        return
+      end
       nest.music:stop()
       nest.music:setVolume(audioManager.getVolume("audio.music.retroReggae"))
       nest.music = nil

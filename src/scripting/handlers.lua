@@ -72,8 +72,7 @@ handlers["moveTo"] = {
     local moveX = dirX * speed
     local moveY = dirY * speed
 
-    if not character:move(moveX, moveY) then
-      -- Movement failed, e.g. hit a wall
+    if not character:move(moveX, moveY, true) then
       logger.warn("Character["..tostring(characterName).."] failed to move towards destination. Ending command.")
       return true
     end
@@ -186,6 +185,27 @@ handlers["glideBy"] = {
   end
 }
 
+handlers["characterFace"] = function(_, characterName, direction)
+  local world = require("src.world")
+  local character = world.characters[characterName]
+  if not character then
+    logger.warn("Couldn't find character["..tostring(characterName).."] to change facing direction using script.")
+    return true -- failed, but skip
+  end
+  local nx, ny = 0, 0
+  if direction == "north" then
+    ny = 1
+  elseif direction == "south" then
+    ny = -1
+  elseif direction == "west" then
+    nx = 1
+  elseif direction == "east" then
+    nx = -1
+  end
+  character:faceDirection(nx, ny)
+  return true
+end
+
 handlers["transition"] = {
   start = function(executionID, transitionType, time)
     local transition = require("src.transition")
@@ -269,6 +289,77 @@ handlers["aiFootstep"] = function()
   local t = (ai.character.y - minRadius) / (maxRadius - minRadius)
   local volumeMod = math.max(0.1, t)
   audioManager.play("audio.fx.footstep.grass", volumeMod)
+  return true
+end
+
+handlers["setCutsceneCamera"] = function(_, x, y, z, lookAtX, lookAtY, lookAtZ)
+  local scene = require("scenes.game")
+  local camera = scene.cutsceneCamera
+  camera:lookAt(x, y, z, lookAtX, lookAtY, lookAtZ)
+  return true 
+end
+
+handlers["lerpCameraTo"] = {
+  start = function(executionID, x, y, z, lookAtX, lookAtY, lookAtZ, seconds)
+    local g3d = require("libs.g3d")
+    local camera = g3d.camera.current()
+
+    if seconds == 0 then
+      camera:lookAt(x, y, z, lookAtX, lookAtY, lookAtZ)
+      return true
+    end
+
+    memory[executionID] = false
+    local state = { }
+    state[1], state[2], state[3] = unpack(camera.position)
+    state[4], state[5], state[6] = unpack(camera.target)
+    local flux = require("libs.flux")
+    flux.to(state, seconds, { x, y, z, lookAtX, lookAtY, lookAtZ })
+      :onupdate(function()
+        camera:lookAt(unpack(state))
+      end)
+      :oncomplete(function()
+        memory[executionID] = true
+      end)
+    return false
+  end,
+  update = function(executionID, _, _, _, _, _, _, _, _)
+    local isComplete = memory[executionID]
+    if isComplete == true then
+      memory[executionID] = nil
+      return true
+    end
+    return false
+  end,
+}
+
+handlers["switchCamera"] = function(_, cameraTo)
+  if cameraTo == "cutscene" then
+    local scene = require("scenes.game")
+    scene.cutsceneCamera:setCurrent()
+  elseif cameraTo == "player" then
+    local player = require("src.player")
+    player.camera:setCurrent()
+  end
+  return true
+end
+
+handlers["createNamedCollider"] = function(_, levelName, name, shape, ...)
+  if shape == "circle" then
+    local x, y, radius, tag = ...
+    tag = tag or "WALL"
+    local world = require("src.world")
+    local level = world.levels[levelName]
+    if not level then
+      error("You misspelt the level name: "..tostring(levelName))
+    end
+    local slick = require("libs.slick")
+    local slickHelper = require("util.slickHelper")
+    local shape = slick.newCircleShape(0, 0, radius, nil, slickHelper.tags[tag])
+    level:add(name, x, y, shape)
+  else
+    error("unsupported collider, you forgot to add idiot")
+  end
   return true
 end
 

@@ -20,7 +20,11 @@ local mapData = {
     {
       x = -41.5, y = 4.75, width = 3.5, height = 7,
       edgeMap = { top = "zone1.rock", bottom = "zone1.ground" }
-    }
+    },
+    {
+      x = -49.5, y = 11.25, width = 7, height = 3.5,
+      edgeMap = { right = "zone1.rock", left = "zone1.upper" }
+    },
   },
   models = {
     --- Nest
@@ -130,6 +134,7 @@ local mapData = {
     { levels = { "zone1.ground" }, shape = "rectangle", x = -41.5, y = 11, width = 0.25, height = 2, tag = "ROCK" },
     { levels = { "zone1.ground", "zone1.rock" }, shape = "rectangle", x = -41.5, y = 14.5, width = 2, height = 0.25, tag = "ROCK" },
     { levels = { "zone1.rock" }, shape = "rectangle", x = -38.5, y = 12.5, width = 0.25, height = 2, tag = "ROCK" },
+    { levels = { "zone1.upper" }, shape = "circle", x = -50, y=17.5, radius = 1, tag = "WALL" },
   },
   collectables = {
     { level = "nest.ground", x =  0, y = 10, tag = "GOLDEN_LEAF", zone = "nest" }, -- behind nest pot
@@ -184,7 +189,25 @@ local mapData = {
       { "unlock" },
     },
     ["event.newgame"] = { isMandatory = true, -- ran when a new game is started
-      -- TODO cutscene
+      { "lock" },
+      { "createNamedCollider", "zone1.rock", "zone1RockBlock", "circle", -42, 13, .5 },
+      { "goto", -2}, -- debug jump
+      { "setCutsceneCamera", -10, -25, 15, -10, -10, 3 },
+      { "switchCamera", "cutscene" },
+      { "glideTo", "Hedgehog.Player", -13, -10.5 },
+      { "sleep", 1.0 },
+      { "wait" },
+      { "glideTo", "Hedgehog.Player", -6.5, -13 },
+      { "lerpCameraTo", -10, -25, 15, 0, -10, -5, 4.5 },
+      { "sleep", 0.9 },
+      { "glideTo", "Hedgehog.Player", -1, -12.5 },
+      { "sleep", 0.7 },
+      { "glideTo", "Hedgehog.Player", 0, -9 },
+      { "sleep", 0.5 },
+      { "characterFace", "Hedgehog.Player", "north" },
+      { "wait" },
+      { "switchCamera", "player" },
+      { "unlock" },
     },
     -- Example interaction script
     ["interact.bed"] = { isMandatory = true,
@@ -239,16 +262,21 @@ local mapData = {
       { "sleep", 0.4 },
       { "aiFootstep" },
       { "sleep", 0.7 },
-    }
+    },
   },
   characters = {
     ["Hedgehog.Player"] = {
       file = "assets/characters/hedgehog/init.lua",
-      level = "zone1.ground", --"nest.ground",
-      x = -42, y = 0, -- 0, -10
-    }
+      level = "nest.ground", --"zone1.ground", --
+      x = -20, y = -5.5, --x = -42, y = 0, -- 0, -10
+    },
+    ["Hedgehog.Debug"] = {
+      file = "assets/characters/hedgehog/init.lua",
+      level = "zone1.upper",
+      x = -54, y = 6.5,
+    },
   },
-  playerCharacter = "Hedgehog.Player",
+  playerCharacter = "Hedgehog.Debug",
 }
 helper.mapData = mapData -- link so helper can populate mapData
 

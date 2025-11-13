@@ -27,6 +27,7 @@ local assets = {
   "audio.fx.footstep.grass",
   "audio.fx.snore",
   "audio.music.retroReggae",
+  "audio.fx.woosh",
 }
 
 --- Grab the models needed for mapData
@@ -63,13 +64,14 @@ for _, assetKey in ipairs(assetList) do
     lookup[assetKey] = true
   end
 end
+--- Slick tags
+local assetList = require("util.slickHelper").getTagAssetList()
+for _, assetKey in ipairs(assetList) do
+  if not lookup[assetKey] then
+    table.insert(assets, assetKey)
+    lookup[assetKey] = true
+  end
+end
 ---
-if lookup["model.flower.red3"] then
-  print("Found red3")
-end
-
-if lookup["model.flower.yellow3"] then
-  print("Found yellow3")
-end
 
 return assets

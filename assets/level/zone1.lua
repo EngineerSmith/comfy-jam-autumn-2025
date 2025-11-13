@@ -20,8 +20,12 @@ helper.addCliff({ "zone1.ground", "zone1.upper" }, -52, 2.5, 0, math.rad(30))
 helper.addCliff({ "zone1.ground", "zone1.upper" }, -56.1, .1, 0, math.rad(30))
 local length = 3
 for y = 0, length * 5, 5 do
-  helper.addCliff({ "zone1.ground", "zone1.upper" }, -50, 6 + y, 0, math.rad(90))
+  -- helper.addCliff({ "zone1.ground", "zone1.upper" }, -50, 6 + y, 0, math.rad(90))
 end
+helper.addCliff({ "zone1.ground", "zone1.upper" }, -50, 6, 0, math.rad(90))
+helper.addCliff("zone1.ground", -50, 11, 0, math.rad(90))
+helper.addCliff("zone1.ground", -50, 16, 0, math.rad(90))
+helper.addCliff({ "zone1.ground", "zone1.upper" }, -50, 21, 0, math.rad(90))
 helper.addCliff({ "zone1.ground", "zone1.upper" }, -48, 24, 0, math.rad(30))
 local length = 3
 for x = 0, length * 5, 5 do
@@ -62,3 +66,7 @@ helper.addGrassClump("zone1.ground", -41, 22.5)
 helper.addPebbleClump("zone1.ground", -47, 13)
 helper.addPebbleClump("zone1.ground", -37, 13)
 helper.addPlant("zone1.ground", -41.5, 10)
+helper.addPlant("zone1.upper", -50, 9.7)
+helper.addPlant("zone1.upper", -50.5, 16)
+helper.addGrassClump("zone1.upper", -53.5, 16)
+helper.addGrassClump("zone1.upper", -52, 8)

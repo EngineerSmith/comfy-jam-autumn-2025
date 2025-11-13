@@ -37,12 +37,14 @@ local scene = {
     scale = 3,
   }
 }
+scene.cutsceneCamera = g3d.camera.newCamera()
+scene.cutsceneCamera.fov = math.rad(50)
 
 if scene.minimap.enabled then
   scene.minimap.canvas = lg.newCanvas(scene.minimap.size, scene.minimap.size)
 end
 
-scene.load = function(roomInfo)
+scene.load = function()
   love.mouse.setRelativeMode(false)
   love.mouse.setVisible(true)
 
@@ -82,6 +84,8 @@ scene.resize = function(w, h)
   ----
 
   player.setAspectRatio(w / h)
+  scene.cutsceneCamera.aspectRatio = w / h
+  scene.cutsceneCamera:updateProjectionMatrix()
   require("src.world.nest").setAspectRatio(w / h)
 end
 
