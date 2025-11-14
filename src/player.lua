@@ -18,6 +18,7 @@ local g3d = require("libs.g3d")
 
 local input = require("util.input")
 local logger = require("util.logger")
+local slickHelper require("util.slickHelper")
 local audioManager = require("util.audioManager")
 
 player.setCharacter = function(character)
@@ -41,19 +42,24 @@ player.setAspectRatio = function(aspectRatio)
   player.camera:updateProjectionMatrix()
 end
 
+local distanceToPlayerSqu = function(x, y)
+  local pX, pY = player.getPosition()
+  local dx, dy = x - pX, y - pY
+  return dx * dx + dy * dy
+end
+
+local isValidPositionalTable = function(tbl)
+  return type(tbl) == "table" and type(tbl.x) == "number" and type(tbl.y) == "number"
+end
+
 local inPhase = false
 player.update = function(dt)
-  if not player.character or player.isInputBlocked then
+  if not player.character then
     lookAt(player.getPosition())
     return
   end
 
-  local inputX, inputY = input.baton:get("move")
-  local moveX, moveY = -inputX, -inputY
-  local inputCharge = input.baton:get("charge")
-  local inputDebug = input.baton:pressed("debugButton")
-
-  if inputDebug then
+  if input.baton:pressed("debugButton") then
     inPhase = not inPhase
     if inPhase then
       print("Entered phase (collision bypass)")
@@ -74,12 +80,14 @@ player.update = function(dt)
       if player.dashTimer <= 0 then
         player.dashTimer = 0
         player.character:setState("idle")
+        player.isInputBlocked = false
       end
     else
       local tags = player.character:getTagsBetween(startX, startY, dashDX, dashDY, "touch")
-      player.character:move(dashDX, dashDY, "touch") -- Attempt to move as close as possible to collision point
+      local _, hits = player.character:move(dashDX, dashDY, "touch") -- Attempt to move as close as possible to collision point
       player.dashTimer = 0
       player.character:setState("bonk")
+      player.isInputBlocked = false
       if tags then
         for _, tag in ipairs(tags) do
           if tag.audio then
@@ -89,31 +97,60 @@ player.update = function(dt)
           end
         end
       end
+      if hits then
+        print(#hits)
+        if #hits > 1 then
+          table.sort(hits, function(a, b)
+            local aValid = isValidPositionalTable(a)
+            local bValid = isValidPositionalTable(b)
+            if not aValid and     bValid then return false end
+            if     aValid and not bValid then return true  end
+            if not aValid and not bValid then return false end
+
+            local magA = distanceToPlayerSqu(a.x, a.y)
+            local magB = distanceToPlayerSqu(b.x, b.y)
+            return magA < magB
+          end)
+        end
+        local target = hits[1]
+        if type(target) == "table" and target.onBonkScriptID then
+          require("src.scripting").startScript(target.onBonkScriptID)
+        end
+      end
     end
 
     lookAt(player.getPosition())
     return
   end
 
+  if player.isInputBlocked then
+    lookAt(player.getPosition())
+    return
+  end
+
+  local inputX, inputY = input.baton:get("move")
+  local moveX, moveY = -inputX, -inputY
+  local inputCharge = input.baton:get("charge")
+
   if player.character.state ~= "bonk" and player.character.state ~= "dash" then
     if inputCharge == 0 then
-      if player.chargingValue >= 1 then -- Release dash!
+      if player.chargingValue >= 0.9 then -- Release dash!
         local angle = player.character:getFacingDirection()
         player.dashNormalX = math.cos(angle)
         player.dashNormalY = math.sin(angle)
         player.dashTimer = player.dashDuration
         player.character:setState("dash")
         audioManager.play("audio.fx.woosh", 1.0)
-      elseif player.chargingValue > 0.25 then
-        -- TODO weak dash, doesn't trigger anything, but pushes forward a little bit
-        -- We could still set to dash, but configure dash duration to be less!
+        player.isInputBlocked = true
+      elseif player.chargingValue >= 0.25 then
         local angle = player.character:getFacingDirection()
         player.dashNormalX = math.cos(angle)
         player.dashNormalY = math.sin(angle)
         player.dashTimer = player.dashDuration / 3
         player.character:setState("dash")
         audioManager.play("audio.fx.woosh", 0.5)
-      else
+        player.isInputBlocked = true
+      elseif player.chargingValue ~= 0 then -- Accidental taps
         player.character:setState("idle")
       end
       player.chargingValue = 0

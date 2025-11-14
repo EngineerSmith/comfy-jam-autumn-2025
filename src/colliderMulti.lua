@@ -4,6 +4,8 @@ colliderMulti.__index = colliderMulti
 local slick = require("libs.slick")
 local slickHelper = require("util.slickHelper")
 
+
+
 colliderMulti.new = function(x, y, scale, shapes, tag, levels)
   if type(tag) == "string" then
     tag = slickHelper.tags[tag]
@@ -18,6 +20,11 @@ colliderMulti.new = function(x, y, scale, shapes, tag, levels)
       local x, y, radius = (s.x or 0) * scale, (s.y or 0) * scale, (s.radius or 1) * scale
       shape = slick.newCircleShape(x, y, radius, s.segments, tag)
       debugShape = { shape = "circle", x = x, y = y, radius = radius, segments = s.segments }
+      local rz = s.rz
+      if rz then
+        shape = slickHelper.rotateShapeVertices(shape, rz, x, y)
+        debugShape.rotate = rz
+      end
     elseif s.shape == "rectangle" then
       local x, y, width, height = (s.x or 0) * scale, (s.y or 0) * scale, (s.width or 1) * scale, (s.height or 1) * scale
       shape = slick.newRectangleShape(x, y, width, height, tag)
@@ -81,7 +88,11 @@ colliderMulti.debugDraw = function(self)
     if shape.shape == "rectangle" then
       lg.rectangle("fill", shape.x, shape.y, shape.width, shape.height)
     elseif shape.shape == "circle" then
-      lg.circle("fill", shape.x, shape.y, shape.radius, shape.segments)
+      lg.push()
+      lg.translate(shape.x, shape.y)
+      lg.rotate(shape.rotate or 0)
+      lg.circle("fill", 0, 0, shape.radius, shape.segments)
+      lg.pop()
     end
   end
   lg.pop()

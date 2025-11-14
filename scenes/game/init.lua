@@ -33,8 +33,8 @@ local world = require("src.world")
 local scene = {
   minimap = {
     enabled = true,
-    size = 256,
-    scale = 3,
+    size = 512,
+    scale = 5,
   }
 }
 scene.cutsceneCamera = g3d.camera.newCamera()

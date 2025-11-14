@@ -26,6 +26,7 @@ local world = {
   levels = { },
   transitions = { },
   props = { },
+  specialProps = { },
   colliders = { },
   collectables = { },
   signposts = { },
@@ -91,25 +92,14 @@ world.load = function()
     world.levels[levelName] = level.new(levelName, x, y, width, height, z)
     local rect = { unpack(world.levels[levelName].rect) }
     rect.color = { 1, 1, 1, 0.5 }
-    if levelName == "zone1.rock" then
+    -- if levelName == "zone1.rock" then
     table.insert(world.debug, rect)
-    end
+    -- end
   end
 
   for _, transitionInfo in ipairs(mapData.transitions) do
-    for edgeName, levelName in pairs(transitionInfo.edgeMap) do
-      if world.levels[levelName] then
-        transitionInfo.edgeMap[edgeName] = world.levels[levelName]
-      else
-        logger.warn("Could not find level named '"..tostring(levelName).."'. Check spelling.")
-      end
-    end
     local x, y, width, height = transitionInfo.x, transitionInfo.y, transitionInfo.width, transitionInfo.height
-    local t = transition.new(x, y, width, height, transitionInfo.edgeMap)
-    table.insert(world.transitions, t)
-    local rect = { unpack(t.rect) }
-    rect.color = { 1, 1, 0.75, 0.5 }
-    table.insert(world.debug, rect)
+    world.addTransition(x, y, width, height, transitionInfo.edgeMap)
   end
 
   for i, modelInfo in ipairs(mapData.models) do
@@ -162,7 +152,9 @@ world.load = function()
           elseif colliderInfo.shape == "circle" then
             local radius, segments, rotation, tag = colliderInfo.radius, colliderInfo.segments, colliderInfo.rotation, colliderInfo.tag
             radius = radius * scale
-            collider = colliderCircle.new(x, y, radius, segments, rotation, tag, levels)
+            local cx, cy = colliderInfo.x or 0, colliderInfo.y or 0
+            cx, cy = cx * scale, cy * scale
+            collider = colliderCircle.new(x + cx, y + cy, radius, segments, rotation, tag, levels)
           elseif colliderInfo.shape == "multi" then
             local tag = colliderInfo.tag
             collider = colliderMulti.new(x, y, scale, colliderInfo, tag, levels)
@@ -170,6 +162,10 @@ world.load = function()
             logger.warn("MapData's Model["..i.."]'s collider had invalid shape. Check spelling: ", tostring(colliderInfo.shape))
           end
         end
+      end
+
+      if collider and modelInfo.onBonkScriptID then
+        collider.onBonkScriptID = modelInfo.onBonkScriptID
       end
 
       local newProp = prop.new(model, texture, x, y, z, level, scale, collider)
@@ -181,6 +177,10 @@ world.load = function()
         newProp:setNoScaleZ(true)
       end
       table.insert(world.props, newProp)
+
+      if modelInfo.id then
+        world.specialProps[modelInfo.id] = newProp
+      end
     end
     ::continue::
   end
@@ -291,6 +291,7 @@ world.unload = function()
   world.levels = { }
   world.transitions = { }
   world.props = { }
+  world.specialProps = { }
   world.colliders = { }
   world.collectables = { }
   for _, signpost in ipairs(world.signposts) do
@@ -320,6 +321,21 @@ end
 COLLECTABLE_SHADOW_MAX = 32
 local sort_ClosestMag = function(a, b)
   return a.mag < b.mag
+end
+
+world.addTransition = function(x, y, width, height, edgeMap)
+  for edgeName, levelName in pairs(edgeMap) do
+    if world.levels[levelName] then
+      edgeMap[edgeName] = world.levels[levelName]
+    else
+      logger.warn("Could not find level named '"..tostring(levelName).."'. Check spelling.")
+    end
+  end
+  local t = transition.new(x, y, width, height, edgeMap)
+  table.insert(world.transitions, t)
+  local rect = { unpack(t.rect) }
+  rect.color = { 1, 1, 0.75, 0.5 }
+  table.insert(world.debug, rect)
 end
 
 world.update = function(dt, scale)

@@ -235,7 +235,7 @@ scriptingEngine.executeNextCommand = function()
   end
 
   local executionID = getExecutionID()
-  local isCompleted = handler.start(executionID, unpack(command, 2))
+  local isCompleted = handler.start(executionID, unpack(command, 2, 15))
 
   if isCompleted then
     scriptingEngine.commandComplete(executionID)
@@ -311,7 +311,7 @@ scriptingEngine.update = function(dt)
     local handler = handlers[commandType]
 
     local executionID = commandInfo.id
-    local isCompleted = handler.update(executionID, dt, unpack(command, 2))
+    local isCompleted = handler.update(executionID, dt, unpack(command, 2, 15))
 
     if isCompleted then
       table.insert(completedIDs, executionID)
@@ -324,7 +324,7 @@ scriptingEngine.update = function(dt)
     local command = activeScript[currentCommandIndex]
     local commandType = command[1]
     if commandType == "sleep" then
-      local isCompleted = handlers[commandType].update(blockingCommandID, dt, unpack(command, 2))
+      local isCompleted = handlers[commandType].update(blockingCommandID, dt, unpack(command, 2, 15))
       if isCompleted then
         blockingCommandID = nil
         isWaiting = false

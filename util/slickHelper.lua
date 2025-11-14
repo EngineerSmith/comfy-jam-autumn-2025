@@ -41,4 +41,29 @@ slickHelper.getTagAssetList = function()
   return assets
 end
 
+slickHelper.rotateShapeVertices = function(shapeDefinition, radians, centerX, centerY)
+  centerX = centerX or 0
+  centerY = centerY or 0
+
+  local cosTheta = math.cos(radians)
+  local sinTheta = math.sin(radians)
+  local vertices = shapeDefinition.arguments
+
+  for i = 1, #vertices, 2 do
+    local x = vertices[i]
+    local y = vertices[i + 1]
+
+    local translatedX = x - centerX
+    local translatedY = y - centerY
+
+    local rotatedX = translatedX * cosTheta - translatedY * sinTheta
+    local rotatedY = translatedX * sinTheta + translatedY * cosTheta
+    
+    vertices[i] = rotatedX + centerX
+    vertices[i + 1] = rotatedY + centerY
+  end
+  
+  return shapeDefinition
+end
+
 return slickHelper

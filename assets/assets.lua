@@ -128,7 +128,9 @@ local list = {
   -- { path = "models/kenney/Nature Kit/cliff_half_rock.obj", name = "model.cliff.rock.half", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/cliff_half_rock.mtl" },
   -- { path = "models/kenney/Nature Kit/cliff_top_rock.obj", name = "model.cliff.rock", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/cliff_top_rock.mtl" },
   { path = "models/cliff_top_plane.obj", name = "model.cliff.rock", onLoad = objLoader, "z", "assets/models/cliff_top_plane.mtl" },
-  { path = "models/kenney/Nature Kit/rock_tallF.obj", name = "model.rock.tall.1", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/rock_tallF.mtl" },
+  { path = "models/kenney/Nature Kit/rock_tallF.obj", name = "model.rock.tall.1", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/rock_tall.mtl" },
+  { path = "models/kenney/Nature Kit/rock_tallA.obj", name = "model.rock.tall.2", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/rock_tall.mtl" },
+  { path = "models/kenney/Nature Kit/rock_tallB.obj", name = "model.rock.tall.3", onLoad = objLoader, "y", "assets/models/kenney/Nature Kit/rock_tall.mtl" },
 
   { path = "models/kenney/Pirate Kit/grass.obj", name = "model.grass.stylized", onLoad = objLoader, "y", "NIL", "v" },
   { path = "models/kenney/Pirate Kit/grass-patch.obj", name = "model.grass.stylized.patch", onLoad = objLoader, "y", "NIL", "v" },
@@ -206,9 +208,14 @@ local list = {
   { path = "audio/fx/nature_spell_bush_tree_whip_02.wav", name = "audio.fx.hit.plant.2", sourceType = "static", audioType = "sfx", key = "audio.fx.hit.plant", volume = 0.1 },
   { path = "audio/fx/nature_spell_bush_tree_whip_03.wav", name = "audio.fx.hit.plant.3", sourceType = "static", audioType = "sfx", key = "audio.fx.hit.plant", volume = 0.1 },
   { path = "audio/fx/nature_spell_bush_tree_whip_04.wav", name = "audio.fx.hit.plant.4", sourceType = "static", audioType = "sfx", key = "audio.fx.hit.plant", volume = 0.1 },
+  { path = "audio/fx/impactWood_medium_000.ogg", name = "audio.fx.impact.wood.1", sourceType = "static", audioType = "sfx", key = "audio.fx.impact.wood", volume = 1.0 },
+  { path = "audio/fx/impactWood_medium_001.ogg", name = "audio.fx.impact.wood.2", sourceType = "static", audioType = "sfx", key = "audio.fx.impact.wood", volume = 1.0 },
+  { path = "audio/fx/impactWood_medium_002.ogg", name = "audio.fx.impact.wood.3", sourceType = "static", audioType = "sfx", key = "audio.fx.impact.wood", volume = 1.0 },
+  { path = "audio/fx/impactWood_medium_003.ogg", name = "audio.fx.impact.wood.4", sourceType = "static", audioType = "sfx", key = "audio.fx.impact.wood", volume = 1.0 },
+  { path = "audio/fx/impactWood_medium_004.ogg", name = "audio.fx.impact.wood.5", sourceType = "static", audioType = "sfx", key = "audio.fx.impact.wood", volume = 1.0 },
 
-  { path = "audio/music/fall.ogg", name = "audio.music.fall", sourceType = "stream", audioType = "music", volume = 0.3 },
-  { path = "audio/music/roundabout.ogg", name = "audio.music.roundabout", sourceType = "stream", audioType = "music", volume = 0.3 },
+  { path = "audio/music/fall.ogg", name = "audio.music.fall", sourceType = "stream", audioType = "music", volume = 0.2 },
+  { path = "audio/music/roundabout.ogg", name = "audio.music.roundabout", sourceType = "stream", audioType = "music", volume = 0.2 },
   { path = "audio/music/Retro Reggae.ogg", name = "audio.music.retroReggae", sourceType = "stream", audioType = "music", volume = 0.25 },
 -- Fonts
   { path = "fonts/Roboto_Mono/RobotoMono-Light.ttf",            name = "fonts.light" },

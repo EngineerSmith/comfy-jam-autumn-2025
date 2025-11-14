@@ -209,7 +209,11 @@ end
 local noCollisions = function() return false end
 
 local noCharacterCollisions = function(_, _, shape, otherShape)
-  return not (shape.tag.value.type == otherShape.tag.value.type)
+  if otherShape.tag and otherShape.tag.value.type == "character" then
+    return false
+  end
+  return true
+  -- return not (shape.tag.value.type == otherShape.tag.value.type)
 end
 
 local noCharacterCollisionsTOUCH = function(...)
@@ -239,9 +243,13 @@ character.move = function(self, dx, dy, inPhase)
     worldQuery = noCharacterCollisions
   end
 
+  local previousHits
+
   local worldsMadeChange, MAX_ITERATIONS = false, 10
   for i = 1, MAX_ITERATIONS do
     worldsMadeChange = false
+
+    local hits = { }
 
     local currentGoalX, currentGoalY = finalX, finalY
     for level in pairs(self.levels) do
@@ -250,12 +258,21 @@ character.move = function(self, dx, dy, inPhase)
         currentGoalX, currentGoalY = actualX, actualY
         worldsMadeChange = true
       end
+      for _, result in ipairs(collisions) do
+        if result.item ~= self then
+          table.insert(hits, result.item)
+        end
+        if result.other ~= self then
+          table.insert(hits, result.other)
+        end
+      end
     end
     finalX, finalY = currentGoalX, currentGoalY
 
     if not worldsMadeChange then
       break
     end
+    previousHits = hits
 
     if i == MAX_ITERATIONS then
       logger.warn("Character movement exceeded max iterations before convergence.")
@@ -265,7 +282,7 @@ character.move = function(self, dx, dy, inPhase)
   if finalX ~= self.x or finalY ~= self.y then
     self:teleport(finalX, finalY)
     self:faceDirection(snappedDx, snappedDy)
-    return true
+    return true, previousHits
   end
   return false
 end
@@ -353,7 +370,6 @@ end
 
 character.update = function(self, dt)
   self.frameChanged = false
-
   if self.stateTextures["walking"] then
     if self.movedPreviousFrame and self.state == "idle" then
       self:setState("walking")

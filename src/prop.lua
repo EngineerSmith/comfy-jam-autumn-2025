@@ -25,8 +25,18 @@ prop.setNoScaleZ = function(self, bool)
   self.noScaleZ = bool == true
 end
 
-prop.update = function(self, dt)
+prop.getPosition = function(self)
+  return self.x, self.y, self.z
+end
 
+prop.getRotation = function(self)
+  return self.rx, self.ry, self.rz
+end
+
+prop.updateRotation = function(self)
+  if self.collider then
+    self.collider:rotate(self.rz)
+  end
 end
 
 local lg = love.graphics

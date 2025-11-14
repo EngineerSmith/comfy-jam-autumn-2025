@@ -82,7 +82,7 @@ helper.addPebbleClump = function(...)
   return helper.addModelClump(pebbleModels, 2, 3, 1.5, 3, ...)
 end
 
-helper.addModel = function(models, minScale, maxScale, level, x, y, zOffset)
+helper.addModel = function(models, minScale, maxScale, level, x, y, zOffset, noCollisions, propID)
 local model = models[rng:random(#models)]
   if type(model) == "table" then
     if model.minScale then minScale = model.minScale end
@@ -93,7 +93,7 @@ local model = models[rng:random(#models)]
   maxScale = maxScale * scaleDecimalPlace
 
   local colliderCopy
-  if type(model) == "table" and model.collider then
+  if not noCollisions and type(model) == "table" and model.collider then
     colliderCopy = { }
     for key, value in pairs(model.collider) do
       colliderCopy[key] = value
@@ -130,6 +130,7 @@ local model = models[rng:random(#models)]
       rz = rng:random() * 2 * math.pi,
       collider = colliderCopy,
       noScaleZ = type(model) == "table" and model.noScaleZ == true,
+      id = propID,
     })
 end
 
@@ -167,6 +168,19 @@ helper.addLargeRock = function(...)
   return helper.addModel(largeRockModels, 8, 15, ...)
 end
 
+local tallRockModels = {
+  -- { "model.rock.tall.2", collider = {
+  --   shape = "multi", tag = "ROCK",
+  --   { shape = "circle", x = -0.19, y = 0, radius = 0.33, segments = 6, rz = math.rad(22.5) },
+  --   { shape = "circle", x = 0.05, y = 0.05, radius = 0.28, segments = 6, rz = math.rad(22.5) },
+  --   { shape = "circle", x = 0.31, y = -0.07, radius = 0.17, segments = 5, rz = math.rad(-10) },
+  -- } },
+  { "model.rock.tall.3", collider = { shape = "rectangle", width = 0.66, height = 0.70, tag = "ROCK" } },
+}
+helper.addTallRock = function(...)
+  return helper.addModel(tallRockModels, 7, 11, ...)
+end
+
 local cabbageModels = {
   { "model.bush.cabbage", "texture.foodKit.colorMap", collider = { shape = "circle", radius = 0.1, segments = 6, tag = "PLANT" } }
 }
@@ -177,11 +191,11 @@ end
 local cliffModels = {
   { "model.cliff.rock", collider = { shape = "rectangle", width = 1, height = .16, tag = "ROCK" } },
 }
-helper.addCliff = function(level, x, y, zOffset, rz)
+helper.addCliff = function(level, x, y, zOffset, rz, noCollisions)
   local model = cliffModels[rng:random(#cliffModels)]
   local modelName = model[1]
   local colliderCopy
-  if model.collider then
+  if not noCollisions and model.collider then
     colliderCopy = { }
     for key, value in pairs(model.collider) do
       colliderCopy[key] = value
@@ -250,7 +264,7 @@ helper.addLeafCircle = function(level, zone, centerX, centerY, radius, count, ta
 end
 
 
-helper.placePath = function(level, bezierCurve, pathModels, litterModels)
+helper.placePath = function(level, bezierCurve, pathModels, litterModels, zOffset)
   local T_INCREMENT = 0.002
   local SEGMENT_LENGTH = 1.1
   local SEGMENT_LENGTH_SQU = SEGMENT_LENGTH * SEGMENT_LENGTH
@@ -264,6 +278,8 @@ helper.placePath = function(level, bezierCurve, pathModels, litterModels)
   local LITTER_Z_JITTER = 0.05
   local LITTER_PLACEMENT_RANGE = PATH_WIDTH + LITTER_OFFSET
 
+  zOffset = zOffset or 0
+
   local placeSegmentAndLitter = function(t, x, y)
     local nextT = math.min(t + 0.01, 1)
     local nextX, nextY = bezierCurve:evaluate(nextT)
@@ -276,7 +292,7 @@ helper.placePath = function(level, bezierCurve, pathModels, litterModels)
     local model = randomChoice(pathModels)
     table.insert(helper.mapData.models, {
       model = type(model) == "table" and model[1] or model,
-      x = x, y = y, z = randomRange(PATH_Z_POS - PATH_Z_JITTER, PATH_Z_POS + PATH_Z_JITTER),
+      x = x, y = y, z = randomRange(PATH_Z_POS - PATH_Z_JITTER, PATH_Z_POS + PATH_Z_JITTER) + zOffset,
       rz = rotation + randomRange(-0.05, 0.05),
       scale = type(model) == "table" and randomRange(model.scaleMin, model.scaleMax) or randomRange(0.8, 1.4),
       level = level,
@@ -298,7 +314,7 @@ helper.placePath = function(level, bezierCurve, pathModels, litterModels)
       local litterY = y + normalY * (LITTER_PLACEMENT_RANGE + litterDist)
       table.insert(helper.mapData.models, {
         model = randomChoice(litterModels),
-        x = litterX, y = litterY, z = randomRange(LITTER_Z_POS - LITTER_Z_JITTER, LITTER_Z_POS + LITTER_Z_JITTER),
+        x = litterX, y = litterY, z = randomRange(LITTER_Z_POS - LITTER_Z_JITTER, LITTER_Z_POS + LITTER_Z_JITTER) + zOffset,
         rz = randomRange(0, 2 * math.pi),
         scale = randomRange(0.9, 1.4),
         level = level,
@@ -311,7 +327,7 @@ helper.placePath = function(level, bezierCurve, pathModels, litterModels)
       local litterY = y + -normalY * (LITTER_PLACEMENT_RANGE + litterDist)
       table.insert(helper.mapData.models, {
         model = randomChoice(litterModels),
-        x = litterX, y = litterY, z = randomRange(LITTER_Z_POS - LITTER_Z_JITTER, LITTER_Z_POS + LITTER_Z_JITTER),
+        x = litterX, y = litterY, z = randomRange(LITTER_Z_POS - LITTER_Z_JITTER, LITTER_Z_POS + LITTER_Z_JITTER) + zOffset,
         rz = randomRange(0, 2 * math.pi),
         scale = randomRange(0.9, 1.4),
         level = level,
@@ -347,8 +363,8 @@ local dirtPathLitterModels = {
   "model.path.litter.dirt.3",
   "model.path.litter.dirt.4",
 }
-helper.placeDirtPath = function(level, bezierCurve)
-  return helper.placePath(level, bezierCurve, dirtPathModels, dirtPathLitterModels)
+helper.placeDirtPath = function(level, bezierCurve, zOffset)
+  return helper.placePath(level, bezierCurve, dirtPathModels, dirtPathLitterModels, zOffset)
 end
 
 return helper

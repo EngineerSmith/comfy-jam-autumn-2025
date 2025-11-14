@@ -7,6 +7,8 @@ local mapData = {
     ["zone1.ground"] = { x = -130, y = -50, z = 0, width = 100, height = 100 },
     ["zone1.upper"] = { x = -120, y = -20, z = 5, width = 80, height = 100 },
     ["zone1.rock"] = { x = -41.5, y = 12.5, z = 4.1, width = 3, height = 3 },
+    ["tutorial.ground"] = { x = -15, y = -60, z = 0, width = 65, height = 40 },
+    ["tutorial.upper"] = { x = 14, y = -50, z = 5, width = 15, height = 20 },
   },
   transitions = {
     {
@@ -21,9 +23,17 @@ local mapData = {
       x = -41.5, y = 4.75, width = 3.5, height = 7,
       edgeMap = { top = "zone1.rock", bottom = "zone1.ground" }
     },
+    -- {
+    --   x = -49.5, y = 11.25, width = 7, height = 3.5,
+    --   edgeMap = { right = "zone1.rock", left = "zone1.upper" }
+    -- },
     {
-      x = -49.5, y = 11.25, width = 7, height = 3.5,
-      edgeMap = { right = "zone1.rock", left = "zone1.upper" }
+      x = -4, y = -23, width = 16, height = 2,
+      edgeMap = { bottom = "tutorial.ground", top = "nest.ground" }
+    },
+    {
+      x = 3.25, y = -38.5, width = 9.5, height = 4,
+      edgeMap = { left = "tutorial.ground", right = "tutorial.upper" }
     },
   },
   models = {
@@ -31,6 +41,8 @@ local mapData = {
     -- { model = "model.surface.1", texture = "texture.prototype.2", level = "nest.ground", x = 0, y = 0, z = -.1 },
     { model = "model.surface.2", level = "nest.ground", x = 0, y = 0, z = -.1 },
     { model = "model.surface.2", level = "zone1.ground", x = -50, y = 0, z = -.1 },
+    { model = "model.surface.2", level = "tutorial.ground", x = 15, y = -50, z = -.1 },
+    { model = "model.surface.2", level = "tutorial.ground", x = 65, y = -50, z = -.1 },
     {
       model = "model.flower_pot.nest", level = "nest.ground", x = 0, y = 0, z = -.05, scale = 25,
       collider = { levels = { "nest.ground" }, shape = "circle", radius = 0.295, segments = 8, rotation = math.rad(22.5), tag = "POT" },
@@ -61,33 +73,33 @@ local mapData = {
         { shape = "rectangle", x = -0.27, y =  0.10, width = 0.1, height = 0.05, },
       }
     },
-    {
-      model = "model.rock.large.1", level = "nest.ground", x = 0, y = -25, z = -0.14, scale = 25, rz = math.rad(43.5), noScaleZ = true,
-      collider = {
-        levels = { "nest.ground" }, shape = "multi", tag = "ROCK",
-        { shape = "circle", x =  0,   y = -0.13, radius = 0.38 },
-        { shape = "circle", x = -0.2, y =  0.35, radius = 0.15 },
-      }
-    },
+    -- { -- Removed for tutorial zone
+    --   model = "model.rock.large.1", level = "nest.ground", x = 0, y = -25, z = -0.14, scale = 25, rz = math.rad(43.5), noScaleZ = true,
+    --   collider = {
+    --     levels = { "nest.ground" }, shape = "multi", tag = "ROCK",
+    --     { shape = "circle", x =  0,   y = -0.13, radius = 0.38 },
+    --     { shape = "circle", x = -0.2, y =  0.35, radius = 0.15 },
+    --   }
+    -- },
     {
       model = "model.rock.large.1", level = "nest.ground", x = -20, y = -18, z = -0.14, scale = 10, rz = math.rad(38+180), noScaleZ = true,
       collider = {
-        levels = { "nest.ground" }, shape = "multi", tag = "ROCK",
+        levels = { "nest.ground", "tutorial.ground" }, shape = "multi", tag = "ROCK",
         { shape = "circle", x =  0,   y = -0.13, radius = 0.38 },
         { shape = "circle", x = -0.2, y =  0.35, radius = 0.15 },
       }
     },
     {
       model = "model.bush.cabbage", texture = "texture.foodKit.colorMap", level = "nest.ground", x = -18, y = -26.5, scale = 25, rz = love.math.random(0, 2 * math.pi),
-      collider = { levels = { "nest.ground" }, shape = "circle", radius = 0.1, segments = 6, tag = "PLANT" },
+      collider = { levels = { "nest.ground", "tutorial.ground" }, shape = "circle", radius = 0.1, segments = 6, tag = "PLANT" },
     },
     {
-      model = "model.bush.cabbage", texture = "texture.foodKit.colorMap", level = "nest.ground", x = 12.5, y = -23, scale = 28, rz = love.math.random(0, 2 * math.pi),
-      collider = { levels = { "nest.ground" }, shape = "circle", radius = 0.1, segments = 6, tag = "PLANT" },
+      model = "model.bush.cabbage", texture = "texture.foodKit.colorMap", level = "nest.ground", x = 12.5, y = -21, scale = 28, rz = love.math.random(0, 2 * math.pi),
+      collider = { levels = { "nest.ground", "tutorial.ground" }, shape = "circle", radius = 0.1, segments = 6, tag = "PLANT" },
     },
     {
-      model = "model.bush.cabbage", texture = "texture.foodKit.colorMap", level = "nest.ground", x = -2, y = -25, scale = 23, rz = love.math.random(0, 2 * math.pi),
-      collider = { levels = { "nest.ground" }, shape = "circle", radius = 0.1, segments = 6, tag = "PLANT" },
+      model = "model.bush.cabbage", texture = "texture.foodKit.colorMap", level = "nest.ground", x = -5.5, y = -23.5, scale = 23, rz = love.math.random(0, 2 * math.pi),
+      collider = { levels = { "nest.ground", "tutorial.ground" }, shape = "circle", radius = 0.1, segments = 6, tag = "PLANT" },
     },
     {
       model = "model.bush.cabbage", texture = "texture.foodKit.colorMap", level = "nest.ground", x = 15, y = -5, scale = 15, rz = love.math.random(0, 2 * math.pi),
@@ -119,17 +131,38 @@ local mapData = {
       model = "model.rock.tall.1", level = "zone1.ground", x = -49, y = 13, scale = 6, rz = math.rad(90),
       collider = { levels = { "zone1.ground" }, shape = "circle", radius = 0.25, segments = 6, tag = "ROCK" },
     },
+    { --- Transition ramp; tutorial.upper <-> tutorial.ground (left)
+      model = "model.log", level = "tutorial.ground", x = 9.5, y = -36.5, scale = 15, z = 0, rx = math.rad(-25), rz = math.rad(90),
+    },
+    -- { --- Transition ramp; tutorial.ground <-> tutorial.upper (right)
+    --   model = "model.log", level = "tutorial.ground", x = 34.25, y = -36.5, scale = 15, z = 0, rx = math.rad(25), rz = math.rad(90),
+    --   onBonkScriptID = "bonk.tutorial",
+    -- },
+    { --- Transition ramp; tutorial.ground <-> tutorial.upper (right); position moved by gameplay script
+      model = "model.log", level = "tutorial.ground", x = 41, y = -36.5, scale = 15, z = 5.25, rx = math.rad(90), rz = math.rad(90),
+      onBonkScriptID = "bonk.tutorial", id = "tutorial.log",
+      collider = { levels = { "tutorial.ground" }, x = 0.1, shape = "circle", radius = 0.1, segments = 6, tag = "LOG" },
+    },
+    { --- Transition ramp; zone1.upper <-> zone1.rock; position moved by gameplay script
+      model = "model.log", level = "zone1.upper", x = -50.5, y = 13, scale = 13, z = 4.55, rx = math.rad(90), rz = math.rad(-90),
+      onBonkScriptID = "bonk.zone1.upper", id = "zone1.upper.log",
+      collider = { levels = { "zone1.upper" }, x = -0.1, shape = "circle", radius = 0.1, segments = 6, tag = "LOG" },
+    },
+    -- {
+    --   model = "model.log", level = "zone1.upper", x = -44.8, y = 13, scale = 13, z = -3, rx = math.rad(-10), rz = math.rad(-90),
+    -- },
   },
   colliders = {
     -- Nest
-    { levels = { "nest.ground" }, shape = "rectangle", x = -30, y = -22, width = 60, height = 3, tag = "WALL" }, -- South wall
+    -- { levels = { "nest.ground", "tutorial.ground" }, shape = "rectangle", x = -30, y = -22, width = 25, height = 3, tag = "WALL" }, -- South wall Left
+    -- { levels = { "nest.ground", "tutorial.ground" }, shape = "rectangle", x =  12, y = -22, width = 25, height = 3, tag = "WALL" }, -- South wall Right
     { levels = { "nest.ground" }, shape = "rectangle", x = -30, y =  32, width = 60, height = 3, tag = "WALL" }, -- North wall
     { levels = { "nest.pot" }, shape = "rectangle", x = 23, y = -5.5, width = 5, height = 1, tag = "WALL" },
     { levels = { "nest.pot" }, shape = "rectangle", x = 31,   y = 0, width = 1, height = 5, tag = "WALL", rz = math.rad(180-25) },
     { levels = { "nest.pot" }, shape = "rectangle", x = 21,   y = 0, width = 1, height = 5, tag = "WALL", rz = math.rad(180+25) },
     { levels = { "nest.pot" }, shape = "rectangle", x = 30.5, y = 0, width = 1, height = 5, tag = "WALL", rz = math.rad(    25) },
     { levels = { "nest.pot" }, shape = "rectangle", x = 19.5, y = .5, width = 1, height = 5, tag = "WALL", rz = math.rad(   -25) },
-    { levels = { "nest.ground", "zone1.ground" }, shape = "rectangle", x = -31, y = -51, width = 1, height = 50, tag = "WALL" },
+    { levels = { "nest.ground", "zone1.ground", "tutorial.ground" }, shape = "rectangle", x = -31, y = -51, width = 1, height = 50, tag = "WALL" },
     -- { levels = { "nest.ground", "zone1.ground" }, shape = }
     { levels = { "zone1.ground" }, shape = "rectangle", x = -41.5, y = 11, width = 0.25, height = 2, tag = "ROCK" },
     { levels = { "zone1.ground", "zone1.rock" }, shape = "rectangle", x = -41.5, y = 14.5, width = 2, height = 0.25, tag = "ROCK" },
@@ -137,10 +170,10 @@ local mapData = {
     { levels = { "zone1.upper" }, shape = "circle", x = -50, y=17.5, radius = 1, tag = "WALL" },
   },
   collectables = {
-    { level = "nest.ground", x =  0, y = 10, tag = "GOLDEN_LEAF", zone = "nest" }, -- behind nest pot
-    { level = "nest.ground", x =  0, y = 13, tag = "LEAF", zone = "nest" },
-    { level = "nest.ground", x = -3, y = 10, tag = "LEAF", zone = "nest" },
-    { level = "nest.ground", x =  3, y = 10, tag = "LEAF", zone = "nest" },
+    { level = "nest.ground", x = -2, y = 17.5, tag = "GOLDEN_LEAF", zone = "nest" }, -- behind nest pot
+    -- { level = "nest.ground", x =  0, y = 13, tag = "LEAF", zone = "nest" },
+    { level = "nest.ground", x = -10.5, y = 9, tag = "LEAF", zone = "nest" },
+    { level = "nest.ground", x =  7.5, y = 7.5, tag = "LEAF", zone = "nest" },
     { level = "nest.ground", x = -14.5, y = -2, tag = "LEAF", zone = "nest" },
     { level = "nest.ground", x = -9, y = -11.5, tag = "LEAF", zone = "nest"  },
     { level = "nest.ground", x = -17.5, y = -8, tag = "LEAF", zone = "nest" },
@@ -151,15 +184,18 @@ local mapData = {
     { level = "nest.pot",    x = 25.5, y = 0.5, tag = "GOLDEN_LEAF", zone = "nest" }, -- on top of the large pot to show off different levels
     { level = "nest.ground", x = 18, y = -.5, tag = "LEAF", zone = "nest" },
     { level = "nest.ground", x = 19, y = 8, tag = "LEAF", zone = "nest" },
-    { level = "nest.ground", x = -25, y = -14, tag = "GOLDEN_LEAF", zone = "nest" }, -- Hidden under cabbage on the left of the nest pot
-    { level = "nest.ground", x = -1, y = 17, tag = "LEAF", zone = "nest" },
+    -- { level = "nest.ground", x = -25, y = -14, tag = "GOLDEN_LEAF", zone = "nest" }, -- Hidden under cabbage on the left of the nest pot
+    -- { level = "nest.ground", x = -1, y = 17, tag = "LEAF", zone = "nest" },
     { level = "nest.ground", x = -23.5, y = 0, tag = "LEAF", zone = "nest" },
   },
   signposts = {
-    { level = "nest.ground", x = 0, y = -7.4, z = 4, content = "Press [button.interact]to enter Nest", radius = 3.5 },
-    { level = "nest.ground", x = -8, y = -6.5, z = 3, content = "[collectable_count.nest]", radius = 5.1 },
-    { level = "nest.ground", x = -23, y = 0, z = 3, content = "[collectable_count.zone_1]", radius = 5.5, rz =  math.rad(20) },
-    { level = "nest.ground", x =  29.5, y = -6, z = 3, content = "[collectable_count.zone_2]", radius = 5.5, rz = -math.rad(30) },
+    { level = "nest.ground", x =  0,     y =  -7.4, z = 4, content = "Press[button.interact]to enter Nest", radius = 3.5 },
+    { level = "nest.ground", x = -8,     y =  -6.5, z = 3, content = "[collectable_count.nest]", radius = 5.1 },
+    { level = "nest.ground", x = -23,    y =   0,   z = 3, content = "[collectable_count.zone_1]", radius = 5.5, rz =  math.rad(20) },
+    { level = "nest.ground", x =  29.5,  y =  -6,   z = 3, content = "[collectable_count.zone_2]", radius = 5.5, rz = -math.rad(30) },
+    { level = "nest.ground", x =   4.25, y = -22.5, z = 3, content = "[collectable_count.tutorial]", radius = 5.5 },
+    { level = "tutorial.ground", x = 47, y = -32.5, z = 3, content = "Hold[button.charge]to bash logs", radius = 5.5 },
+    { level = "tutorial.ground", x = 48, y = -50,   z = 3, content = "Use[button.move]to move", radius = 5.5 },
   },
   interactions = {
     { level = "nest.ground", x = 0, y = -8, radius = 3.0, scriptID = "enter.pot" },
@@ -263,18 +299,47 @@ local mapData = {
       { "aiFootstep" },
       { "sleep", 0.7 },
     },
+    ["bonk.tutorial"] = {
+      { "lock" },
+      { "setCutsceneCamera", 33.5, -46, 15, 33.5, -36, 2 },
+      { "switchCamera", "cutscene" },
+      { "lerpProp", "tutorial.log", 34.25, nil, 0, math.rad(25), nil, nil, 0.8 },
+      { "removePropCollider", "tutorial.log" },
+      { "removePropCollider", "tutorial.rock.logBlock" },
+      { "addTransition", 31.0, -38.5, 9.75, 4, { left = "tutorial.upper", right = "tutorial.ground" } },
+      { "sleep", 0.7 },
+      { "playAudio", "audio.fx.impact.wood" },
+      { "sleep", 1.3 },
+      { "wait" },
+      { "switchCamera", "player" },
+      { "unlock" },
+    },
+    ["bonk.zone1.upper"] = {
+      { "lerpProp", "zone1.upper.log", -44.8, nil, -3, math.rad(-10), nil, nil, 1.0 },
+      { "sleep", 0.9 },
+      { "playAudio", "audio.fx.impact.wood" },
+      { "removePropCollider", "zone1.upper.log" },
+      { "removeNamedCollider", "zone1.rock", "zone1RockBlock" },
+      { "addTransition", -49.5, 11.25, 7, 3.5, { right = "zone1.rock", left = "zone1.upper" } },
+      { "wait" },
+    }
   },
   characters = {
     ["Hedgehog.Player"] = {
       file = "assets/characters/hedgehog/init.lua",
-      level = "nest.ground", --"zone1.ground", --
-      x = -20, y = -5.5, --x = -42, y = 0, -- 0, -10
+      level = "tutorial.ground",
+      x = 44.5, y = -53,
     },
     ["Hedgehog.Debug"] = {
       file = "assets/characters/hedgehog/init.lua",
       level = "zone1.upper",
       x = -54, y = 6.5,
     },
+    -- ["Hedgehog.Debug"] = {
+    --   file = "assets/characters/hedgehog/init.lua",
+    --   level = "tutorial.ground",
+    --   x = 44.5, y = -53,
+    -- },
   },
   playerCharacter = "Hedgehog.Debug",
 }
@@ -282,5 +347,8 @@ helper.mapData = mapData -- link so helper can populate mapData
 
 require("assets.level.nest_ground")
 require("assets.level.zone1")
+helper.addPlant("nest.ground", 23.5, 27)
+helper.addSmallRock("nest.ground", 20.5, 29)
+require("assets.level.tutorial")
 
 return mapData

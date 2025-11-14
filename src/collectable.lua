@@ -35,7 +35,7 @@ local tags = {
     end,
   },
   ["GOLDEN_LEAF"] = {
-    value = 10,
+    value = 5,
     rotationSpeed = math.rad(120), -- per second
     bobbingSpeed = 1.0, -- per second
     bobbingHeight = 0.5,

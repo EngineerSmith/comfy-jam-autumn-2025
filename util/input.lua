@@ -69,7 +69,7 @@ input.getBindingAssetNames = function(actionName, limit)
   local controls = settings.client.input
 
   local action = controls[actionName]
-  if not action then
+  if not action and actionName ~= "move" then
     logger.warn("Couldn't find action with name: '"..tostring(actionName).."'. Check spelling.")
     return nil
   end
@@ -88,6 +88,14 @@ input.getBindingAssetNames = function(actionName, limit)
     gamepadType = settings.client.gamepadType -- change to other types for testing without needing other controllers
     if gamepadType == "general" then gamepadType = "xbox" end -- the most generic one I've got symbols for
     assetPrefix = ("input.%s."):format(gamepadType)
+  end
+
+  if actionName == "move" then
+    if lookForKeyboard then -- { key = assetPrefix .. asset, name = asset }
+      return { { key = "input.pc.arrows.all", name = actionName } }
+    elseif lookForJoyStick then -- It's hardcoded; but who cares
+      return { { key = assetPrefix .. "leftstick", name = "leftstick" } }
+    end
   end
 
   -- Priority is the order they are in the array

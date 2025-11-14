@@ -28,6 +28,7 @@ local assets = {
   "audio.fx.snore",
   "audio.music.retroReggae",
   "audio.fx.woosh",
+  "audio.fx.impact.wood",
 }
 
 --- Grab the models needed for mapData

@@ -363,6 +363,78 @@ handlers["createNamedCollider"] = function(_, levelName, name, shape, ...)
   return true
 end
 
+handlers["removeNamedCollider"] = function(_, levelName, name)
+  local world = require("src.world")
+  local level = world.levels[levelName]
+  if not level then
+    error("You misspelt the level name: "..tostring(levelName))
+  end
+  if level:isInLevel(name) then
+    level:remove(name)
+  end
+  return true
+end
+
+handlers["lerpProp"] = {
+  start = function(executionID, propID, toX, toY, toZ, toRX, toRY, toRZ, lerpDuration)
+    local world = require("src.world")
+    local prop = world.specialProps[propID]
+    if not prop then
+      logger.warn("Couldn't find prop["..tostring(propID).."] when trying to start lerpProp. Check spelling.")
+      return true
+    end
+    local x, y, z = prop:getPosition()
+    local rx, ry, rz = prop:getRotation()
+
+    local targetState = {
+      x = toX or x, y = toY or y, z = toZ or z,
+      rx = toRX or rx, ry = toRY or ry, rz = toRZ or rz,
+    }
+
+    local tween = require("libs.flux").to(prop, lerpDuration or 0.5, targetState)
+      :ease("quadout")
+      :onupdate(function()
+        prop:updateRotation()
+      end)
+      :oncomplete(function()
+        memory[executionID].finished = true
+      end)
+    memory[executionID] = {
+      tween = tween,
+      finished = false,
+    }
+    return false
+  end,
+  update = function(executionID, _, _, _, _, _, _, _)
+    local mem = memory[executionID]
+    if mem.finished then
+      memory[executionID] = nil
+      return true
+    end
+    return false
+  end,
+}
+
+handlers["removePropCollider"] = function(_, propID)
+  local world = require("src.world")
+  local prop = world.specialProps[propID]
+  if not prop then
+    logger.warn("Couldn't find prop["..tostring(propID).."] when trying to removePropCollider. Check spelling.")
+    return true
+  end
+  if prop.collider then
+    prop.collider:remove()
+    prop.collider = nil
+  end
+  return true
+end
+
+handlers["addTransition"] = function(_, x, y, width, height, edgeMap)
+  local world = require("src.world")
+  world.addTransition(x, y, width, height, edgeMap)
+  return true
+end
+
 --- handler validation
 local keysToRemove = { }
 for key, handler in pairs(handlers) do
