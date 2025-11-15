@@ -7,7 +7,7 @@ local mapData = {
     ["zone1.ground"] = { x = -130, y = -50, z = 0, width = 100, height = 100 },
     ["zone1.upper"] = { x = -120, y = -20, z = 5, width = 80, height = 100 },
     ["zone1.rock"] = { x = -41.5, y = 12.5, z = 4.1, width = 3, height = 3 },
-    ["tutorial.ground"] = { x = -15, y = -60, z = 0, width = 65, height = 40 },
+    ["tutorial.ground"] = { x = -35, y = -80, z = 0, width = 85, height = 60 },
     ["tutorial.upper"] = { x = 14, y = -50, z = 5, width = 15, height = 20 },
   },
   transitions = {
@@ -23,10 +23,6 @@ local mapData = {
       x = -41.5, y = 4.75, width = 3.5, height = 7,
       edgeMap = { top = "zone1.rock", bottom = "zone1.ground" }
     },
-    -- {
-    --   x = -49.5, y = 11.25, width = 7, height = 3.5,
-    --   edgeMap = { right = "zone1.rock", left = "zone1.upper" }
-    -- },
     {
       x = -4, y = -23, width = 16, height = 2,
       edgeMap = { bottom = "tutorial.ground", top = "nest.ground" }
@@ -134,10 +130,6 @@ local mapData = {
     { --- Transition ramp; tutorial.upper <-> tutorial.ground (left)
       model = "model.log", level = "tutorial.ground", x = 9.5, y = -36.5, scale = 15, z = 0, rx = math.rad(-25), rz = math.rad(90),
     },
-    -- { --- Transition ramp; tutorial.ground <-> tutorial.upper (right)
-    --   model = "model.log", level = "tutorial.ground", x = 34.25, y = -36.5, scale = 15, z = 0, rx = math.rad(25), rz = math.rad(90),
-    --   onBonkScriptID = "bonk.tutorial",
-    -- },
     { --- Transition ramp; tutorial.ground <-> tutorial.upper (right); position moved by gameplay script
       model = "model.log", level = "tutorial.ground", x = 41, y = -36.5, scale = 15, z = 5.25, rx = math.rad(90), rz = math.rad(90),
       onBonkScriptID = "bonk.tutorial", id = "tutorial.log",
@@ -148,9 +140,6 @@ local mapData = {
       onBonkScriptID = "bonk.zone1.upper", id = "zone1.upper.log",
       collider = { levels = { "zone1.upper" }, x = -0.1, shape = "circle", radius = 0.1, segments = 6, tag = "LOG" },
     },
-    -- {
-    --   model = "model.log", level = "zone1.upper", x = -44.8, y = 13, scale = 13, z = -3, rx = math.rad(-10), rz = math.rad(-90),
-    -- },
   },
   colliders = {
     -- Nest
@@ -188,14 +177,16 @@ local mapData = {
     -- { level = "nest.ground", x = -1, y = 17, tag = "LEAF", zone = "nest" },
     { level = "nest.ground", x = -23.5, y = 0, tag = "LEAF", zone = "nest" },
   },
+  smashables = { },
   signposts = {
     { level = "nest.ground", x =  0,     y =  -7.4, z = 4, content = "Press[button.interact]to enter Nest", radius = 3.5 },
     { level = "nest.ground", x = -8,     y =  -6.5, z = 3, content = "[collectable_count.nest]", radius = 5.1 },
     { level = "nest.ground", x = -23,    y =   0,   z = 3, content = "[collectable_count.zone_1]", radius = 5.5, rz =  math.rad(20) },
     { level = "nest.ground", x =  29.5,  y =  -6,   z = 3, content = "[collectable_count.zone_2]", radius = 5.5, rz = -math.rad(30) },
     { level = "nest.ground", x =   4.25, y = -22.5, z = 3, content = "[collectable_count.tutorial]", radius = 5.5 },
-    { level = "tutorial.ground", x = 47, y = -32.5, z = 3, content = "Hold[button.charge]to bash logs", radius = 5.5 },
+    { level = "tutorial.ground", x = 47, y = -32.5, z = 3, content = "Hold[button.charge]to bash into logs", radius = 5.5 },
     { level = "tutorial.ground", x = 48, y = -50,   z = 3, content = "Use[button.move]to move", radius = 5.5 },
+    { level = "tutorial.upper",  x = 23, y = -34.5, z = 3, content = "Hold[button.charge]to bash through pots", radius = 5.5 },
   },
   interactions = {
     { level = "nest.ground", x = 0, y = -8, radius = 3.0, scriptID = "enter.pot" },
@@ -315,12 +306,12 @@ local mapData = {
       { "unlock" },
     },
     ["bonk.zone1.upper"] = {
-      { "lerpProp", "zone1.upper.log", -44.8, nil, -3, math.rad(-10), nil, nil, 1.0 },
-      { "sleep", 0.9 },
-      { "playAudio", "audio.fx.impact.wood" },
+      { "lerpProp", "zone1.upper.log", -44.8, nil, -3, math.rad(-10), nil, nil, 0.8 },
       { "removePropCollider", "zone1.upper.log" },
       { "removeNamedCollider", "zone1.rock", "zone1RockBlock" },
       { "addTransition", -49.5, 11.25, 7, 3.5, { right = "zone1.rock", left = "zone1.upper" } },
+      { "sleep", 0.7 },
+      { "playAudio", "audio.fx.impact.wood" },
       { "wait" },
     }
   },
@@ -341,7 +332,7 @@ local mapData = {
     --   x = 44.5, y = -53,
     -- },
   },
-  playerCharacter = "Hedgehog.Debug",
+  playerCharacter = "Hedgehog.Player",
 }
 helper.mapData = mapData -- link so helper can populate mapData
 

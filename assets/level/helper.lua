@@ -235,6 +235,19 @@ helper.addCollectable = function(tag, level, x, y, zone)
   })
 end
 
+helper.addSmashable = function(tag, level, x, y, zOffset)
+  table.insert(helper.mapData.smashables, {
+    x = x, y = y,
+    level = level,
+    tag = tag,
+    zOffset = zOffset,
+  })
+end
+
+helper.addSmashablePot = function(...)
+  helper.addSmashable("POT", ...)
+end
+
 helper.addLeafLine = function(level, zone, startX, startY, endX, endY, count, tag)
   count = count or 5
   tag = tag or "LEAF"

@@ -57,6 +57,14 @@ for _, assetKey in ipairs(assetList) do
     lookup[assetKey] = true
   end
 end
+ -- Smashables
+local assetList = require("src.smashable").getAssetList()
+for _, assetKey in ipairs(assetList) do
+  if not lookup[assetKey] then
+    table.insert(assets, assetKey)
+    lookup[assetKey] = true
+  end
+end
 --- Music Player
 local assetList = require("src.musicPlayer").music
 for _, assetKey in ipairs(assetList) do

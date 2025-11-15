@@ -74,6 +74,10 @@ player.update = function(dt)
     local dashDX = player.dashNormalX * dashSpeed * dt
     local dashDY = player.dashNormalY * dashSpeed * dt
     if player.character:canMoveBy(dashDX, dashDY, "touch") then
+      local _, smashables = player.character:getTagsBetween(startX, startY, dashDX, dashDY, "touch")
+      for _, smashable in ipairs(smashables) do
+        smashable:smashed()
+      end
       player.character:move(dashDX, dashDY, "touch")
 
       player.dashTimer = player.dashTimer - dt
@@ -83,7 +87,10 @@ player.update = function(dt)
         player.isInputBlocked = false
       end
     else
-      local tags = player.character:getTagsBetween(startX, startY, dashDX, dashDY, "touch")
+      local tags, smashables = player.character:getTagsBetween(startX, startY, dashDX, dashDY, "touch")
+      for _, smashable in ipairs(smashables) do
+        smashable:smashed()
+      end
       local _, hits = player.character:move(dashDX, dashDY, "touch") -- Attempt to move as close as possible to collision point
       player.dashTimer = 0
       player.character:setState("bonk")
@@ -98,7 +105,6 @@ player.update = function(dt)
         end
       end
       if hits then
-        print(#hits)
         if #hits > 1 then
           table.sort(hits, function(a, b)
             local aValid = isValidPositionalTable(a)

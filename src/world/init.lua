@@ -11,6 +11,7 @@ local prop = require("src.prop")
 local player = require("src.player")
 local signpost = require("src.signpost")
 local character = require("src.character")
+local smashable = require("src.smashable")
 local collectable = require("src.collectable")
 local interaction = require("src.interaction")
 local musicPlayer = require("src.musicPlayer")
@@ -29,6 +30,7 @@ local world = {
   specialProps = { },
   colliders = { },
   collectables = { },
+  smashables = { },
   signposts = { },
   interactions = { },
   characters = { },
@@ -66,6 +68,7 @@ end
 
 world.load = function()
   collectable.load() -- load assets
+  smashable.load()
 
   world.leaves = 0
   world.currencyLeaves = 0
@@ -231,6 +234,16 @@ world.load = function()
     end
   end
 
+  for i, smashableInfo in ipairs(mapData.smashables) do
+    local level = world.levels[smashableInfo.level]
+    if not level then
+      logger.warn("Collectable of mapData.smashables["..tostring(i).."] had invalid level. Check spelling. Ignoring smashable.")
+    else
+      local x, y, tag, zOffset = smashableInfo.x, smashableInfo.y, smashableInfo.tag, smashableInfo.zOffset
+      table.insert(world.smashables, smashable.new(x, y, level, tag, zOffset))
+    end
+  end
+
   for i, signpostInfo in ipairs(mapData.signposts) do
     local level = world.levels[signpostInfo.level]
     if not level then
@@ -287,6 +300,7 @@ end
 
 world.unload = function()
   collectable.unload()
+  smashable.unload()
 
   world.levels = { }
   world.transitions = { }
@@ -294,6 +308,7 @@ world.unload = function()
   world.specialProps = { }
   world.colliders = { }
   world.collectables = { }
+  world.smashables = { }
   for _, signpost in ipairs(world.signposts) do
     signpost:unload() -- release assets
   end
@@ -454,6 +469,9 @@ world.debugDraw = function()
     for _, collectable in ipairs(world.collectables) do
       collectable:debugDraw()
     end
+    for _, smashable in ipairs(world.smashables) do
+      smashable:debugDraw()
+    end
     for _, signpost in ipairs(world.signposts) do
       signpost:debugDraw()
     end
@@ -472,6 +490,10 @@ world.draw = function(scale)
 
     for _, collectable in ipairs(world.collectables) do
       collectable:draw()
+    end
+
+    for _, smashable in ipairs(world.smashables) do
+      smashable:draw()
     end
 
     for _, character in pairs(world.characters) do

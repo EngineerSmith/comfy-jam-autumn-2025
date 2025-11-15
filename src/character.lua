@@ -208,20 +208,30 @@ end
 
 local noCollisions = function() return false end
 
-local noCharacterCollisions = function(_, _, shape, otherShape)
+local noCharacterCollisions = function(item, _, shape, otherShape)
   if otherShape.tag and otherShape.tag.value.type == "character" then
     return false
   end
+  -- if player is dashing, and object is smashable; phase through it
+  if item and getmetatable(item) == character and item.state == "dash" and otherShape.tag and otherShape.tag.value.isSmashable then
+    return "cross"
+  end
   return true
-  -- return not (shape.tag.value.type == otherShape.tag.value.type)
 end
 
-local noCharacterCollisionsTOUCH = function(...)
-  local bool = noCharacterCollisions(...)
-  if bool == false then
+local noCharacterCollisionsTOUCH = function(item, _, shape, otherShape)
+  if otherShape.tag and otherShape.tag.value.type == "character" then
     return "touch"
   end
-  return bool
+  -- if player is dashing, and object is smashable; phase through it
+  if otherShape.tag and otherShape.tag.value.isSmashable then
+    if item and getmetatable(item) == character and item.state == "dash" then
+      return "cross"
+    else
+      return true
+    end
+  end
+  return true
 end
 
 character.move = function(self, dx, dy, inPhase)
@@ -243,7 +253,7 @@ character.move = function(self, dx, dy, inPhase)
     worldQuery = noCharacterCollisions
   end
 
-  local previousHits
+  local previousHits, previous
 
   local worldsMadeChange, MAX_ITERATIONS = false, 10
   for i = 1, MAX_ITERATIONS do
@@ -329,29 +339,27 @@ character.getTagsBetween = function(self, startX, startY, deltaX, deltaY, inPhas
 
   local goalX, goalY = startX + deltaX, startY + deltaY
   local tags, lookup = { }, { }
+  local smashables, smashablesLookup = { }, { }
   for level in pairs(self.levels) do
-    local collisions = level.world:project(self, startX, startY, goalX, goalY)
+    local collisions = level.world:project(self, startX, startY, goalX, goalY, worldQuery)
     for _, result in ipairs(collisions) do
-      if result.item ~= self and result.shape and result.shape.tag then
-        local tagType = result.shape.tag.value.type
-        if tagType and not lookup[tagType] then
-          lookup[tagType] = true
-          table.insert(tags, tagType)
-        end
-      end
       if result.other ~= self and result.otherShape and result.otherShape.tag then
         local tagType = result.otherShape.tag.value.type
         if tagType and not lookup[tagType] then
           lookup[tagType] = true
           table.insert(tags, tagType)
         end
+        if result.otherShape.tag.value.isSmashable and not smashablesLookup[result.other] then
+          table.insert(smashables, result.other)
+          smashablesLookup[result.other] = true
+        end
       end
     end
   end
   if #tags == 0 then
-    return nil
+    return nil, smashables
   end
-  return slickHelper.typeArrayToTags(tags)
+  return slickHelper.typeArrayToTags(tags), smashables
 end
 
 character.teleport = function(self, x, y)

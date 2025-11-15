@@ -91,7 +91,7 @@ audioManager.play = function(assetKey, volumeMod)
     local s = audioInfo[love.math.random(1, #audioInfo)]
     local volume = s.asset:getVolume() 
     if type(volumeMod) == "number" and volumeMod ~= 1.0 then
-      s.asset:setVolume(volume * volumeMod)
+      s.asset:setVolume(math.min(1.0, math.max(0.0, volume * volumeMod)))
     end
     s.asset:play()
     local r = s.asset

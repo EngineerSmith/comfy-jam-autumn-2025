@@ -23,6 +23,7 @@ local tags = {
     bobbingOffset = 1,
     modelName = "model.collectable.leaf.1",
     audioName = "audio.fx.sweep_leaves",
+    scale = 0.5,
     -- minimap
     radius = 1.5,
     activeColor = { .8, .5, .1, 1 },
@@ -30,7 +31,7 @@ local tags = {
     draw = function(tag, collectable)
       tag.model:setTranslation(collectable:getPosition())
       tag.model:setRotation(0, 0, collectable.rotation)
-      tag.model:setScale(collectable.scale * 0.5)
+      tag.model:setScale(collectable.scale * tag.scale)
       tag.model:draw()
     end,
   },
@@ -42,6 +43,7 @@ local tags = {
     bobbingOffset = 1,
     modelName = "model.collectable.leaf.gold",
     audioName = "audio.fx.collect_special",
+    scale = 0.5,
     -- minimap
     radius = 2,
     activeColor = { .8, .8, 0, 1 },
@@ -49,7 +51,7 @@ local tags = {
     draw = function(tag, collectable)
       tag.model:setTranslation(collectable:getPosition())
       tag.model:setRotation(0, 0, collectable.rotation)
-      tag.model:setScale(collectable.scale * 0.5)
+      tag.model:setScale(collectable.scale * tag.scale)
       tag.model:draw()
     end,
   }
@@ -175,7 +177,7 @@ collectable.draw = function(self)
 
   local tag = self:getTag()
   if tag and tag.draw then
-    tag.draw(tag, self)
+    tag:draw(self)
   end
 end
 
