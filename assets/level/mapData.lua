@@ -184,9 +184,9 @@ local mapData = {
     { level = "nest.ground", x = -23,    y =   0,   z = 3, content = "[collectable_count.zone_1]", radius = 5.5, rz =  math.rad(20) },
     { level = "nest.ground", x =  29.5,  y =  -6,   z = 3, content = "[collectable_count.zone_2]", radius = 5.5, rz = -math.rad(30) },
     { level = "nest.ground", x =   4.25, y = -22.5, z = 3, content = "[collectable_count.tutorial]", radius = 5.5 },
-    { level = "tutorial.ground", x = 47, y = -32.5, z = 3, content = "Hold[button.charge]to bash into logs", radius = 5.5 },
+    { level = "tutorial.ground", x = 47, y = -32.5, z = 3, content = "Hold[button.charge]to bash logs", radius = 5.5 },
     { level = "tutorial.ground", x = 48, y = -50,   z = 3, content = "Use[button.move]to move", radius = 5.5 },
-    { level = "tutorial.upper",  x = 23, y = -34.5, z = 3, content = "Hold[button.charge]to bash through pots", radius = 5.5 },
+    { level = "tutorial.upper",  x = 23, y = -34.5, z = 3, content = "Hold[button.charge]to bash pots", radius = 5.5 },
   },
   interactions = {
     { level = "nest.ground", x = 0, y = -8, radius = 3.0, scriptID = "enter.pot" },
@@ -339,7 +339,7 @@ helper.mapData = mapData -- link so helper can populate mapData
 require("assets.level.nest_ground")
 require("assets.level.zone1")
 helper.addPlant("nest.ground", 23.5, 27)
-helper.addSmallRock("nest.ground", 20.5, 29)
+helper.addSmallRock("nest.ground", 21.5, 29)
 require("assets.level.tutorial")
 
 return mapData

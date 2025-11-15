@@ -18,6 +18,7 @@ local tags = {
     audioName = "audio.fx.hit.pot",
     scale = 3,
     radius = 0.1, -- model radius
+    litterColor = { 0.57, 0.32, 0.22 },
     -- debug draws
     color = { .2, .8, .2, 1 },
     --
@@ -167,12 +168,13 @@ smashable.draw = function(self)
   local tag = self:getTag()
   if self.isSmashed then
     -- draw litter cubes
+    local r, g, b = unpack(tag.litterColor)
     lg.push("all")
     for _, litter in ipairs(self.litter) do
-      lg.setColor(1, 1, 1, litter.opacity)
+      lg.setColor(r, g ,b, litter.opacity)
       CUBE:setTranslation(litter.x, litter.y, litter.z)
       CUBE:setRotation(litter.rx, litter.ry, litter.rz)
-      CUBE:setScale((((tag.radius or 1) * self.scale * tag.scale) / 2)) -- 1/2 the scale of the smashable model, 0.25 for the size of the cube
+      CUBE:setScale((((tag.radius or 1) * self.scale * tag.scale) / 1.5)) -- 1/2 the scale of the smashable model, 0.25 for the size of the cube
       CUBE:draw()
     end
     lg.pop()

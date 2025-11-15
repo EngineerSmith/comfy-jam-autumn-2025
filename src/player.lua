@@ -7,6 +7,8 @@ local player = {
   dashDuration = 0.10,
   dashSpeedMultiplier = 10,
   dashTimer = 0,
+  chargeDX = 0,
+  chargeDY = 0,
 
   counter = 0,
 }
@@ -141,17 +143,15 @@ player.update = function(dt)
   if player.character.state ~= "bonk" and player.character.state ~= "dash" then
     if inputCharge == 0 then
       if player.chargingValue >= 0.9 then -- Release dash!
-        local angle = player.character:getFacingDirection()
-        player.dashNormalX = math.cos(angle)
-        player.dashNormalY = math.sin(angle)
+        player.dashNormalX = player.chargeDX
+        player.dashNormalY = player.chargeDY
         player.dashTimer = player.dashDuration
         player.character:setState("dash")
         audioManager.play("audio.fx.woosh", 1.0)
         player.isInputBlocked = true
       elseif player.chargingValue >= 0.25 then
-        local angle = player.character:getFacingDirection()
-        player.dashNormalX = math.cos(angle)
-        player.dashNormalY = math.sin(angle)
+        player.dashNormalX = player.chargeDX
+        player.dashNormalY = player.chargeDY
         player.dashTimer = player.dashDuration / 3
         player.character:setState("dash")
         audioManager.play("audio.fx.woosh", 0.5)
@@ -161,9 +161,27 @@ player.update = function(dt)
       end
       player.chargingValue = 0
       player.counter = 0
+      player.chargeDX, player.chargeDY = 0, 0
     else
       player.character:setState("charging")
       player.chargingValue = player.chargingValue + inputCharge * dt / chargingTime
+
+      if moveX ~= 0 or moveY ~= 0 then
+        local mag = math.sqrt(moveX * moveX + moveY * moveY)
+        if mag > 0.4 then
+          player.character:faceDirection(moveX, moveY)
+          local angle = player.character:getFacingDirection()
+          player.chargeDX = math.cos(angle)
+          player.chargeDY = math.sin(angle)
+        end
+      end
+
+      if player.chargingValue * dt < 0.01 and player.chargeDX == 0 and player.chargeDY == 0 then
+        local angle = player.character:getFacingDirection()
+        player.chargeDX = math.cos(angle)
+        player.chargeDY = math.sin(angle)
+      end
+
       if player.chargingValue > 1 then
         player.chargingValue = 1
         if player.character.currentFrame % 4 == 0 then
