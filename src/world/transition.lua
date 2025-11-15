@@ -180,15 +180,14 @@ transition.update = function(self, characters)
       goto continue
     end
 
-    -- Check if character isn't within one of the levels in the transition; not return
-    local foundInLevel = false
+    -- Check how many of the ramp's levels the character is currently in.
+    local levelsAssociated = 0
     for _, level in ipairs(self.levels) do
       if level:isInLevel(character) then
-        foundInLevel = true
-        break
+        levelsAssociated = levelsAssociated + 1
       end
     end
-    if not foundInLevel then
+    if levelsAssociated == 0 then
       goto continue
     end
 
@@ -196,14 +195,16 @@ transition.update = function(self, characters)
       character.z = self:calculateZ(character)
     end
 
-    if inside and not wasInside then -- Entered
+    if inside then 
       -- If entered, add to all levels they're aren't in
+        -- This happens constantly while they're inside the transition zone due to
+        -- the bug of transitions zones being created on top of a character.
       for _, level in ipairs(self.levels) do
         if not level:isInLevel(character) then
           character:addToLevel(level)
         end
       end
-    elseif not inside and wasInside then -- Exited
+    elseif not inside and wasInside and levelsAssociated > 1 then -- Exited
       -- Once exited remove from all levels, but the one they choose
       local targetLevel, edgeName = self:checkExitEdge(character)
       if not targetLevel then
@@ -216,6 +217,9 @@ transition.update = function(self, characters)
           character:removeFromLevel(level)
         end
       end
+
+      local scriptingEngine = require("src.scripting")
+      scriptingEngine.startScript("event.enter."..targetLevel.name)
     end
     ::continue::
   end

@@ -11,6 +11,8 @@ local player = {
   chargeDY = 0,
 
   counter = 0,
+
+  flags = { }, -- used to track player events by gameplay scripts
 }
 
 -- 4 frames, 0.3 s per frame

@@ -4,7 +4,7 @@ local mapData = {
   levels = {
     ["nest.ground"] = { x = -60, y = -60, z = 0, width = 120, height = 120 },
     ["nest.pot"] = { x = 20, y = -5, z = 4, width = 12, height = 12 },
-    ["zone1.ground"] = { x = -130, y = -50, z = 0, width = 100, height = 100 },
+    ["zone1.ground"] = { x = -180, y = -100, z = 0, width = 150, height = 150 },
     ["zone1.upper"] = { x = -120, y = -20, z = 5, width = 80, height = 100 },
     ["zone1.rock"] = { x = -41.5, y = 12.5, z = 4.1, width = 3, height = 3 },
     ["tutorial.ground"] = { x = -35, y = -80, z = 0, width = 85, height = 60 },
@@ -37,6 +37,8 @@ local mapData = {
     -- { model = "model.surface.1", texture = "texture.prototype.2", level = "nest.ground", x = 0, y = 0, z = -.1 },
     { model = "model.surface.2", level = "nest.ground", x = 0, y = 0, z = -.1 },
     { model = "model.surface.2", level = "zone1.ground", x = -50, y = 0, z = -.1 },
+    { model = "model.surface.2", level = "zone1.ground", x = -85, y = -25, z = -.1 },
+    { model = "model.surface.2", level = "zone1.ground", x = -135, y = -25, z = -.1 },
     { model = "model.surface.2", level = "tutorial.ground", x = 15, y = -50, z = -.1 },
     { model = "model.surface.2", level = "tutorial.ground", x = 65, y = -50, z = -.1 },
     {
@@ -140,6 +142,20 @@ local mapData = {
       onBonkScriptID = "bonk.zone1.upper", id = "zone1.upper.log",
       collider = { levels = { "zone1.upper" }, x = -0.1, shape = "circle", radius = 0.1, segments = 6, tag = "LOG" },
     },
+    {
+      model = "model.rock.tall.1", level = "zone1.ground", x = -78.5, y = -39.5, scale = 6, rz = love.math.random() * 2 * math.pi,
+      collider = { levels = { "zone1.ground" }, shape = "circle", radius = 0.25, segments = 6, tag = "ROCK" },
+    },
+    { --- Transition ramp; zone1.ground <-> zone1.upper (bottom); position moved by gameplay script
+      model = "model.log", level = "zone1.ground", x = -112, y = -57, scale = 15, z = 5.25, rx = math.rad(-90), rz = math.rad(90),
+      onBonkScriptID = "bonk.zone1.ground.bottom", id = "zone1.ground.bottom.log",
+      collider = { levels = { "zone1.ground" }, x = -0.1, shape = "circle", radius = 0.1, segments = 6, tag = "LOG" },
+    },
+    { --- Transition ramp; zone1.upper <-> zone1.upper (bottom); position moved by gameplay script
+      model = "model.log", level = "zone1.upper", x = -78.5, y = -46.5, scale = 15, z = 5.25, rx = math.rad(90),
+      onBonkScriptID = "bonk.zone1.upper.bottom", id = "zone1.upper.bottom.log",
+      collider = { levels = { "zone1.upper" }, y = -0.1, shape = "circle", radius = 0.1, segments = 6, tag = "LOG" },
+    },
   },
   colliders = {
     -- Nest
@@ -173,7 +189,7 @@ local mapData = {
     { level = "nest.pot",    x = 25.5, y = 0.5, tag = "GOLDEN_LEAF", zone = "nest" }, -- on top of the large pot to show off different levels
     { level = "nest.ground", x = 18, y = -.5, tag = "LEAF", zone = "nest" },
     { level = "nest.ground", x = 19, y = 8, tag = "LEAF", zone = "nest" },
-    -- { level = "nest.ground", x = -25, y = -14, tag = "GOLDEN_LEAF", zone = "nest" }, -- Hidden under cabbage on the left of the nest pot
+    { level = "nest.ground", x = 0, y = -9.5, tag = "GOLDEN_LEAF", zone = "nest" }, -- Front of the pot to make players go in!
     -- { level = "nest.ground", x = -1, y = 17, tag = "LEAF", zone = "nest" },
     { level = "nest.ground", x = -23.5, y = 0, tag = "LEAF", zone = "nest" },
   },
@@ -181,7 +197,7 @@ local mapData = {
   signposts = {
     { level = "nest.ground", x =  0,     y =  -7.4, z = 4, content = "Press[button.interact]to enter Nest", radius = 3.5 },
     { level = "nest.ground", x = -8,     y =  -6.5, z = 3, content = "[collectable_count.nest]", radius = 5.1 },
-    { level = "nest.ground", x = -23,    y =   0,   z = 3, content = "[collectable_count.zone_1]", radius = 5.5, rz =  math.rad(20) },
+    { level = "nest.ground", x = -25,    y =   1,   z = 3, content = "[collectable_count.zone_1]", radius = 5.5, rz =  math.rad(20) },
     { level = "nest.ground", x =  29.5,  y =  -6,   z = 3, content = "[collectable_count.zone_2]", radius = 5.5, rz = -math.rad(30) },
     { level = "nest.ground", x =   4.25, y = -22.5, z = 3, content = "[collectable_count.tutorial]", radius = 5.5 },
     { level = "tutorial.ground", x = 47, y = -32.5, z = 3, content = "Hold[button.charge]to bash logs", radius = 5.5 },
@@ -299,7 +315,7 @@ local mapData = {
       { "removePropCollider", "tutorial.rock.logBlock" },
       { "addTransition", 31.0, -38.5, 9.75, 4, { left = "tutorial.upper", right = "tutorial.ground" } },
       { "sleep", 0.7 },
-      { "playAudio", "audio.fx.impact.wood" },
+      { "playAudio", "audio.fx.impact.wood", 2.0 },
       { "sleep", 1.3 },
       { "wait" },
       { "switchCamera", "player" },
@@ -311,7 +327,36 @@ local mapData = {
       { "removeNamedCollider", "zone1.rock", "zone1RockBlock" },
       { "addTransition", -49.5, 11.25, 7, 3.5, { right = "zone1.rock", left = "zone1.upper" } },
       { "sleep", 0.7 },
-      { "playAudio", "audio.fx.impact.wood" },
+      { "playAudio", "audio.fx.impact.wood", 2.0 },
+      { "wait" },
+    },
+    ["event.enter.zone1.ground"] = { isMandatory = true,
+      { "if", "firstTimeEnterZone1", 2, -1 },
+      { "lock" },
+      { "setCutsceneCamera", "player" },
+      { "switchCamera", "cutscene" },
+      { "sleep", 0.5 },
+      { "lerpCameraTo", -42.5, -3, 15, -56, 7.5, 6, 3 },
+      { "wait" },
+      { "lerpCameraTo", -47.5, 2, 10, nil, nil, nil, 2 },
+      { "wait" },
+      { "sleep", 1.0 },
+      { "switchCamera", "player" },
+      { "unlock" },
+      { "wait" },
+    },
+    ["bonk.zone1.ground.bottom"] = {
+      { "lerpProp", "zone1.ground.bottom.log", -105.25, nil, 0, math.rad(-25), nil, nil, 0.8 },
+      { "removePropCollider", "zone1.ground.bottom.log" },
+      { "removePropCollider", "zone1.rock.logBlock.bottom.1" },
+      { "removePropCollider", "zone1.rock.logBlock.bottom.2" },
+      { "addTransition", -111.5, -59, 9.75, 4, { left = "zone1.ground", right = "zone1.upper" } },
+      { "sleep", 0.7 },
+      { "playAudio", "audio.fx.impact.wood", 2.0 },
+      { "wait" },
+    },
+    ["bonk.zone1.upper.bottom"] = {
+      
       { "wait" },
     }
   },
@@ -321,18 +366,18 @@ local mapData = {
       level = "tutorial.ground",
       x = 44.5, y = -53,
     },
+    -- ["Hedgehog.Debug"] = {
+    --   file = "assets/characters/hedgehog/init.lua",
+    --   level = "zone1.upper",
+    --   x = -54, y = 6.5,
+    -- },
     ["Hedgehog.Debug"] = {
       file = "assets/characters/hedgehog/init.lua",
       level = "zone1.upper",
-      x = -54, y = 6.5,
+      x = -85, y = -58,
     },
-    -- ["Hedgehog.Debug"] = {
-    --   file = "assets/characters/hedgehog/init.lua",
-    --   level = "tutorial.ground",
-    --   x = 44.5, y = -53,
-    -- },
   },
-  playerCharacter = "Hedgehog.Player",
+  playerCharacter = "Hedgehog.Debug",
 }
 helper.mapData = mapData -- link so helper can populate mapData
 
@@ -341,5 +386,6 @@ require("assets.level.zone1")
 helper.addPlant("nest.ground", 23.5, 27)
 helper.addSmallRock("nest.ground", 21.5, 29)
 require("assets.level.tutorial")
+require("assets.level.zone1_sprint2") -- sprint 2 of building out zone1 has to be in another file, otherwise will disturb the rng of the tutorial model placement
 
 return mapData

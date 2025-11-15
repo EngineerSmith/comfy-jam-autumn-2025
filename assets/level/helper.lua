@@ -226,12 +226,13 @@ helper.addCliff = function(level, x, y, zOffset, rz, noCollisions)
     })
 end
 
-helper.addCollectable = function(tag, level, x, y, zone)
+helper.addCollectable = function(tag, level, x, y, zone, zOffset)
   table.insert(helper.mapData.collectables, {
     x = x, y = y,
     level = level,
     tag = tag,
     zone = zone,
+    zOffset = zOffset,
   })
 end
 

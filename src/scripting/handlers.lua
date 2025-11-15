@@ -295,6 +295,11 @@ end
 handlers["setCutsceneCamera"] = function(_, x, y, z, lookAtX, lookAtY, lookAtZ)
   local scene = require("scenes.game")
   local camera = scene.cutsceneCamera
+  if x == "player" then -- Grab player's current camera position to use for smooth cutscene transition
+    local player = require("src.player")
+          x,       y,       z = unpack(player.camera.position)
+    lookAtX, lookAtY, lookAtZ = unpack(player.camera.target)
+  end
   camera:lookAt(x, y, z, lookAtX, lookAtY, lookAtZ)
   return true 
 end
@@ -314,13 +319,14 @@ handlers["lerpCameraTo"] = {
     state[1], state[2], state[3] = unpack(camera.position)
     state[4], state[5], state[6] = unpack(camera.target)
     local flux = require("libs.flux")
-    flux.to(state, seconds, { x, y, z, lookAtX, lookAtY, lookAtZ })
+    flux.to(state, seconds, { x or state[1], y or state[2], z or state[3], lookAtX or state[4], lookAtY or state[5], lookAtZ or state[6] })
       :onupdate(function()
-        camera:lookAt(unpack(state))
+        camera:lookAt(unpack(state, 1, 6))
       end)
       :oncomplete(function()
         memory[executionID] = true
       end)
+      :ease("linear")
     return false
   end,
   update = function(executionID, _, _, _, _, _, _, _, _)
@@ -433,6 +439,15 @@ handlers["addTransition"] = function(_, x, y, width, height, edgeMap)
   local world = require("src.world")
   world.addTransition(x, y, width, height, edgeMap)
   return true
+end
+
+handlers["firstTimeEnterZone1"] = function()
+  local player = require("src.player")
+  if not player.flags["zone1"] then
+    player.flags["zone1"] = true
+    return true
+  end
+  return false
 end
 
 --- handler validation

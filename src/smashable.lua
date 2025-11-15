@@ -110,7 +110,7 @@ smashable.smashed = function(self)
   self.isSmashed = true
   local tag = self:getTag()
   if tag.audioName then
-    audioManager.play(tag.audioName, 2.0)
+    audioManager.play(tag.audioName, 3.0)
   end
 
   local x, y, z = self:getPosition()
