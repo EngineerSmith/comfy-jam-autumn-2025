@@ -25,21 +25,21 @@ nest.bedAssets = {
   [4] = "model.nest.interior.bed.4",
 }
 
--- nest.bedLevels = { -- total 71
---   [0] = 7, -- 64 left after
---   [1] = 15, -- 49 left after
---   [2] = 20, -- 29 left after
---   [3] = 25, -- 4 left after
---   [4] = 4, -- 0 left after
--- }
-
-nest.bedLevels = { -- debug
-  [0] = 0,
-  [1] = 0,
-  [2] = 0,
-  [3] = 0,
-  [4] = 0,
+nest.bedLevels = { -- total 71
+  [0] = 7, -- 64 left after
+  [1] = 15, -- 49 left after
+  [2] = 20, -- 29 left after
+  [3] = 25, -- 4 left after
+  [4] = 4, -- 0 left after
 }
+
+-- nest.bedLevels = { -- debug
+--   [0] = 0,
+--   [1] = 0,
+--   [2] = 0,
+--   [3] = 0,
+--   [4] = 0,
+-- }
 
 nest.bedButton = {
   text = "Upgrade Bed: %d leaves",
