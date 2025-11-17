@@ -410,7 +410,7 @@ ai.update = function(dt)
         end
       elseif chance >= 1 - BEHAVIOUR_CHANCE then
         local behaviourID = getRandomBehaviour()
-        if behaviourID and behaviourID == "play_ball" then
+        if behaviourID and behaviourID == "play_ball" and require("src.world.nest").ballUnlocked then
           consumed = true
           ai.currentBehaviour = {
             id = behaviourID,

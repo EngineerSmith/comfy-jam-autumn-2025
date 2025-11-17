@@ -1,7 +1,9 @@
 local nest = require("src.world.nest")
+local wind = require("src.world.wind")
 local level = require("src.world.level")
 local transition = require("src.world.transition")
 
+local input = require("util.input")
 local logger = require("util.logger")
 local assetManager = require("util.assetManager")
 
@@ -240,7 +242,7 @@ world.load = function()
       logger.warn("Collectable of mapData.smashables["..tostring(i).."] had invalid level. Check spelling. Ignoring smashable.")
     else
       local x, y, tag, zOffset = smashableInfo.x, smashableInfo.y, smashableInfo.tag, smashableInfo.zOffset
-      table.insert(world.smashables, smashable.new(x, y, level, tag, zOffset))
+      table.insert(world.smashables, smashable.new(x, y, level, tag, zOffset, smashableInfo.onBashScriptID))
     end
   end
 
@@ -296,6 +298,9 @@ world.load = function()
   end
 
   nest.load()
+  if playerCharacter then
+    wind.load(playerCharacter.x, playerCharacter.y, playerCharacter.z, 40)
+  end
 end
 
 world.unload = function()
@@ -356,7 +361,7 @@ end
 world.update = function(dt, scale)
   scriptingEngine.update(dt) -- we want to process updates before we check for new interaction triggers
 
-  if not player.isInputBlocked then
+  if not player.isInputBlocked_cutscene and not player.isInputBlocked_dash then
     local px, py, _ = player.getPosition()
     for _, interaction in ipairs(world.interactions) do
       if interaction:isInRange(px, py) and player.character:isInLevel(interaction.level) then
@@ -368,6 +373,12 @@ world.update = function(dt, scale)
   end
 
   if world.stage == "world" then
+
+    if input.baton:pressed("reject") then
+      local game = require("scenes.game")
+      game.showingSettings = not game.showingSettings
+    end
+
     -- We update player after interactions, as scripts can lock player input, and thus stopping them move this frame
     player.update(dt)
 
@@ -444,6 +455,9 @@ world.update = function(dt, scale)
       else
         shader:send("numCollectable", 0)
       end
+
+      wind.update(dt, playerCharacter.x, playerCharacter.y, playerCharacter.z, 40)
+
     end
   elseif world.stage == "nest" then
     nest.update(dt, scale)
@@ -504,6 +518,8 @@ world.draw = function(scale)
     for _, signpost in ipairs(world.signposts) do
       signpost:draw()
     end
+
+    wind.draw()
   elseif world.stage == "nest" then
     nest.draw()
     nest.drawUi(scale)

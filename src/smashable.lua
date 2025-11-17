@@ -32,9 +32,33 @@ local tags = {
       tag.model:draw()
       tag.model:setRotation(preRX, preRY, preRZ)
     end,
+  },
+  ["PUMPKIN"] = {
+    modelName = "model.pumpkin",
+    textureName = "texture.foodKit.colorMap",
+    audioName = "audio.fx.softImpact",
+    scale = 5,
+    radius = 0.22,
+    --
+    minLitter = 8,
+    maxLitter = 12,
+    litterColor = { 1.0, 0.4, 0.0 },
+    litterScale = 0.5,
+    -- debug draws
+    color = { .4, .1, .1, 1 },
+    --
+    draw = function(tag, smashable)
+      local scale = tag.scale
+      tag.model:setTexture(tag.texture)
+      local x, y, z = smashable:getPosition()
+      tag.model:setTranslation(x, y, z)
+      tag.model:setScale(scale)
+      tag.model:draw()
+    end
   }
 }
 tags.POT.shape = slickHelper.rotateShapeVertices(slick.newCircleShape(0, 0, tags.POT.radius * tags.POT.scale, 6, slickHelper.tags.SMASHABLE_POT), math.rad(90), 0, 0)
+tags.PUMPKIN.shape = slick.newCircleShape(0, 0, tags.PUMPKIN.radius * tags.PUMPKIN.scale, nil, slickHelper.tags.SMASHABLE_PUMPKIN)
 
 local tagAssets, lookup = { }, { }
 for _, tag in pairs(tags) do
@@ -45,6 +69,10 @@ for _, tag in pairs(tags) do
   if type(tag.audioName) == "string" and not lookup[tag.audioName] then
     lookup[tag.audioName] = true
     table.insert(tagAssets, tag.audioName)
+  end
+  if type(tag.textureName) == "string" and not lookup[tag.textureName] then
+    lookup[tag.textureName] = true
+    table.insert(tagAssets, tag.textureName)
   end
 end
 lookup = nil
@@ -64,6 +92,15 @@ smashable.load = function()
         tag.model = model
       end
     end
+    if type(tag.textureName) == "string" then
+      local texture = assetManager[tag.textureName]
+      if not texture then
+        logger.warn("Couldn't find smashable texture with ID:", tag.textureName, ". Attempting to continue without.")
+        tag.texture = nil
+      else
+        tag.texture = texture
+      end
+    end
   end
 end
 
@@ -80,7 +117,7 @@ smashable.getTag = function(tag)
   return tags[tag]
 end
 
-smashable.new = function(x, y, level, tag, zOffset)
+smashable.new = function(x, y, level, tag, zOffset, onBashScriptID)
   local self = setmetatable({
     x = x or 0,
     y = y or 0,
@@ -88,6 +125,7 @@ smashable.new = function(x, y, level, tag, zOffset)
     tag = tag,
     level = level,
     zOffset = zOffset or 0,
+    onBashScriptID = onBashScriptID, -- or nil
     scale = 1,
     rotation = 0,
     litter = { },
@@ -114,7 +152,7 @@ smashable.smashed = function(self)
   end
 
   local x, y, z = self:getPosition()
-  for i = 0, love.math.random(3,5) do
+  for i = 0, love.math.random( tag.minLitter or 3, tag.maxLitter or 5) do
     local litter = {
       x = x, y = y, z = z,
       rx = 0, ry = 0, rz = 0,
@@ -152,6 +190,11 @@ smashable.smashed = function(self)
         end
       end)
   end
+
+  if self.onBashScriptID then
+    local scriptingEngine = require("src.scripting")
+    scriptingEngine.startScript(self.onBashScriptID)
+  end
 end
 
 local lg = love.graphics
@@ -174,7 +217,7 @@ smashable.draw = function(self)
       lg.setColor(r, g ,b, litter.opacity)
       CUBE:setTranslation(litter.x, litter.y, litter.z)
       CUBE:setRotation(litter.rx, litter.ry, litter.rz)
-      CUBE:setScale((((tag.radius or 1) * self.scale * tag.scale) / 1.5)) -- 1/2 the scale of the smashable model, 0.25 for the size of the cube
+      CUBE:setScale((((tag.radius or 1) * self.scale * tag.scale) / 1.5) * (tag.litterScale or 1)) -- 1/2 the scale of the smashable model, 0.25 for the size of the cube
       CUBE:draw()
     end
     lg.pop()

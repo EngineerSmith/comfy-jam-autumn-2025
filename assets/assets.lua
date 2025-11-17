@@ -139,6 +139,7 @@ local list = {
 
   { path = "models/kenney/Food Kit/cabbage.obj", name = "model.bush.cabbage", onLoad = objLoader, "y", "NIL", "v" },
   { path = "models/kenney/Food Kit/colormap.png", name = "texture.foodKit.colorMap", onLoad = filterLinearRepeat },
+  { path = "models/kenney/Food Kit/pumpkin.obj", name = "model.pumpkin", onLoad = objLoader, "y", "NIL", "v" },
 -- Audio
   -- sourceType = "static"/"stream"
   { path = "audio/ui/rollover4.ogg", name = "audio.ui.select.1", sourceType = "static", audioType = "ui", key = "audio.ui.select", volume = .5 },

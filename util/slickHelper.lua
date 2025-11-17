@@ -7,13 +7,14 @@ local slickHelper = { }
 -- Thus to correctly compare tag.type == tag.type
 
 slickHelper.tags = {
-  CHARACTER     = slick.newEnum({ type = "character"  }),
-  WALL          = slick.newEnum({ type = "wall"         , audio = "audio.fx.softImpact" }),
-  ROCK          = slick.newEnum({ type = "rock"         , audio = "audio.fx.hit.rock"   }),
-  LOG           = slick.newEnum({ type = "log"          , audio = "audio.fx.hit.log"    }),
-  POT           = slick.newEnum({ type = "pot"          , audio = "audio.fx.hit.pot"    }),
-  PLANT         = slick.newEnum({ type = "plant"        , audio = "audio.fx.hit.plant"  }),
-  SMASHABLE_POT = slick.newEnum({ type = "smashable_pot", audio = "audio.fx.hit.pot"      , isSmashable = true }),
+  CHARACTER         = slick.newEnum({ type = "character"      }),
+  WALL              = slick.newEnum({ type = "wall"             , audio = "audio.fx.softImpact" }),
+  ROCK              = slick.newEnum({ type = "rock"             , audio = "audio.fx.hit.rock"   }),
+  LOG               = slick.newEnum({ type = "log"              , audio = "audio.fx.hit.log"    }),
+  POT               = slick.newEnum({ type = "pot"              , audio = "audio.fx.hit.pot"    }),
+  PLANT             = slick.newEnum({ type = "plant"            , audio = "audio.fx.hit.plant"  }),
+  SMASHABLE_POT     = slick.newEnum({ type = "smashable_pot"    , audio = "audio.fx.hit.pot"      , isSmashable = true }),
+  SMASHABLE_PUMPKIN = slick.newEnum({ type = "smashable_pumpkin", audio = "audio.fx.softImpact"   , isSmashable = true }),
 }
 
 slickHelper.typeArrayToTags = function(array)

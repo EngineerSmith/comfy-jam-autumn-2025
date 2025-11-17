@@ -44,6 +44,7 @@ local defaultSettings = {
         bedPurchase = { "button:y", "mouse:1", "sc:space" },
         debugButton = { "sc:tab", "button:dpleft" },
         charge = { "axis:triggerright+", "button:b", "mouse:2", "sc:return" },
+        skip = { "mouse:1", "sc:space", "button:b", "button:y", "button:x" },
       },
       deadzone = .15,
       deadzoneSquared = false,

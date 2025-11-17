@@ -236,12 +236,13 @@ helper.addCollectable = function(tag, level, x, y, zone, zOffset)
   })
 end
 
-helper.addSmashable = function(tag, level, x, y, zOffset)
+helper.addSmashable = function(tag, level, x, y, zOffset, scriptID)
   table.insert(helper.mapData.smashables, {
     x = x, y = y,
     level = level,
     tag = tag,
     zOffset = zOffset,
+    onBashScriptID = scriptID,
   })
 end
 

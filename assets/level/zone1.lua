@@ -37,7 +37,7 @@ helper.addCabbage({ "zone1.ground", "zone1.upper" }, -29, 34, 5)
 helper.addSmallRock("zone1.upper", -58, 1.5)
 local length = 5
 for x = 0, length * -5, -5 do
- helper.addCliff({ "zone1.ground", "zone1.upper" }, -60 + x, -1)
+ helper.addCliff({ "zone1.ground", "zone1.upper" }, -60 + x, -1, nil, nil, x == -15)
 end
 helper.addSmallRock("zone1.upper", -53, 22)
 helper.addSmallRock("zone1.upper", -48.5, 26.5)

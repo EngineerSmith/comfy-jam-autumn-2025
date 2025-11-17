@@ -25,12 +25,20 @@ nest.bedAssets = {
   [4] = "model.nest.interior.bed.4",
 }
 
-nest.bedLevels = {
-  [0] = 7,
-  [1] = 20,
-  [2] = 25,
-  [3] = 25,
-  [4] = 25,
+-- nest.bedLevels = { -- total 71
+--   [0] = 7, -- 64 left after
+--   [1] = 15, -- 49 left after
+--   [2] = 20, -- 29 left after
+--   [3] = 25, -- 4 left after
+--   [4] = 4, -- 0 left after
+-- }
+
+nest.bedLevels = { -- debug
+  [0] = 0,
+  [1] = 0,
+  [2] = 0,
+  [3] = 0,
+  [4] = 0,
 }
 
 nest.bedButton = {
@@ -136,6 +144,12 @@ nest.unload = function()
   nest.bedButton.isHovered = false
 end
 
+nest.unlockBall = function()
+  nest.ballUnlocked = true
+  -- todo on next enter, queue ball interaction
+  nest.playBallOnEnter = true
+end
+
 nest.enter = function()
   nest.camera:setCurrent()
   local shader = g3d.shader
@@ -166,6 +180,11 @@ nest.enter = function()
     :onupdate(function()
       nest.music:setVolume(targetVolume * fade.t)
     end)
+
+  if nest.playBallOnEnter then
+    nest.playBallOnEnter = false
+    require("src.scripting").startScript("nest.forcedBallPlay")
+  end
 end
 
 nest.leave = function()
@@ -230,7 +249,9 @@ nest.update = function(dt, scale)
     end
   end
 
-  nest.ball:update(dt)
+  if nest.ballUnlocked then
+    nest.ball:update(dt)
+  end
 
   nest.hedgehog:update(dt)
   -- move hedgehog after update
@@ -252,9 +273,9 @@ nest.update = function(dt, scale)
     shader:send("numCollectable", 0)
   end
 
-  if input.baton:pressed("pause") then
-    ai.startBehaviour("play_ball", nest.ball)
-  end
+  -- if input.baton:pressed("pause") then
+  --   ai.startBehaviour("play_ball", nest.ball)
+  -- end
 
   local world = require("src.world") -- no sin is too far
   local cost = nest.bedLevels[nest.bedLevel + 1]
@@ -447,7 +468,11 @@ nest.draw = function()
 
     g3d.shader:send("disableLight", true)
     for _, object in ipairs(nest.objects) do
-      object:draw()
+      if object ~= nest.ball then
+        object:draw()
+      elseif object == nest.ball and nest.unlockBall then
+        object:draw()
+      end
     end
     g3d.shader:send("disableLight", false)
 

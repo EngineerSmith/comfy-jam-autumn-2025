@@ -18,13 +18,13 @@ local memory = { }
 
 handlers["lock"] = function(_)
   local player = require("src.player")
-  player.isInputBlocked = true
+  player.isInputBlocked_cutscene = true
   return true
 end
 
 handlers["unlock"] = function(_)
   local player = require("src.player")
-  player.isInputBlocked = false
+  player.isInputBlocked_cutscene = false
   return true
 end
 
@@ -309,6 +309,13 @@ handlers["lerpCameraTo"] = {
     local g3d = require("libs.g3d")
     local camera = g3d.camera.current()
 
+    if x == "player" then
+      seconds = y
+      local player = require("src.player")
+            x,       y,       z = unpack(player.camera.position)
+      lookAtX, lookAtY, lookAtZ = unpack(player.camera.target)
+    end
+
     if seconds == 0 then
       camera:lookAt(x, y, z, lookAtX, lookAtY, lookAtZ)
       return true
@@ -449,6 +456,46 @@ handlers["firstTimeEnterZone1"] = function()
   end
   return false
 end
+
+handlers["finishedNest"] = function()
+  local nest = require("src.world.nest")
+  return nest.unlockBall and nest.bedLevel >= 1
+end
+
+handlers["unlockPumpkinBall"] = function()
+  local nest = require("src.world.nest")
+  nest.unlockBall()
+  return true
+end
+
+handlers["startBehaviour"] = function(_, behaviour)
+  local ai = require("src.world.nest.ai")
+  if behaviour == "play_ball" then
+    local nest = require("src.world.nest")
+    ai.startBehaviour("play_ball", nest.ball)
+    ai.triggerScript("ai.alert", true)
+  end
+  return true
+end
+
+handlers["playCredits"] = {
+  start = function(executionID)
+    local game = require("scenes.game")
+    game.playCredits(function()
+      memory[executionID] = true
+    end)
+    memory[executionID] = false
+    return false
+  end,
+  update = function(executionID, _)
+    local mem = memory[executionID]
+    if mem then
+      memory[executionID] = nil
+      return true
+    end
+    return false
+  end,
+}
 
 --- handler validation
 local keysToRemove = { }

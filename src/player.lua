@@ -1,7 +1,8 @@
 local player = {
   lookAt = { 0, -5, 20 }, -- -1e-5
   magnet = 0.5, -- magnet * playerCharacter.size = effect radius
-  isInputBlocked = false,
+  isInputBlocked_cutscene = false,
+  isInputBlocked_dash = false,
   chargingValue = 0,
 
   dashDuration = 0.10,
@@ -63,14 +64,14 @@ player.update = function(dt)
     return
   end
 
-  if input.baton:pressed("debugButton") then
-    inPhase = not inPhase
-    if inPhase then
-      print("Entered phase (collision bypass)")
-    else
-      print("Exited phase (collision check on)")
-    end
-  end
+  -- if input.baton:pressed("debugButton") then
+  --   inPhase = not inPhase
+  --   if inPhase then
+  --     print("Entered phase (collision bypass)")
+  --   else
+  --     print("Exited phase (collision check on)")
+  --   end
+  -- end
 
   if player.dashTimer > 0 then
     local dashSpeed = player.character.speed * player.dashSpeedMultiplier
@@ -88,7 +89,7 @@ player.update = function(dt)
       if player.dashTimer <= 0 then
         player.dashTimer = 0
         player.character:setState("idle")
-        player.isInputBlocked = false
+        player.isInputBlocked_dash = false
       end
     else
       local tags, smashables = player.character:getTagsBetween(startX, startY, dashDX, dashDY, "touch")
@@ -98,7 +99,7 @@ player.update = function(dt)
       local _, hits = player.character:move(dashDX, dashDY, "touch") -- Attempt to move as close as possible to collision point
       player.dashTimer = 0
       player.character:setState("bonk")
-      player.isInputBlocked = false
+      player.isInputBlocked_dash = false
       if tags then
         for _, tag in ipairs(tags) do
           if tag.audio then
@@ -133,7 +134,7 @@ player.update = function(dt)
     return
   end
 
-  if player.isInputBlocked then
+  if player.isInputBlocked_cutscene or player.isInputBlocked_dash then
     lookAt(player.getPosition())
     return
   end
@@ -150,14 +151,14 @@ player.update = function(dt)
         player.dashTimer = player.dashDuration
         player.character:setState("dash")
         audioManager.play("audio.fx.woosh", 1.0)
-        player.isInputBlocked = true
+        player.isInputBlocked_dash = true
       elseif player.chargingValue >= 0.25 then
         player.dashNormalX = player.chargeDX
         player.dashNormalY = player.chargeDY
         player.dashTimer = player.dashDuration / 3
         player.character:setState("dash")
         audioManager.play("audio.fx.woosh", 0.5)
-        player.isInputBlocked = true
+        player.isInputBlocked_dash = true
       elseif player.chargingValue ~= 0 then -- Accidental taps
         player.character:setState("idle")
       end

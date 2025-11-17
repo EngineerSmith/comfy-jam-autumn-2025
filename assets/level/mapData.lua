@@ -31,6 +31,14 @@ local mapData = {
       x = 3.25, y = -38.5, width = 9.5, height = 4,
       edgeMap = { left = "tutorial.ground", right = "tutorial.upper" }
     },
+    {
+      x = -93, y = -13.5, width = 3, height = 7.5,
+      edgeMap = { bottom = "zone1.upper", top = "zone1.ground" }
+    },
+    {
+      x = -76.5, y = -9.5, width = 3, height = 7.5,
+      edgeMap = { bottom = "zone1.ground", top = "zone1.upper" }
+    }
   },
   models = {
     --- Nest
@@ -156,6 +164,12 @@ local mapData = {
       onBonkScriptID = "bonk.zone1.upper.bottom", id = "zone1.upper.bottom.log",
       collider = { levels = { "zone1.upper" }, y = -0.1, shape = "circle", radius = 0.1, segments = 6, tag = "LOG" },
     },
+    { --- Transition ramp; zone1.upper <-> zone1.ground (mid)
+      model = "model.log", level = "zone1.ground", x = -91, y = -11.5, scale = 15, z = -0.2, rx = math.rad(-35),
+    },
+    { --- Transition ramp; zone1.ground <-> zone1.upper (mid)
+      model = "model.log", level = "zone1.ground", x = -75, y = -4.5, scale = 15, z = -0.2, rx = math.rad(35),
+    },
   },
   colliders = {
     -- Nest
@@ -173,6 +187,7 @@ local mapData = {
     { levels = { "zone1.ground", "zone1.rock" }, shape = "rectangle", x = -41.5, y = 14.5, width = 2, height = 0.25, tag = "ROCK" },
     { levels = { "zone1.rock" }, shape = "rectangle", x = -38.5, y = 12.5, width = 0.25, height = 2, tag = "ROCK" },
     { levels = { "zone1.upper" }, shape = "circle", x = -50, y=17.5, radius = 1, tag = "WALL" },
+    { levels = { "nest.ground" }, shape = "rectangle", x = 38, y = -8, width = 1, height = 40, tag = "WALL" },
   },
   collectables = {
     { level = "nest.ground", x = -2, y = 17.5, tag = "GOLDEN_LEAF", zone = "nest" }, -- behind nest pot
@@ -203,6 +218,7 @@ local mapData = {
     { level = "tutorial.ground", x = 47, y = -32.5, z = 3, content = "Hold[button.charge]to bash logs", radius = 5.5 },
     { level = "tutorial.ground", x = 48, y = -50,   z = 3, content = "Use[button.move]to move", radius = 5.5 },
     { level = "tutorial.upper",  x = 23, y = -34.5, z = 3, content = "Hold[button.charge]to bash pots", radius = 5.5 },
+    { level = "zone1.upper",  x = -65, y = 8.5, z = 3, content = "Hold[button.charge]to bash the pumpkin", radius = 5.5 },
   },
   interactions = {
     { level = "nest.ground", x = 0, y = -8, radius = 3.0, scriptID = "enter.pot" },
@@ -229,6 +245,22 @@ local mapData = {
       { "sleep", 0.2 },
       { "glideBy", "Hedgehog.Player", 0, -3 },
       { "wait" },
+      { "if", "finishedNest", 9, -2 },
+      { "setCutsceneCamera", "player" },
+      { "switchCamera", "cutscene" },
+      { "sleep", 0.5 },
+      { "lerpCameraTo", -50, -50, 25, nil, nil, nil, 5 },
+      { "wait" },
+      { "lerpCameraTo", -50, -50, 50, -50, nil, nil, 5 },
+      { "wait" },
+      { "lerpCameraTo", -30, -120, 75, -30, nil, nil, 5 },
+      { "wait" },
+      { "playCredits" },
+      { "wait" },
+      { "lerpCameraTo", "player", 2 },
+      { "wait" },
+      { "sleep", 1.0 },
+      { "switchCamera", "player" },
       { "unlock" },
     },
     ["event.newgame"] = { isMandatory = true, -- ran when a new game is started
@@ -336,7 +368,7 @@ local mapData = {
       { "setCutsceneCamera", "player" },
       { "switchCamera", "cutscene" },
       { "sleep", 0.5 },
-      { "lerpCameraTo", -42.5, -3, 15, -56, 7.5, 6, 3 },
+      { "lerpCameraTo", -42.5, -3, 15, -59, 6, 6, 3 },
       { "wait" },
       { "lerpCameraTo", -47.5, 2, 10, nil, nil, nil, 2 },
       { "wait" },
@@ -362,6 +394,27 @@ local mapData = {
       { "sleep", 0.7 },
       { "playAudio", "audio.fx.impact.wood", 2.0 },
       { "wait" },
+    },
+    ["bashed.pumpkin"] = { isMandatory = true,
+      { "lock" },
+      { "setCutsceneCamera", "player" },
+      { "switchCamera", "cutscene" },
+      { "sleep", 0.5 },
+      { "lerpCameraTo", -30, -15, 15, -8.5, -7, 2,  5 },
+      { "wait" },
+      { "lerpCameraTo", -10, -15, 15,  0,   -9, 3,  3 },
+      { "wait" },
+      { "lerpCameraTo",  -0, -14, 7,   0,   -9, 3,  2 },
+      { "wait" },
+      { "sleep", 1.0 },
+      { "unlockPumpkinBall" },
+      { "switchCamera", "player" },
+      { "unlock" },
+      { "wait" },
+    },
+    ["nest.forcedBallPlay"] = { isMandatory = true,
+      -- { "sleep", 1.0 },
+      { "startBehaviour", "play_ball" },
     }
   },
   characters = {
@@ -378,7 +431,7 @@ local mapData = {
     ["Hedgehog.Debug"] = {
       file = "assets/characters/hedgehog/init.lua",
       level = "zone1.upper",
-      x = -85, y = -58,
+      x = -68, y = 3.5,
     },
   },
   playerCharacter = "Hedgehog.Debug",
@@ -391,5 +444,10 @@ helper.addPlant("nest.ground", 23.5, 27)
 helper.addSmallRock("nest.ground", 21.5, 29)
 require("assets.level.tutorial")
 require("assets.level.zone1_sprint2") -- sprint 2 of building out zone1 has to be in another file, otherwise will disturb the rng of the tutorial model placement
+local length = 13 - 5
+for x = -5 * 5, length * -5, -5 do
+ helper.addCliff({ "zone1.ground", "zone1.upper" }, -60 + x, -1, nil, nil, x == -15)
+end
+
 
 return mapData
