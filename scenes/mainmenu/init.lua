@@ -280,6 +280,17 @@ end
 scene.draw = function()
   lg.clear()
   background.draw(scene.scale)
+
+  lg.push("all")
+  local w, h = lg.getDimensions()
+  lg.translate(math.floor(w/2), math.floor(h/2))
+  lg.setColor(1,1,1,1)
+  local title = assetManager["ui.title"]
+  local w, h = title:getDimensions()
+  w, h = w * scene.scale, h * scene.scale
+  lg.draw(title, -math.floor(w/2), -math.floor(h/2), 0, scene.scale)
+  lg.pop()
+
   if scene.menu == "prompt" then
     local windowW, windowH = lg.getDimensions()
     local offset = windowH/10

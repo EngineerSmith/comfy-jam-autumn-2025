@@ -234,6 +234,8 @@ local list = {
   { path = "UI/basic_3slice.png", name = "ui.3slice.basic", onLoad = slice3Nearest, 16, 96 },
   { path = "UI/tab_3slice.png", name = "ui.3slice.tab", onLoad = slice3Nearest, 128, 130 },
   { path = "UI/tab2_3slice.png", name = "ui.3slice.tab2", onLoad = slice3Nearest, 8, 56 },
+  { path = "UI/title.png", name = "ui.title", onLoad = filterNearest },
+  { path = "UI/subtitle.png", name = "ui.subtitle", onLoad = filterNearest },
   -- Cursor
   { path = "UI/cursor/navigation_e.png", name = "ui.cursor.navigation.east" },
   { path = "UI/cursor/navigation_w.png", name = "ui.cursor.navigation.west" },

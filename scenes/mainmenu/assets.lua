@@ -6,6 +6,8 @@ local assets = {
 -- textures
   "ui.logoES",
   "ui.3slice.basic",
+  "ui.title",
+  "ui.subtitle",
 -- audios
   "audio.ui.select",
   "audio.ui.click",
