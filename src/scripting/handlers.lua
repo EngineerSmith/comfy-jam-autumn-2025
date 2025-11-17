@@ -299,6 +299,9 @@ handlers["setCutsceneCamera"] = function(_, x, y, z, lookAtX, lookAtY, lookAtZ)
     local player = require("src.player")
           x,       y,       z = unpack(player.camera.position)
     lookAtX, lookAtY, lookAtZ = unpack(player.camera.target)
+  elseif lookAtX == "player" then
+    local player = require("src.player")
+    lookAtX, lookAtY, lookAtZ = unpack(player.camera.position)
   end
   camera:lookAt(x, y, z, lookAtX, lookAtY, lookAtZ)
   return true 

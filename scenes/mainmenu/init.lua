@@ -277,18 +277,32 @@ scene.updateui = function()
   end
 end
 
+local quadA = lg.newQuad( 1, 1, 32, 32, 67, 34)
+local quadB = lg.newQuad(34, 1, 32, 32, 67, 34)
+
 scene.draw = function()
   lg.clear()
   background.draw(scene.scale)
 
   lg.push("all")
   local w, h = lg.getDimensions()
+  lg.translate(0, -math.floor(h/8))
   lg.translate(math.floor(w/2), math.floor(h/2))
   lg.setColor(1,1,1,1)
   local title = assetManager["ui.title"]
   local w, h = title:getDimensions()
   w, h = w * scene.scale, h * scene.scale
   lg.draw(title, -math.floor(w/2), -math.floor(h/2), 0, scene.scale)
+  local subtitle = assetManager["ui.subtitle"]
+  local w, h = subtitle:getDimensions()
+  w, h = w * scene.scale, h * scene.scale
+  lg.draw(subtitle, -math.floor(w/2), -math.floor(h/2), 0, scene.scale)
+  lg.translate(0, math.floor(h/4))
+  local sleep = assetManager["sprite.hedgehog.sleep.loop"]
+  local w, h = 32, 32
+  w, h = w * scene.scale, h * scene.scale
+  local quad = love.timer.getTime() % .5 < .25 and quadA or quadB
+  lg.draw(sleep, quad, -math.floor((w * 4)/2), -math.floor((h * 4)/2), 0, scene.scale * 4)
   lg.pop()
 
   if scene.menu == "prompt" then

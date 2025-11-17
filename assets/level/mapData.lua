@@ -187,7 +187,7 @@ local mapData = {
     { levels = { "zone1.ground", "zone1.rock" }, shape = "rectangle", x = -41.5, y = 14.5, width = 2, height = 0.25, tag = "ROCK" },
     { levels = { "zone1.rock" }, shape = "rectangle", x = -38.5, y = 12.5, width = 0.25, height = 2, tag = "ROCK" },
     { levels = { "zone1.upper" }, shape = "circle", x = -50, y=17.5, radius = 1, tag = "WALL" },
-    { levels = { "nest.ground" }, shape = "rectangle", x = 38, y = -8, width = 1, height = 40, tag = "WALL" },
+    { levels = { "nest.ground" }, shape = "rectangle", x = 38, y = -12, width = 1, height = 40, tag = "WALL" },
   },
   collectables = {
     { level = "nest.ground", x = -2, y = 17.5, tag = "GOLDEN_LEAF", zone = "nest" }, -- behind nest pot
@@ -266,20 +266,23 @@ local mapData = {
     ["event.newgame"] = { isMandatory = true, -- ran when a new game is started
       { "lock" },
       { "createNamedCollider", "zone1.rock", "zone1RockBlock", "circle", -42, 13, .5 },
-      { "goto", -2}, -- debug jump
-      { "setCutsceneCamera", -10, -25, 15, -10, -10, 3 },
+      -- { "goto", -2}, -- debug jump
+      { "setCutsceneCamera", 40, -44, 15, 45.5, -53, 1 },
       { "switchCamera", "cutscene" },
-      { "glideTo", "Hedgehog.Player", -13, -10.5 },
+      { "sleep", 0.5 },
+      { "glideTo", "Hedgehog.Player", 47.5, -53 },
       { "sleep", 1.0 },
       { "wait" },
-      { "glideTo", "Hedgehog.Player", -6.5, -13 },
-      { "lerpCameraTo", -10, -25, 15, 0, -10, -5, 4.5 },
-      { "sleep", 0.9 },
-      { "glideTo", "Hedgehog.Player", -1, -12.5 },
-      { "sleep", 0.7 },
-      { "glideTo", "Hedgehog.Player", 0, -9 },
+      { "lerpCameraTo", nil, nil, 20, 23, -37, 4.5 + 5, 5 },
+      { "wait" },
+      { "lerpCameraTo", 20, nil, nil, 8, -36.5, 2.5 + 5, 4 },
+      { "wait" },
+      { "lerpCameraTo", 0, -20, 15, 0, -10, 2.5, 4 },
+      { "wait" },
+      { "lerpCameraTo", 0, -12, 5, 0, -8, 1.5, 2.5 },
+      { "wait" },
       { "sleep", 0.5 },
-      { "characterFace", "Hedgehog.Player", "north" },
+      { "lerpCameraTo", "player", 2.5 },
       { "wait" },
       { "switchCamera", "player" },
       { "unlock" },
@@ -421,20 +424,20 @@ local mapData = {
     ["Hedgehog.Player"] = {
       file = "assets/characters/hedgehog/init.lua",
       level = "tutorial.ground",
-      x = 44.5, y = -53,
+      x = 47.5, y = -55,
     },
     -- ["Hedgehog.Debug"] = {
     --   file = "assets/characters/hedgehog/init.lua",
     --   level = "zone1.upper",
     --   x = -54, y = 6.5,
     -- },
-    ["Hedgehog.Debug"] = {
-      file = "assets/characters/hedgehog/init.lua",
-      level = "zone1.upper",
-      x = -68, y = 3.5,
-    },
+  --   ["Hedgehog.Debug"] = {
+  --     file = "assets/characters/hedgehog/init.lua",
+  --     level = "zone1.upper",
+  --     x = -68, y = 3.5,
+  --   },
   },
-  playerCharacter = "Hedgehog.Debug",
+  playerCharacter = "Hedgehog.Player",
 }
 helper.mapData = mapData -- link so helper can populate mapData
 

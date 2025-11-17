@@ -3,6 +3,7 @@ local assets = {
   "sprite.leaves.1",
   "sprite.trees.1",
   "sprite.trees.2",
+  "sprite.hedgehog.sleep.loop",
 -- textures
   "ui.logoES",
   "ui.3slice.basic",

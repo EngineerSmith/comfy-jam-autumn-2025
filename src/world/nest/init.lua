@@ -121,7 +121,7 @@ nest.load = function()
 
   nest.objects = {
     nest.hedgehog,
-    nest.ball,
+    -- nest.ball,
   }
 
   ai.addCharacterControl(nest.hedgehog)
@@ -145,7 +145,11 @@ nest.unload = function()
 end
 
 nest.unlockBall = function()
+  if nest.ballUnlocked then
+    return
+  end
   nest.ballUnlocked = true
+  table.insert(nest.objects, nest.ball)
   -- todo on next enter, queue ball interaction
   nest.playBallOnEnter = true
 end
@@ -468,11 +472,7 @@ nest.draw = function()
 
     g3d.shader:send("disableLight", true)
     for _, object in ipairs(nest.objects) do
-      if object ~= nest.ball then
-        object:draw()
-      elseif object == nest.ball and nest.unlockBall then
-        object:draw()
-      end
+      object:draw()
     end
     g3d.shader:send("disableLight", false)
 
