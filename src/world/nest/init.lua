@@ -566,6 +566,23 @@ nest.drawUi = function(windowScale)
       lg.print(text, font, textX, textY)
     lg.pop()
   end
+
+  local assets = input.getBindingAssetNames("reject")
+  local asset = assetManager[assets[1].key]
+  if asset then
+    lg.push("all")
+    local assetScale = 1 / 3
+    local w, h = asset:getDimensions()
+    w, h = math.floor(w * assetScale), math.floor(h * assetScale)
+    w, h = w * windowScale, h * windowScale
+    lg.translate(0, lg.getHeight() - 5 * windowScale - h)
+    lg.draw(asset, 5 * windowScale, 0, 0, windowScale * assetScale)
+    lg.translate(0 , h - nest.bedButton.textFont:getHeight()*1.5)
+    lg.print("Press to return", nest.bedButton.textFont, 10 * windowScale + w, 0)
+    lg.pop()
+  else
+    assetManager.load({ assets[1].key })
+  end
 end
 
 nest.mousemoved = function(scale, _, _, dx, dy, _)

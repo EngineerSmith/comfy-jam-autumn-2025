@@ -65,7 +65,9 @@ Lily: Concurrent Asset Loader
 There's a total of 71 leaves you can collect!
 Did you get them all?
 
-Thanks for playing
+Thanks for playing! I hope you found some enjoyment.
+
+I wanted to recreate the PS2 comfy vibes of going around and collecting things!
 ]]
 
 local scene = {

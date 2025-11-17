@@ -79,14 +79,6 @@ local mapData = {
         { shape = "rectangle", x = -0.27, y =  0.10, width = 0.1, height = 0.05, },
       }
     },
-    -- { -- Removed for tutorial zone
-    --   model = "model.rock.large.1", level = "nest.ground", x = 0, y = -25, z = -0.14, scale = 25, rz = math.rad(43.5), noScaleZ = true,
-    --   collider = {
-    --     levels = { "nest.ground" }, shape = "multi", tag = "ROCK",
-    --     { shape = "circle", x =  0,   y = -0.13, radius = 0.38 },
-    --     { shape = "circle", x = -0.2, y =  0.35, radius = 0.15 },
-    --   }
-    -- },
     {
       model = "model.rock.large.1", level = "nest.ground", x = -20, y = -18, z = -0.14, scale = 10, rz = math.rad(38+180), noScaleZ = true,
       collider = {
@@ -431,11 +423,11 @@ local mapData = {
     --   level = "zone1.upper",
     --   x = -54, y = 6.5,
     -- },
-  --   ["Hedgehog.Debug"] = {
-  --     file = "assets/characters/hedgehog/init.lua",
-  --     level = "zone1.upper",
-  --     x = -68, y = 3.5,
-  --   },
+    -- ["Hedgehog.Debug"] = {
+    --   file = "assets/characters/hedgehog/init.lua",
+    --   level = "nest.ground",
+    --   x = 0, y = -10,
+    -- },
   },
   playerCharacter = "Hedgehog.Player",
 }
