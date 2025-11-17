@@ -462,7 +462,7 @@ end
 
 handlers["finishedNest"] = function()
   local nest = require("src.world.nest")
-  return nest.unlockBall and nest.bedLevel >= 1
+  return nest.ballUnlocked and nest.bedLevel >= 1
 end
 
 handlers["unlockPumpkinBall"] = function()
