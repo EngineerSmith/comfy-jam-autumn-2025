@@ -167,9 +167,9 @@ transition.checkExitEdge = function(self, character)
 end
 
 transition.update = function(self, characters)
-  if #self.levels <= 1 then -- transition is a dead end, so no logic needed (2 levels minimally needed)
-    return
-  end
+  -- if #self.levels <= 1 then -- transition is a dead end, so no logic needed (2 levels minimally needed)
+  --   return
+  -- end
 
   for _, character in pairs(characters) do
     local inside = self:isInside(character.x, character.y)

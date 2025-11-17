@@ -23,11 +23,19 @@ end
 local length = 9
 for x = 0, length * 5, 5 do
   helper.addCliff({ "zone1.ground", "zone1.upper" }, -72.5 - x, -14.5, 0, math.rad(180))
-  helper.addCliff({ "zone1.ground", "zone1.upper" }, -72.5 - x, -34.5)
+  if x ~= 5 then
+    helper.addCliff({ "zone1.ground", "zone1.upper" }, -72.5 - x, -34.5)
+  else
+    helper.addCliff("zone1.ground", -72.5 - x, -34.5)
+  end
 end
 local length = 9
 for x = 0, length * 5, 5 do
-  helper.addCliff({ "zone1.ground", "zone1.upper" }, -52.5 - x, -44.5, 0, math.rad(180))
+  if x ~= 25 then
+    helper.addCliff({ "zone1.ground", "zone1.upper" }, -52.5 - x, -44.5, 0, math.rad(180))
+  else
+    helper.addCliff("zone1.ground", -52.5 - x, -44.5, 0, math.rad(180))
+  end
   helper.addCliff({ "zone1.ground", "zone1.upper" }, -52.5 - x, -74.5)
 end
 local length = 5
@@ -81,7 +89,7 @@ helper.addPlant("zone1.ground", 57.5, -42)
 helper.addGrassClump("zone1.ground", -64.5, -33.5)
 helper.addPebbleClump("zone1.ground", -68.5, -26)
 helper.addPlant("zone1.ground", -60, -30)
-helper.addLeafCircle("zone1.ground", "zone_1", -78.5, -39.5, 3, 6)
+helper.addLeafCircle("zone1.ground", "zone_1", -77.5, -39.5, 3, 6)
 helper.placeDirtPath("zone1.ground", love.math.newBezierCurve(-85.5, -39.5, -100, -38, -112.5, -43))
 helper.addPlant("zone1.ground", -73.5, -37)
 helper.addPebbleClump("zone1.ground", -80.5, -41)
@@ -169,7 +177,7 @@ helper.placeDirtPath("zone1.upper", love.math.newBezierCurve(-96.5, -55, -89, -5
 helper.addPlant("zone1.upper", -73.5, -51)
 helper.addSmallRock("zone1.upper", -72.5, -46.5)
 helper.addGrassClump("zone1.upper", -83.5, -62)
-helper.placeDirtPath("zone1.upper", love.math.newBezierCurve(-79, -53.5, -79, -49), 0.1)
+helper.placeDirtPath("zone1.upper", love.math.newBezierCurve(-79, -53.5, -77, -51,-76.5, -49), 0.1)
 helper.addGrassClump("zone1.upper", -82.5, -46.5)
 helper.addGrassClump("zone1.upper", -82.5, -46.5)
 helper.addSmallRock("zone1.upper", -83, -66)

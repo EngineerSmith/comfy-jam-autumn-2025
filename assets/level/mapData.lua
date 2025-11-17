@@ -143,7 +143,7 @@ local mapData = {
       collider = { levels = { "zone1.upper" }, x = -0.1, shape = "circle", radius = 0.1, segments = 6, tag = "LOG" },
     },
     {
-      model = "model.rock.tall.1", level = "zone1.ground", x = -78.5, y = -39.5, scale = 6, rz = love.math.random() * 2 * math.pi,
+      model = "model.rock.tall.1", level = "zone1.ground", x = -77.5, y = -39.5, scale = 6, rz = love.math.random() * 2 * math.pi,
       collider = { levels = { "zone1.ground" }, shape = "circle", radius = 0.25, segments = 6, tag = "ROCK" },
     },
     { --- Transition ramp; zone1.ground <-> zone1.upper (bottom); position moved by gameplay script
@@ -152,7 +152,7 @@ local mapData = {
       collider = { levels = { "zone1.ground" }, x = -0.1, shape = "circle", radius = 0.1, segments = 6, tag = "LOG" },
     },
     { --- Transition ramp; zone1.upper <-> zone1.upper (bottom); position moved by gameplay script
-      model = "model.log", level = "zone1.upper", x = -78.5, y = -46.5, scale = 15, z = 5.25, rx = math.rad(90),
+      model = "model.log", level = "zone1.upper", x = -77.5, y = -45.5, scale = 15, z = 5.25, rx = math.rad(90),
       onBonkScriptID = "bonk.zone1.upper.bottom", id = "zone1.upper.bottom.log",
       collider = { levels = { "zone1.upper" }, y = -0.1, shape = "circle", radius = 0.1, segments = 6, tag = "LOG" },
     },
@@ -356,7 +356,11 @@ local mapData = {
       { "wait" },
     },
     ["bonk.zone1.upper.bottom"] = {
-      
+      { "lerpProp", "zone1.upper.bottom.log", nil, -39.5, -2.61, math.rad(0), nil, nil, 0.8 },
+      { "removePropCollider", "zone1.upper.bottom.log" },
+      { "addTransition", -79, -44.5, 3, 10, { bottom = "zone1.upper", top = "zone1.upper" } },
+      { "sleep", 0.7 },
+      { "playAudio", "audio.fx.impact.wood", 2.0 },
       { "wait" },
     }
   },
